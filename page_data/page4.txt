@@ -1,0 +1,202 @@
+2-SAT问题是这样的：有  $n$ 个布尔变量  $x_i$ ，另有  $m$ 个需要满足的条件，每个条件的形式都是“  $x_i$ 为真/假或者  $x_j$ 为真/假”。比如："  $x_1$ 为真或者  $x_3$ 为假“。注意这里的”或“是指两个条件至少有一个是正确的，比如  $x_1$ 和  $x_3$ 一共有  $3$ 中组合满足"  $x_1$ 为真或者  $x_3$ 为假“。2-SAT问题的目标是给每个变量赋值，使得所有条件得到满足。求解2-SAT问题一般比较常见方法是构造一张有向图  $G$ ，其中每个变量  $x_i$ 拆成两个结点  $2i$ 和  $2i+1$ ，分别表示  $x_i$ 为假和  $x_i$ 为真。最后要为每个变量选择其中一个结点标记。比如，若标记了节点  $2i$ ，表示  $x_i$ 为假；如果标记了  $2i+1$ ，表示  $x_i$ 为真。对于“  $x_i$ 为假或者  $x_j$ 为假”这样的条件，我们连一条有向边  $2i+1 \rightarrow 2j$ ，表示如果标记节点  $2i+1$ 那么也必须标记结点  $j$ ，同理还需要连一条有向边  $2j+1 \rightarrow 2i$ 。对于其他情况，也可以类似连边。换句话说，每个条件对应两条“对称”的边。接下来逐一考虑每个没有赋值的变量，设为  $x_i$ 。我们首先假定它为假，然后标记借点  $2_i$ ，并且沿着有向边标记所有能标记的结点。如果标记过程中发现某个变量对应的两个结点都被标记，则“  $x_i$ 为假”这个假定不成立，需要改成“  $x_i$ 为真”，然后重新标记。注意，该算法无回溯过程。如果当前考虑的变量不管赋值为真还是假都会引起矛盾，可以证明整个2-SAT问题无解（即使调整以前赋值的变量也没用）。这是很显然的，每个变量只会影响到关系到该变量的表达式的取值，因此对于未赋值的变量一定与之前的赋值无关，可以分开考虑，整个问题有解需要满足每个块都有解。下面给出求解2-SAT问题的代码：
+```cpp
+struct _2_sat{
+    int n;
+    vector<int> G[maxn << 1];
+    bool mark[maxn << 1];
+    int S[maxn << 1], c;
+    bool dfs(int x){
+        if(mark[x ^ 1]) return 0;
+        if(mark[x]) return 1;
+        mark[x] = 1;
+        S[c++] = x;
+        FOR(i, 0, G[x].size() - 1) if(!dfs(G[x][i])) return 0;
+        return 1;
+    }
+    void init(int n){
+        this->n = n;
+        FOR(i, 0, 2 * n - 1) G[i].clear();
+        clr(mark, 0);
+    }
+    //x = xval or y = yval
+    void add_caluse(int x, int xval, int y, int yval){
+        x = x * 2 + xval, y = y * 2 + yval;
+        G[x ^ 1].pb(y), G[y ^ 1].pb(x);
+    }
+    bool solve(){
+        for(int i = 0; i < 2 * n; i += 2) if(!mark[i] && !mark[i + 1]){
+            c = 0;
+            if(!dfs(i)){
+                while(c > 0) mark[S[--c]] = 0;
+                if(!dfs(i + 1)) return 0;
+            }
+        }
+        return 1;
+    }
+};
+```
+相关习题：
+
+LA 3713 Astronauts
+
+```cpp
+1 #include <algorithm>
+  2 #include <cstdio>
+  3 #include <cstring>
+  4 #include <string>
+  5 #include <queue>
+  6 #include <map>
+  7 #include <set>
+  8 #include <stack>
+  9 #include <ctime>
+ 10 #include <cmath>
+ 11 #include <iostream>
+ 12 #include <assert.h>
+ 13 #pragma comment(linker, "/STACK:102400000,102400000")
+ 14 #define max(a, b) ((a) > (b) ? (a) : (b))
+ 15 #define min(a, b) ((a) < (b) ? (a) : (b))
+ 16 #define mp std :: make_pair
+ 17 #define st first
+ 18 #define nd second
+ 19 #define keyn (root->ch[1]->ch[0])
+ 20 #define lson (u << 1)
+ 21 #define rson (u << 1 | 1)
+ 22 #define pii std :: pair<int, int>
+ 23 #define pll pair<ll, ll>
+ 24 #define pb push_back
+ 25 #define type(x) __typeof(x.begin())
+ 26 #define foreach(i, j) for(type(j)i = j.begin(); i != j.end(); i++)
+ 27 #define FOR(i, s, t) for(int i = (s); i <= (t); i++)
+ 28 #define ROF(i, t, s) for(int i = (t); i >= (s); i--)
+ 29 #define dbg(x) std::cout << x << std::endl
+ 30 #define dbg2(x, y) std::cout << x << " " << y << std::endl
+ 31 #define clr(x, i) memset(x, (i), sizeof(x))
+ 32 #define maximize(x, y) x = max((x), (y))
+ 33 #define minimize(x, y) x = min((x), (y))
+ 34 using namespace std;
+ 35 typedef long long ll;
+ 36 const int int_inf = 0x3f3f3f3f;
+ 37 const ll ll_inf = 0x3f3f3f3f3f3f3f3f;
+ 38 const int INT_INF = (int)((1ll << 31) - 1);
+ 39 const double double_inf = 1e30;
+ 40 const double eps = 1e-14;
+ 41 typedef unsigned long long ul;
+ 42 typedef unsigned int ui;
+ 43 inline int readint(){
+ 44     int x;
+ 45     scanf("%d", &x);
+ 46     return x;
+ 47 }
+ 48 inline int readstr(char *s){
+ 49     scanf("%s", s);
+ 50     return strlen(s);
+ 51 }
+ 52 
+ 53 class cmpt{
+ 54 public:
+ 55     bool operator () (const int &x, const int &y) const{
+ 56         return x > y;
+ 57     }
+ 58 };
+ 59 
+ 60 int Rand(int x, int o){
+ 61     //if o set, return [1, x], else return [0, x - 1]
+ 62     if(!x) return 0;
+ 63     int tem = (int)((double)rand() / RAND_MAX * x) % x;
+ 64     return o ? tem + 1 : tem;
+ 65 }
+ 66 ll ll_rand(ll x, int o){
+ 67     if(!x) return 0;
+ 68     ll tem = (ll)((double)rand() / RAND_MAX * x) % x;
+ 69     return o ? tem + 1 : tem;
+ 70 }
+ 71 
+ 72 void data_gen(){
+ 73     srand(time(0));
+ 74     freopen("in.txt", "w", stdout);
+ 75     int kases = 10;
+ 76     printf("%d\n", kases);
+ 77     while(kases--){
+ 78         ll sz = 100000;
+ 79         printf("%d\n", sz);
+ 80         FOR(i, 1, sz){
+ 81             int o = Rand(2, 0);
+ 82             int x = Rand(1e9, 1);
+ 83             int y1 = Rand(1e9, 1), y2 = Rand(1e9, 1);
+ 84             if(o == 0) printf("%d %d %d %d\n", x, y1, x, y1);
+ 85             else printf("%d %d %d %d\n", y1, x, y2, x);
+ 86         }
+ 87     }
+ 88 }
+ 89 const int maxn = 1e5 + 10;
+ 90 int n, m;
+ 91 ll sum;
+ 92 int id[maxn];
+ 93 int age[maxn];
+ 94 int head[maxn << 1];
+ 95 struct E{
+ 96     int to, nex;
+ 97 }e[maxn << 2];
+ 98 bool vis[maxn << 1];
+ 99 int N;
+100 void addE(int x, int y){
+101     e[N].nex = head[x];
+102     e[N].to = y;
+103     head[x] = N++;
+104 }
+105 int stk[maxn], k;
+106 bool dfs(int u){
+107     if(vis[u]) return 1;
+108     vis[u] = 1;
+109     stk[k++] = u;
+110     if(vis[u] && vis[u ^ 1]) return 0;
+111     for(int i = head[u]; ~i; i = e[i].nex){
+112         int v = e[i].to;
+113         if(!dfs(v)) return 0;
+114     }
+115     return 1;
+116 }
+117 
+118 bool solve(int u){
+119     k = 0;
+120     if(dfs(2 * u)) return 1;
+121     while(k) vis[stk[--k]] = 0;
+122     if(dfs(2 * u + 1)) return 1;
+123     return 0;
+124 }
+125 
+126 int main(){
+127     //data_gen(); return 0;
+128     //C(); return 0;
+129     int debug = 0;
+130     if(debug) freopen("in.txt", "r", stdin);
+131     //freopen("out.txt", "w", stdout);
+132     while(~scanf("%d%d", &n, &m) && n){
+133         sum = 0;
+134         FOR(i, 0, n - 1) age[i] = readint(), sum += age[i];
+135         FOR(i, 0, n - 1) id[i] = (ll)age[i] * n >= sum ? 0 : 1;
+136         clr(head, -1), N = 0;
+137         FOR(i, 0, m - 1){
+138             int x = readint() - 1, y = readint() - 1;
+139             //cc[i][0] = x, cc[i][1] = y;
+140             addE(2 * x, 2 * y + 1);
+141             if(id[x] == id[y]) addE(2 * x + 1, 2 * y);
+142             addE(2 * y, 2 * x + 1);
+143             if(id[x] == id[y]) addE(2 * y + 1, 2 * x);
+144         }
+145         int ok = 1;
+146         clr(vis, 0);
+147         FOR(i, 0, n - 1) if(!vis[2 * i] && !vis[2 * i + 1] && !solve(i)){
+148             ok = 0;
+149             break;
+150         }
+151         if(!ok) puts("No solution.");
+152         else FOR(i, 0, n - 1) putchar(!vis[2 * i + 1] ? 'C' : 'A' + id[i]), putchar('\n');
+153         //int res = verdict();
+154         //printf("verdict :: %s", res ? "ok\n" : "err\n");
+155     }
+156     return 0;
+157 }
+
+code:
+```
