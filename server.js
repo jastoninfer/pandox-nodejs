@@ -89,7 +89,7 @@ const checkAndCreateDir = async (dirPath) => {
 // 初始化图片函数
 const initImages = async (imgName, author='pandoxone') => {
     // console.log('--------------------------\n');
-    const filePath = `/Users/jeylnastoninfer/Desktop/pandox-images/${imgName}`;
+    const filePath = `static/resource/${imgName}`;
     // console.log('***********************\n');
     const fileContent = await fs.readFile(filePath);
     // console.log('+++++++++++++++++++++++\n');
