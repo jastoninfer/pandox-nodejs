@@ -13,7 +13,7 @@ const app = express();
 
 var corsOptions = {
     // 允许前端服务器访问的域名
-    origin: 'http://localhost:3000'
+    origin: ['http://localhost:3000', 'https://pandox-reactjs.vercel.app'],
 };
 
 // middleware: 跨域检查
