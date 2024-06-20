@@ -1,7 +1,8 @@
 const multer = require("multer");
 const fs = require('fs').promises;
 const path = require('path');
-
+// import { rootPath } from "../../config/resource.config";
+const { rootPath } = require('../../config/resource.config');
 const imageFilter = (req, file, cb) => {
     if (file.mimetype.startsWith("image")) {
         cb(null, true);
@@ -13,7 +14,7 @@ const imageFilter = (req, file, cb) => {
 const createStorage = (username) => {
     return multer.diskStorage({
         destination: async (req, file, cb) => {
-            const dir = path.join('/Users/jeylnastoninfer/Desktop/prac/nodejs_myapp', `img_data/${username}`);
+            const dir = path.join(rootPath, `img_data/${username}`);
             try {
                 await fs.access(dir);
             } catch (err) {
@@ -36,7 +37,7 @@ const createStorage = (username) => {
 
 var storage1 = multer.diskStorage({
     destination: async (req, file, cb) => {
-        const dir = path.join('/Users/jeylnastoninfer/Desktop/prac/nodejs_myapp', `img_data/${req.body.username}`);
+        const dir = path.join(rootPath, `img_data/${req.body.username}`);
         try {
             await fs.access(dir);
         } catch (err) {
@@ -48,6 +49,7 @@ var storage1 = multer.diskStorage({
             console.log('Filename already exists.');
             return cb('Internal error: filename exists');
         } catch (err) {
+            
         }
 
         cb(null, dir);

@@ -3,6 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const mime = require('mime');
 const Image = mysqlDb.images;
+// import { rootPath } from '../../config/resource.config';
+const {rootPath} = require('../../config/resource.config');
 
 // 需要注意的是, 一个image必然属于某个page, 不能脱离某个page而单独存在
 // 
@@ -44,7 +46,7 @@ exports.getImageById = async (req, res) => {
     const imageId = req.params.imageId;
     const username = req.params.username;
     try {
-        const imagePath = path.join(`/Users/jeylnastoninfer/Desktop/prac/nodejs_myapp/img_data/${username}`, imageId);
+        const imagePath = path.join(`${rootPath}/img_data/${username}`, imageId);
         fs.accessSync(imagePath, fs.constants.R_OK);
         const imageStream = fs.createReadStream(imagePath);
         const mimeType = mime.lookup(imagePath);
@@ -77,7 +79,7 @@ exports.getImageById123 = async (req, res) => {
         }
         // console.log('HERE....');
         const imageType = imageEntry.type;
-        const imagePath = path.join(`/Users/jeylnastoninfer/Desktop/prac/nodejs_myapp/img_data/${username}`, imageId);
+        const imagePath = path.join(`${rootPath}/img_data/${username}`, imageId);
         console.log('Path', imagePath);
         fs.accessSync(imagePath, fs.constants.R_OK);
         // console.log('exiss?', imageExists);
