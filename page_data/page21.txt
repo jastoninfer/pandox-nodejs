@@ -27,7 +27,7 @@ p(\mathbf{t,w})=p(\mathbf{w})\prod_{n=1}^Np(t_n|\mathbf{w}),
 $$
 
 其图表示如下
-![o_Untitled Diagram](http://localhost:8080/api/db/images/pandoxone/o_Untitled%20Diagram%20(1).png "80")
+![o_Untitled Diagram](https://www.pandox.xyz/api/db/images/pandoxone/o_Untitled%20Diagram%20(1).png "80")
 为了使表示更加紧凑，将 $N$ 个同类型的节点合并并增加一个方框。将除随机变量外的其余数据增加到图结构中，由于
 
 
@@ -36,7 +36,7 @@ p(\mathbf{t,w}|\mathbf{x},\alpha,\sigma^2)=p(\mathbf{w}|\alpha)\prod_{n=1}^Np(t_
 $$
 得到如下网络结构
 <span id = "anchor1"></span>
-![o_Untitled Diagram](http://localhost:8080/api/db/images/pandoxone/o_Untitled%20Diagram%20(2).png "80")
+![o_Untitled Diagram](https://www.pandox.xyz/api/db/images/pandoxone/o_Untitled%20Diagram%20(2).png "80")
 在图模型中，将随机变量分为两类，一类是**观测变量(observed)**,一类是**隐含变量(latent)**(又称隐藏变量)，在本例中， $\mathbf{t}$ 属于前者，而 $\mathbf{w}$ 属于后者,在图形表示中，将观测变量涂上阴影。
 在预测阶段，给定新的输入变量 $\hat{x}$ ，模型给出输出变量 $\hat{t}$ 的概率分布，满足
 
@@ -44,7 +44,7 @@ $$
 p(\hat{t}|\hat{x},\mathbf{x,t},\alpha,\sigma^2)\propto \int p(\hat{t},\mathbf{t,w}|\hat{x},\mathbf{x},\alpha,\sigma^2) \rm  d\mathbf{w},
 $$
 其网络结构如下
-![o_Untitled Diagram](http://localhost:8080/api/db/images/pandoxone/o_Untitled%20Diagram%20(3).png "80")
+![o_Untitled Diagram](https://www.pandox.xyz/api/db/images/pandoxone/o_Untitled%20Diagram%20(3).png "80")
 
 **6** 考虑离散随机变量 $\mathbf{x}=\left(x_1,...,x_K\right)^\text{T}$ 有 $K$ 种不同状态 $\left(x_i\in\{0,1\},P(x_i=1)=\mu_i,\sum_{i}x_i=1\right)$ ，从而其概率分布为
 
@@ -103,21 +103,21 @@ $$
 **1** 考虑三个随机变量 $a$ ， $b$ 和 $c$ ，如果满足 $p(a,b|c)=p(a|c)p(b|c)$ ，则称 $a$ 、 $b$ 条件独立（给定 $c$ ）。一般来说，给定一个由多个条件概率分布相乘得到的联合分布函数，可以反复利用加法、乘法原理检验变量之间的条件独立性，除此之外，我们还可以使用**d-分离**(d表示有向)的方法，利用图的结构判定条件独立性。
 
 **2** 考虑只有3个随机变量 $a,b,c$ 构成的图，
-![o_Untitled Diagram](http://localhost:8080/api/db/images/pandoxone/o_Untitled%20Diagram%20(4).png "80")
+![o_Untitled Diagram](https://www.pandox.xyz/api/db/images/pandoxone/o_Untitled%20Diagram%20(4).png "80")
 其联合分布函数为
 
 $$
 p(a,b,c)=p(a|c)p(b|c)p(c),
 $$
 可以说明， $a$ 、 $b$ 两变量不独立(积掉 $c$ 后)，而关于 $c$ 条件独立，并称 $c$ 结点为尾到尾型(tail-to-tail)。再考虑如下图结构，
-![o_Untitled Diagram](http://localhost:8080/api/db/images/pandoxone/o_Untitled%20Diagram%20(6).png "80")
+![o_Untitled Diagram](https://www.pandox.xyz/api/db/images/pandoxone/o_Untitled%20Diagram%20(6).png "80")
 其联合分布函数为
 
 $$
 p(a,b,c)=p(a)p(c|a)p(b|c),
 $$
 同样， $a$ 、 $b$ 仅关于 $c$ 条件独立，此时 $c$ 结点为头到尾型(head-to-tail)。而如下的图结构
-![o_Untitled Diagram](http://localhost:8080/api/db/images/pandoxone/o_Untitled%20Diagram%20(5).png "80")
+![o_Untitled Diagram](https://www.pandox.xyz/api/db/images/pandoxone/o_Untitled%20Diagram%20(5).png "80")
 表示的联合分布为
 
 $$
@@ -220,7 +220,7 @@ $$
 
 **2** 使用**和积算法(sum-product algorithm)**，可以在树形结构上完成同样有效率的推断。无向树指任意两个结点有且仅有一条路径的无向图；而有向树指除根结点没有父节点外，其余结点恰有一个父结点的有向图。
 >显然，有向树和无向树之间不需要增减任何边即可完成转换。此外，在不考虑边的方向的前提下，任意两个结点恰存在一条路径的有向图的非有向树称为polytree，如下图所示。
->![o_Untitled Diagram](http://localhost:8080/api/db/images/pandoxone/o_Untitled%20Diagram%20(2)%20(1).png "80")
+>![o_Untitled Diagram](https://www.pandox.xyz/api/db/images/pandoxone/o_Untitled%20Diagram%20(2)%20(1).png "80")
 
 **3** 有向或无向图将联合分布表达为若干定义在结点（变量）子集上的因子（函数）的乘积。**因子图**则包含两类结点，其一是变量，此外还有因子函数本身。将联合分布重写为如下形式
 
@@ -241,7 +241,7 @@ $$
 p(\mathbf{x})=\prod_{s\in\text{ne}(x)}F_s(x,X_s),
 $$
 其中 $\text{ne}(x)$ 表示 $x$ 的邻接（儿子）结点集合， $X_s$ 表示 $f_s$ 子树中变量结点集合， $F_s(x, X_s)$ 表示 $x$ 的 $f_s$ 子树中所有因子的乘积，示意图如下。
-![o_Untitled Diagram](http://localhost:8080/api/db/images/pandoxone/o_Untitled%20Diagram%20(2)%20(2).png "80")
+![o_Untitled Diagram](https://www.pandox.xyz/api/db/images/pandoxone/o_Untitled%20Diagram%20(2)%20(2).png "80")
 利用各因子之间的独立性，通过变换乘法和加法次序，可将边缘分布重写
 
 $$

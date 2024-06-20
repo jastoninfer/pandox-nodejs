@@ -72,7 +72,7 @@ const signin = (req, res) => {
         res.status(200).send({
             username: user.username,
             email: user.email,
-            avatar: `http://localhost:8080/api/db/images/${user.username}/${user.avatar}`,
+            avatar: `https://www.pandox.xyz/api/db/images/${user.username}/${user.avatar}`,
             selfIntro: user.selfIntro,
             accessToken: token,
         });

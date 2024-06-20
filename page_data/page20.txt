@@ -30,7 +30,7 @@ y_k(\mathbf x)=\mathbf w_k^\text T\mathbf x+w_{k0}>y_j(\mathbf x), j\neq k.
 $$
 显然，我们使用这种方法可以将样本空间无歧义地划给 $K$ 类。某种程度上，这种思路类似于K近邻方法(KNN)。可以说明，这种方法下的判决区域(某类别的所属子空间)是单联通的凸区域。可以选取某类别区域任意两点，分析线段上某点的类别所属情况说明之。
 
-![o_Untitled Diagram](http://localhost:8080/api/db/images/pandoxone/o_Untitled%20Diagram%20(7).png "80")
+![o_Untitled Diagram](https://www.pandox.xyz/api/db/images/pandoxone/o_Untitled%20Diagram%20(7).png "80")
 
 以下分别介绍通过最小方差(平方误差/MSE)、Fisher线性判别和感知机算法学习线性判别函数的参数。
 
