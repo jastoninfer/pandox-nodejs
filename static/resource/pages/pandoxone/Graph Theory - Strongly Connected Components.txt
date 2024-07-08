@@ -1,0 +1,40 @@
+KEYWORDS[[ACM/ICPC][Graph Theory]]KEYWORDS
+The concept of `strongly connected components` (SCCs) is analogous to connected components in an undirected graph.
+
+The relationship $R$ defined by `mutual reachability` in a directed graph is an equivalent relationship. Each set from the partition induced by $R$ is referred to as a strongly connected component (SCC).
+
+If we consider each set as a node, all SCCs togother form a graph known as the SCC graph. Such a SCC graph does not contain any directed cycles, making it a Directed Acyclic Graph (DAG).
+
+Algorithms for finding strongly connected components in a directed graph are typically based on depth-first-search (DFS). Commonly used alogirhmths include Kosaraju's algorithm and Tarjan's alogorithm. Below is the code for the Tarjan's algorithm:
+
+```cpp
+vector<int> G[maxn];
+int pre[maxn], low_link[maxn], scc_no[maxn], dfs_clk, scc_cnt;
+stack<int> S;
+void dfs(int u){
+    pre[u] = low_link[u] = ++dfs_clk;
+    S.push(u);
+    FOR(i, 0, G[u].size() - 1){
+        int v = G[u][i];
+        if(!pre[v]){
+            dfs(v);
+            minimize(low_link[u], low_link[v]);
+        }else if(!scc_no[v]) minimize(low_link[u], pre[v]);
+    }
+    if(low_link[u] == pre[u]){
+        scc_cnt++;
+        while(true){
+            int x = S.top(); S.pop();
+            scc_no[x] = scc_cnt;
+            if(x == u) break;
+        }
+    }
+}
+void find_scc(int n){
+    dfs_clk = scc_cnt = 0;
+    clr(scc_no, 0), clr(pre, 0);
+    FOR(i, 0, n - 1) if(!pre[i]) dfs(i);
+}
+```
+
+Since each vertex belongs to exactly one SCC, we aim to output the SCC when we first visit a node within that SCC and complete the traversal. It is essential to determine whether a particular node is the first one discovered in its SCC. Similar to the method for computing biconnected components in an undirected graph, for each node $u$, we use $lowlink(u)$ to represent the value of $pre(v)$ for the earliest ancestor point $v$ that $u$ and its descendants can trace back to. Therefore, $u$ is the first discovered point if and only if $lowlink(u)$ equals $pre(u)$.

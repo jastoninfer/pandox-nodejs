@@ -1,0 +1,15 @@
+## Demo
+
+This is my first post
+
+```js
+function A() {
+    const counter = 0;
+    const B = () => {
+        console.log(counter);
+    };
+    return B;
+}
+const b = A();
+b();
+```

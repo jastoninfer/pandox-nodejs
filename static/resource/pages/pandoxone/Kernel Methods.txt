@@ -1,0 +1,283 @@
+KEYWORDS[[Machine Learning][PRML]]KEYWORDS
+### Dual Representation
+---
+
+**1** We derive the form of the kernel function from a linearly parameterized model. Consider a linear regression model with an $L_2$ regularization term (parameter squared error term), the error function is given by
+
+$$
+ J(\mathbf w)=\frac{1}{2}\sum\left(\mathbf w^\text T\boldsymbol\phi(\mathbf x_n)-t_n\right)^2+\frac{\lambda}{2}\mathbf w^\text T\mathbf w, 
+$$
+The gradient of this error function with respect to $\mathbf w$ is
+
+$$
+\nabla_\mathbf w J(\mathbf w)=\lambda\mathbf w+\sum \boldsymbol\phi(\mathbf x_n)\left(\mathbf w^\text T\boldsymbol\phi(\mathbf x_n)-t_n\right),
+$$
+Let $\nabla_\mathbf w=0$ ，we have
+
+$$
+\mathbf w=\sum a_n\boldsymbol\phi(\mathbf x_n)=\mathbf\Phi^\text T\mathbf a,
+$$
+where
+
+$$
+\mathbf\Phi^\text T=(\boldsymbol\phi(\mathbf x_1),...,\boldsymbol\phi(\mathbf x_n)),
+$$
+
+$$
+a_n=-\frac 1\lambda\left(\mathbf w^\text T\boldsymbol\phi(\mathbf x_n)-t_n)\right),
+$$
+
+Now express the error term as a function of $\mathbf a$ by substituting $\mathbf w=\mathbf\Phi^\text T\mathbf a$ back into the error function, we get
+
+$$
+\begin{aligned}
+J(\mathbf a)=&\frac 1 2\sum \left(\mathbf a^\text T\mathbf\Phi\boldsymbol\phi(\mathbf x_n)-t_n\right)^2+\frac\lambda 2\mathbf a^\text T\mathbf\Phi\mathbf\Phi^\text T\mathbf a\\=&
+\frac\lambda 2\mathbf a^\text T\mathbf\Phi\mathbf\Phi^\text T\mathbf a+\frac 1 2(\mathbf a^\text T\mathbf\Phi\mathbf\Phi^\text T-\mathbf t^\text T)(\mathbf\Phi\mathbf\Phi^\text T\mathbf a-\mathbf t)\\=&
+\frac\lambda 2\mathbf a^\text T\mathbf\Phi\mathbf\Phi^\text T\mathbf a+\frac 1 2\left(\mathbf a^\text T\mathbf\Phi\mathbf\Phi^\text T\mathbf\Phi\mathbf\Phi^\text T\mathbf a-\mathbf a^\text T\mathbf\Phi\mathbf\Phi^\text T\mathbf t-\mathbf t^\text T\mathbf\Phi\mathbf\Phi^\text T\mathbf a+\mathbf t^\text T\mathbf t\right),
+\end{aligned}
+$$
+
+Now, define the Gram matrix as $\mathbf K=\mathbf\Phi\mathbf\Phi^\text T$ ，so that $K_{ij}=\boldsymbol\phi(\mathbf x_i)^\text T\boldsymbol\phi(\mathbf x_j)=k(\mathbf x_i,\mathbf x_j)=K_{ji}$ , and rewrite the error function as
+
+$$
+J(\mathbf a)=\frac\lambda 2\mathbf a^\text T\mathbf K\mathbf a+\frac 1 2\left(\mathbf a^\text T\mathbf K\mathbf K\mathbf a-2\mathbf a^\text T\mathbf K\mathbf t+\mathbf t^\text T\mathbf t\right),
+$$
+Set its gradient with respect to $\mathbf a$ to zero
+
+$$
+\nabla_\mathbf aJ(\mathbf a)=\lambda\mathbf K\mathbf a+\mathbf K\mathbf K\mathbf a-\mathbf K\mathbf t=0,
+$$
+we have
+
+$$
+\mathbf a=\left(\mathbf K+\lambda\mathbf I\right)^{-1}\mathbf t,
+$$
+Since the model output is
+
+$$
+y(\mathbf w)=\mathbf w^\text T\boldsymbol\phi(\mathbf x),
+$$
+Replace $\mathbf w$ with $\mathbf a$ and use the above conclusion, we have
+
+$$
+\begin{aligned}
+y(\mathbf a)=&\mathbf a^\text T\mathbf\Phi\boldsymbol\phi(\mathbf x)\\=&
+\boldsymbol\phi(\mathbf x)^\text T\mathbf\Phi^\text T\mathbf a\\=&
+\boldsymbol\phi(\mathbf x)^\text T\left(\boldsymbol\phi(\mathbf x_1),...,\boldsymbol\phi(\mathbf x_n)\right)\left(\mathbf K+\lambda\mathbf I\right)^{-1}\mathbf t\\=&
+\mathbf k(\mathbf x)^\text T\left(\mathbf K+\lambda\mathbf I\right)^{-1}\mathbf t.
+\end{aligned}
+$$
+
+It is important to note that to solve for $\mathbf a$, we need to compute the inverse of an $N\times N$ matrix, where $N$ is the number of samples; whereas if we solve directly for $\mathbf w$, we need to compute the inverse of an $M\times M$ matrix in feature space, where $M$ is the dimensionality of the feature space. Generally, $M\ll N$, so it appears that the computational cost is increased. However, the new model input relies entirely on the kernel function $k(\mathbf x, \mathbf x^\prime)$ (in addition to the input data itself), allowing us to bypass the feature vector $\boldsymbol\phi(\mathbf x)$ and avoid the constraints of feature dimensionality.
+
+### Constructing Kernel Functions
+---
+
+**1** There are two ways to construct kernel functions. One is to use the feature function $\mathbf\phi(\cdot)$ to indirectly represent the kernel function $k(\cdot)$, where $k(\mathbf x,\mathbf x^\prime)=\boldsymbol\phi(\mathbf x)^\text T\boldsymbol\phi(\mathbf x^\prime)$. The other way is to construct the kernel function directly, but the selection of kernel functions is not arbitrary, as they implicitly determine a certain feature function. For example, consider the kernel function
+
+$$
+k(\mathbf x,\mathbf z)=\left(\mathbf x^\text T\mathbf z\right)^2,
+$$
+For simplicity, consider the case where the input space dimensionality is 2, i.e., $\mathbf x = (x_1,x_2)^\text T$, so that
+
+$$
+\begin{aligned}
+k(\mathbf x, \mathbf z) =&\left(\mathbf x^\text T\mathbf z\right)^2\\=&
+\left(x_1z_1+x_2z_2\right)^2\\=&
+x_1^2z_1^2+x_2^2z_2^2+2x_1x_2z_1z_2\\=&
+x_1^2\cdot z_1^2+x_2^2\cdot z_2^2+\sqrt 2x_1x_2\cdot \sqrt 2z_1z_2\\=&
+\boldsymbol\phi(x)^\text T\boldsymbol\phi(z),
+\end{aligned}
+$$
+where $\boldsymbol\phi(\mathbf x)=\left(x_1^2, x_2^2,\sqrt 2x_1x_2\right)^\text T$, clearly the feature vector contains all quadratic terms of the original input vector.
+> When the two input vectors are equal, the kernel function represents the norm squared in the feature space.
+> When the feature vectors are normalized (unit length), the kernel function represents the cosine distance between the two vectors.
+
+There is a necessary and sufficient condition for a kernel function to be valid (Shawe Taylor and Cristianini, 2004), a kernel function is valid if and only if the Gram matrix in the input space is positive semi-definite (recall the Gram matrix $K_{ij}=k(\mathbf x_i,\mathbf x_j)$). The kernel function measures the similarity between two input vectors (similarity measure), and in practice, new kernel functions can be constructed based on existing ones, with several criteria ensuring the constructed kernel functions are valid.
+> We have already observed that the kernel function $k(\mathbf x, \mathbf z)=\left(\mathbf x^\text T\mathbf z\right)^2$ corresponds to a feature vector containing only quadratic terms. Furthermore, we have the kernel function $k(\mathbf x, \mathbf z)=\left(\mathbf x^\text T\mathbf z+c\right)^2$ for $c>0$, corresponding to a feature vector containing 0th, 1st, and 2nd order terms; this conclusion can be generalized to $k(\mathbf x,\mathbf z)=\left(\mathbf x^\text T\mathbf z+c\right)^M$.
+
+The Gaussian kernel function is of the form
+
+$$
+k(\mathbf x, \mathbf z)=\exp\left(-\frac{||\mathbf x-\mathbf z||^2}{2\sigma^2}\right),
+$$
+The proof of its validity is omitted here, with the corresponding feature vector having infinite dimensions.
+
+We know that in classification problems, discriminative models generally perform better than generative models, but generative models can handle issues such as missing data. Kernel methods provide a way to combine both. First, use a generative model to obtain the kernel function, and then use this kernel function in the discriminative model.
+
+For example, consider the joint distribution of two input vectors under a Gaussian distribution:
+
+$$
+k(\mathbf x,\mathbf z)=p(\mathbf x)p(\mathbf z),
+$$
+Considering $p(\cdot)$ as the feature function, it is evident that this kernel function is valid. It is easy to show that the following kernel function is also valid:
+
+$$
+k(\mathbf x,\mathbf z)=\sum p(\mathbf x|i)p(\mathbf z|i)p(i),
+$$
+In this case, we only need to consider the feature function $\phi_j(\mathbf x)$ as $\sqrt{p(j)}p(\mathbf x|j)$.
+
+Now assume there is an ordered observation sequence of length $L$, $\mathbf X={\mathbf x_1,...,\mathbf x_L}$. The hidden Markov model is a common sequence generative model, which expresses $p(\mathbf X)$ as the marginal probability of the corresponding ordered hidden state sequence $\mathbf Z = {\mathbf z_1,...,\mathbf z_L}$. Using the kernel function to represent the similarity between two sequences:
+
+$$
+p(\mathbf X,\mathbf X^\prime)=\sum_\mathbf Z p(\mathbf X|\mathbf Z)p(\mathbf X^\prime|\mathbf Z)p(\mathbf Z),
+$$
+Thus, the above two observation sequences $\mathbf X$ and $\mathbf X^\prime$ are both generated by the hidden state sequence $\mathbf Z$.
+
+Another way to define the kernel function using a generative model is the Fisher kernel. Using $p(\mathbf x |\boldsymbol\theta)$ to represent the parameterized generative model, to measure the similarity between two vectors, we first define the Fisher score as the gradient of the log-probability:
+
+$$
+\mathbf g(\boldsymbol\theta,\mathbf x)=\nabla\boldsymbol\theta\ln p(\mathbf x|\mathbf\theta),
+$$
+The Fisher kernel is a quadratic form of this Fisher score:
+
+$$
+k(\mathbf x,\mathbf x^\prime)=\mathbf g(\boldsymbol\theta, \mathbf x)^\text T\mathbf F^{-1}\mathbf g(\boldsymbol\theta, \mathbf x^\prime),
+$$
+where $\mathbf F$ is the Fisher information matrix:
+
+$$
+\mathbf F=\mathbb E_\mathbf x[\mathbf g(\boldsymbol\theta, \mathbf x)\mathbf g(\boldsymbol\theta, \mathbf x)^\text T],
+$$
+Here, the Fisher matrix ensures that the Fisher kernel is invariant to nonlinear transformations of the model parameters (e.g., $\boldsymbol\theta \rightarrow \boldsymbol\psi(\theta)$).。
+
+The sigmoid Gaussian kernel function is of the form:
+
+$$
+k(\mathbf x,\mathbf x^\prime)=\tanh\left(a\mathbf x^\text T\mathbf x+b\right),
+$$
+Generally, the Gram matrix corresponding to this form of kernel function does not satisfy the semi-positive definite condition.
+
+### Radial Basis Function Networks
+---
+
+**1** Derive the Nadaraya-Watson model. Assume the training data is ${\mathbf x_n, t_n}$, using Parzen density estimation to model the joint distribution $p(\mathbf x, t)$:
+
+$$
+p(\mathbf x, t)=\frac{1}{N}\sum f(\mathbf x-\mathbf x_n,t-t_n),
+$$
+where $f(\mathbf x, t)$ is the component density function. Using conditional expectation as the regression output:
+
+$$
+\begin{aligned}
+y(\mathbf x)=&\mathbb E[t|\mathbf x]\\=&
+\int tp(t|\mathbf x)\text{ d}t\\=&
+\frac{1/N\int  t\sum f(\mathbf x -\mathbf x_n,t-t_n)\text{ d}t}{1/N\int \sum f(\mathbf x-\mathbf x_n,t-t_n)\text{ d}t}\\=&
+\frac{\sum \int tf(\mathbf x-\mathbf x_n,t-t_n)\text{ d}t}{\sum \int f(\mathbf x-\mathbf x_n,t-t_n)\text{ d}t},
+\end{aligned}
+$$
+Assuming that for any $\mathbf x$, the expectation of $t$ is zero, so that
+
+$$
+\int tf(\mathbf x,t)\text{ d}t = 0,
+$$
+then
+
+$$
+\begin{aligned}
+y(\mathbf x)=&\frac{\sum t_n\int f(\mathbf x-\mathbf x_n,t)\text{ d}t}{\sum\int f(\mathbf x-\mathbf x_n,t)\text{ d}t}\\=&
+\frac{\sum t_n g(\mathbf x-\mathbf x_n)}{\sum g(\mathbf x-\mathbf x_n)}\\=&
+\sum t_n k(\mathbf x,\mathbf x_n),
+\end{aligned}
+$$
+where
+
+$$
+k(\mathbf x,\mathbf x_n)=\frac{g(\mathbf x-\mathbf x_n)}{\sum g(\mathbf x-\mathbf x_n)},
+$$
+
+$$
+g(\mathbf x)=\int f(\mathbf x,t)\text{ d}t,
+$$
+and the kernel function satisfies the constraint
+
+$$
+\sum k(\mathbf x,\mathbf x_n) = 1.
+$$
+
+### Gaussian Processes
+---
+
+**1** For the following linear regression model
+
+$$
+y(\mathbf x)=\mathbf w^\text T\boldsymbol\phi(\mathbf x),
+$$
+the feature vector is obtained from $M$ fixed basis functions; assuming the prior distribution of $\mathbf w$ is concentric Gaussian
+
+$$
+p(\mathbf w)=\mathcal N(\mathbf w|\mathbf 0,\alpha^{-1}\mathbf I),
+$$
+consider the joint distribution of function values at the training sample points, the vector $\mathbf y = (y(\mathbf x_1), ..., y(\mathbf x_N))^\text T$ satisfies
+
+$$
+\mathbf y=\mathbf\Phi\mathbf w,
+$$
+where $\mathbf \Phi$ is the design matrix, $\mathbf \Phi_{n, \cdot} = \boldsymbol\phi(\mathbf x_n)^\text T$, so that $\mathbf y$ follows a Gaussian distribution, and
+
+$$
+\mathbb E[\mathbf y]=\mathbf\Phi\mathbb E[\mathbf w]=\mathbf 0,
+$$
+
+$$
+\text{cov}[\mathbf y]=\mathbb E[\mathbf y\mathbf y^\text T]=\mathbf\Phi\mathbb E[\mathbf w\mathbf w^\text T]\mathbf\Phi^\text T=\frac{1}{\alpha}\mathbf\Phi\mathbf\Phi^\text T=\mathbf K,
+$$
+where $K$ as the Gram matrix has elements that are values of the kernel function
+
+$$
+K_{nm}=k(\mathbf x_n,\mathbf x_m)=\frac{1}{\alpha}\boldsymbol\phi(\mathbf x_n)^\text T\boldsymbol\phi(\mathbf x_m).
+$$
+
+**2** Consider applying Gaussian processes to regression problems, considering the noisy observation target variable
+
+$$
+t_n=y_n+\epsilon_n,
+$$
+here consider the noise process that follows a Gaussian distribution
+
+$$
+p(t_n|y_n)=\mathcal N(t_n|y_n, \beta^{-1}),
+$$
+assuming that the noise at each sample point is independent, so that
+
+$$
+p(\mathbf t|\mathbf y)=\mathcal N(\mathbf t|\mathbf y,\beta^{-1}\mathbf I_N),
+$$
+according to the definition of the Gaussian process, the marginal distribution of $\mathbf y$ satisfies
+
+$$
+p(\mathbf y)=\mathcal N(\mathbf y|\mathbf 0, \mathbf K),
+$$
+integrating out $\mathbf y$, we get the marginal distribution of $\mathbf t$
+
+$$
+p(\mathbf t) = \int \text{ d}\mathbf yp(\mathbf{t|y})p(\mathbf y)=\mathcal N(\mathbf t|\mathbf 0, \mathbf K+\beta^{-1}\mathbf I_N)=\mathcal N(\mathbf t|\mathbf0, \mathbf C).
+$$
+Since the two Gaussian noises from $y(\mathbf x)$ and $\epsilon$ are independent, the covariances can be directly added. A commonly used Gaussian process regression kernel function has the following form
+
+$$
+k(\mathbf x_n,\mathbf x_m)=\theta_0\exp\left\{-\frac{\theta_1} 2||\mathbf x_n-\mathbf x_m||^2\right\}+\theta_2+\theta_3\mathbf x_n^\text T\mathbf x_m.
+$$
+For a new input $\mathbf x_{N+1}$, the Gaussian process regression model gives the predictive conditional distribution $p(t_{N+1}|\mathbf t_N; \mathbf x_1, ... \mathbf x_N, \mathbf x_{N+1})$, since
+
+$$
+p(\mathbf t_{N+1})=\mathcal N(\mathbf t_{N+1}|\mathbf 0, \mathbf C_{N+1}),
+$$
+decompose this covariance matrix
+
+$$
+\mathbf C_{N+1} =\left(
+\begin{matrix}
+    \mathbf C_N       &\mathbf k\\
+    \mathbf k^\text T & c
+\end{matrix}\right)
+$$
+here $\mathbf k$ consists of $k(\mathbf x_n, \mathbf x_{N+1})$, and $c = k(\mathbf x_{N+1}, \mathbf x_{N+1}) + \beta^{-1}$, applying the conclusion from the previous sections, it can be seen that $p(t_{N+1}|\mathbf t)$ follows a Gaussian distribution with the following characteristics
+
+$$
+m(\mathbf x_{N+1})=\mathbf k^\text T\mathbf C_N^{-1}\mathbf t,
+$$
+
+$$
+\sigma^2(\mathbf x_{N+1})=c-\mathbf k^\text T\mathbf C_N^{-1}\mathbf k,
+$$

@@ -1,0 +1,52 @@
+KEYWORDS[[Machine Learning][PRML]]KEYWORDS
+
+Lagrange multipliers, also known as undetermined multipliers, are used to find the stationary points of a function subject to one or more constraints. Consider finding the maximum of $f(\mathbf{x})$, with the constraint $g(\mathbf{x})=0$. We observe the conditions satisfied by such a stationary point $\mathbf{x}^*$. Clearly, $\mathbf{x}^*$ lies on the $(D-1)$ -dimensional surface in $D$ -dimensional space defined by the constraint $g(\mathbf{x})=0$, and the gradient $\nabla g(\mathbf{x})$ must be perpendicular to this surface (the normal vector to the tangent plane at this point).
+>Considering the Taylor expansion of $g(\mathbf{x})$, since $\mathbf{x}$ is on the surface $g(\mathbf{x})=0$, for $\mathbf{x}+\boldsymbol\epsilon$ also on this surface, we have
+>
+>$$
+>g(\mathbf{x}+\boldsymbol\epsilon)= g(\mathbf{x})+\boldsymbol\epsilon^\text{T}\nabla g(\mathbf{x})+o(\Vert\boldsymbol\epsilon\Vert),
+>$$
+>On the other hand,
+>
+>$$
+>g(\mathbf{x}+\boldsymbol\epsilon)=g(\mathbf x)=0,
+>$$
+>Thus,
+>
+>$$
+>\lim_{\Vert\boldsymbol\epsilon\Vert\rightarrow 0}\boldsymbol\epsilon^\text{T}\nabla g(\mathbf{x})=0.
+>$$
+>Note that here $\boldsymbol\epsilon$ is on the tangent plane $(\mathbf x, \nabla g(\mathbf x))$ (point-normal form), because we have already specified $g(\mathbf x)\equiv 0$, thus the dimension of $\boldsymbol\epsilon$ is also restricted.
+
+Since $\mathbf{x}^*$ is a stationary point of $f(\mathbf{x})$, and $\mathbf{x}^*$ is on the surface $g(\mathbf{x})=0$, the gradient $\nabla f(\mathbf{x}^*)$ must also be perpendicular to this surface. Therefore, there exists a constant $\lambda$ such that
+
+$$
+\nabla f+\lambda \nabla g=0,
+$$
+where $\lambda \neq 0$ is the Lagrange multiplier. Accordingly, the Lagrangian function is
+
+$$
+L(\mathbf{x},\lambda)\equiv f(\mathbf{x})+\lambda g(\mathbf{x}),
+$$
+ $\nabla_{\mathbf{x},\lambda} L = 0$ equivalently represents finding the stationary points of the function under the constraint.
+> ntuitively, the concept of Lagrange multipliers is not fundamentally different from solving for unknowns in an equation. Here, we know that $\lambda$ exists, so we assume it first instead of solving for it directly, and then use the system of equations to implicitly express all constraints or optimality conditions.
+
+
+Consider the case where the constraint is an inequality. Without loss of generality, assume the constraint is $g(\mathbf{x}) \geq 0$, and we aim to maximize the function $f(\mathbf{x})$. Considering whether the equality holds or not, we can construct the same Lagrangian function with the constraints as follows:
+
+$$
+\begin{aligned}
+g(\mathbf{x})&\geq0\\
+\lambda&\geq 0\\
+\lambda g(\mathbf{x})&=0,
+\end{aligned}
+$$
+which are the KKT (Karush-Kuhn-Tucker) conditions.
+>Clearly, the constraint on the sign of $\lambda$ here is still a first-order condition.
+
+If the function to be minimized is $f(\mathbf{x})$, then the Lagrangian function becomes
+
+$$
+L(\mathbf{x},\lambda)\equiv f(\mathbf{x})-\lambda g(\mathbf{x}),
+$$
+and the KKT conditions remain unchanged.

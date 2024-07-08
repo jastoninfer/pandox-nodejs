@@ -1,0 +1,94 @@
+KEYWORDS[[Machine Learning][PRML]]KEYWORDS
+采样方法
+===
+---
+
+>在不会产生歧义的条件下，这里不对“采样”和“取样（抽样）”两个概念加以明确区分。事实上，以下多处用到的“采样”一词实际上指“抽样”，作为习惯，仍保留这种叫法。
+
+对于给定的概率分布 $p(\mathbf{z})$ ，我们希望计算定义在该分布上的函数 $f(\mathbf{z})$ 的期望，即
+
+$$
+\mathbb{E}[f]=\int f(\mathbf{z})p(\mathbf{z}){\rm{d}}\mathbf{z},
+$$
+这里 $f(\mathbf{z})$ 也是随机变量。为了简化计算，按概率分布 $p(\mathbf{z})$ 进行 $L$ 次随机取样得到样本 $\mathbf{z}^{(l)}$ ， $l=1,...,L$ ,从而对 $f$ 的期望估计为
+
+$$
+\hat{f}=\frac{1}{L}\sum_{l=1}^L{f(\mathbf{z}^{(l)})},
+$$
+这里 $\hat{f}$ 是统计量（当然也是随机变量），容易看出 $\hat{f}$ 是 $\mathbb{E}[f]$ 的无偏估计，即满足 $\mathbb{E}[\hat{f}]=\mathbb{E}[f]$ 。该统计量的方差为
+
+$$
+\text{var}[\hat{f}]=\frac{1}{L}\mathbb{E}\left[(f-\mathbb{E}[f])^2\right],
+$$
+
+对于没有已观测结点的有向图，可以使用祖先采样(ancestral)方法；而对于存在已观测结点的有向图，其后验概率可以使用逻辑采样(logic)方法（作为重要性采样(importance)的特例）。
+无向图的采样稍微复杂一些，可使用Gibbs采样方法。
+
+1 基础采样算法
+---
+---
+**1** 考虑对一般的概率分布 $p(y)$ 进行随机取样。假设 $z \sim U(0,1)$ ，映射 $f(\cdot)$ 满足 $y=f(z)$ ，从而使得 $|p(z){\rm d}z|=|p(y){\rm d}y|$ 。记 $h(y)$ 为 $p(\cdot)$ 的分布函数，有
+
+$$
+z=h(y),
+$$
+从而
+
+$$
+y=h^{-1}(z),
+$$
+即有 $f=h^{-1}$ 。
+若随机变量为多维，则利用雅克比行列式有
+
+$$
+p(\mathbf{y})=p(\mathbf{z})\left|\frac{\partial \mathbf{z}}{\partial\mathbf{y}}\right|.
+$$
+对一维高斯分布进行取样的一种方法是使用Box-Muller变换，同时获得两个独立同分布（零均值，单位方差）上的样本。对于多元高斯分布的取样，可使用Cholesky分解，通过变换
+
+$$
+\begin{aligned}\mathbf{\Sigma}&=\mathbf{LL}^\text{T}\\
+\mathbf{y}&=\boldsymbol\mu+\mathbf{Lz},\end{aligned}
+$$
+得到 $\mathcal{N}(\boldsymbol{\mu},\mathbf{\Sigma})$ 上的随机样本。
+
+**2** 对于某些形式较为复杂的分布不易通过直接变换进行采样，可使用取舍采样(rejection sampling)。假定真实分布为 $p(z)$ ，给定 $z$ ，我们可以计算 $\widetilde{p}(z)$ ，满足
+
+$$
+p(z)=\frac{1}{Z_p}\widetilde{p}(z),
+$$
+其中 $Z_p$ 是待定常数。首先选取一个形式简单的分布 $q(z)$ 和一个相关的常数 $k$ ，满足对于所有的 $z$ ， $kq(z)\geq \widetilde{p}(z)$ 。而后从分布 $q(z)$ 上生成 $z_0$ ，并在 $[0, kq(z_0)]$ 上随机均匀选取 $u_0$ ，从而 $(z_0,u_0)$ 在分布 $kq(z)$ 曲线下均匀分布，当 $u_0>\widetilde{p}(z_0)$ 时舍弃该样本，从而舍弃后的二元变量在分布 $\widetilde{p}(z)$ 曲线下均匀分布，现在只看样本中的 $z_0$ 值，容易说明它是服从 $p(z)$ 分布的。
+
+此外为了降低舍弃率，应该选取尽可能小的 $k$ ，要求 $q(z)$ 尽可能与 $p(z)$ 相似。
+
+**3** 一般来说，对于一个任意的分布 $p(z)$ ，给出接近该分布的解析包络函数(envelope function)是比较困难的。自适应取舍采样可在运行时对 $q(z)$ 进行调整以逼近 $p(z)$ 。特别地，当 $\ln p(z)$ 是凹函数时，可构造 $(z_0, p(z_0))$ 处的切线段集合作为 $p(z)$ 的包络函数，当某个 $(z_0,u_0)$ 元组被舍弃时，增添一个 $z_0$ 处的切线段即可改善逼近效果。
+>当 $\ln p(z)$ 非凹时，使用改进的自适应取舍算法（带Metropolis-Hastings步）。
+
+取舍采样的直接应用受限于分布的维度，实际上，舍弃率随维度上升呈指数式增长。
+
+**4** 重要性采样(importance sampling)给出对某个分布 $p(\mathbf{z})$ 的数字特征的估计，而绕过了对 $p(\mathbf{z})$ 的直接采样。其大致原理如下，首先构造提议分布(proposal distribution) $q(\mathbf{z})$ ，从而利用在 $q(\mathbf{z})$ 上的采样估计 $\mathbb{E}[f]$ ，即
+
+$$
+\begin{aligned}\mathbb{E}[f]&=\int f(\mathbf{z})p(\mathbf{z}){\rm{d}}\mathbf{z}\\&=
+\int f(\mathbf{z})\frac{p(\mathbf{z})}{q(\mathbf{z})}q(\mathbf{z}){\rm{d}}\mathbf{z}\\&\simeq
+\frac{1}{L}\sum_{l=1}^L\frac{p(\mathbf{z}^{(l)})}{q(\mathbf{z}^{(l)})}f(\mathbf{z}^{(l)}),
+\end{aligned}
+$$
+其中 ${p(\mathbf{z}^{(l)})}/{q(\mathbf{z}^{(l)})}$ ，简记为 $r_l$ ，称为重要性权值。显然，若 $q(\mathbf{z})\equiv p(\mathbf{z})$ ，有 $r_l\equiv 1$ 。
+
+与取舍采样相同，重要性采样的效果依赖于选取的提议分布在多大程度上与原始分布相似，当两者背道而驰时，该采样方法将给出一个糟糕的估计。
+
+2 马尔科夫链蒙特卡洛
+---
+---
+3 Gibbs采样
+---
+---
+4 切片采样
+---
+---
+5 混合蒙特卡洛算法
+---
+---
+6 估计配分函数
+---
+---

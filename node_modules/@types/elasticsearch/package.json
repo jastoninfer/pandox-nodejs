@@ -1,0 +1,80 @@
+{
+    "name": "@types/elasticsearch",
+    "version": "5.0.43",
+    "description": "TypeScript definitions for elasticsearch",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/elasticsearch",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "Casper Skydt",
+            "githubUsername": "CasperSkydt",
+            "url": "https://github.com/CasperSkydt"
+        },
+        {
+            "name": "Blake Smith",
+            "githubUsername": "bfsmith",
+            "url": "https://github.com/bfsmith"
+        },
+        {
+            "name": "Dave Dunkin",
+            "githubUsername": "ddunkin",
+            "url": "https://github.com/ddunkin"
+        },
+        {
+            "name": "Jeffery Grajkowski",
+            "githubUsername": "pushplay",
+            "url": "https://github.com/pushplay"
+        },
+        {
+            "name": "Margus Lamp",
+            "githubUsername": "mlamp",
+            "url": "https://github.com/mlamp"
+        },
+        {
+            "name": "Ahmad Ferdous Bin Alam",
+            "githubUsername": "ahmadferdous",
+            "url": "https://github.com/ahmadferdous"
+        },
+        {
+            "name": "Simon Schick",
+            "githubUsername": "SimonSchick",
+            "url": "https://github.com/SimonSchick"
+        },
+        {
+            "name": "Paul Brabban",
+            "githubUsername": "brabster",
+            "url": "https://github.com/brabster"
+        },
+        {
+            "name": "Budi Irawan",
+            "githubUsername": "deerawan",
+            "url": "https://github.com/deerawan"
+        },
+        {
+            "name": "Yonatan Kiron",
+            "githubUsername": "YonatanKiron",
+            "url": "https://github.com/YonatanKiron"
+        },
+        {
+            "name": "Jani Šumak",
+            "githubUsername": "dasdachs",
+            "url": "https://github.com/dasdachs"
+        },
+        {
+            "name": "Chris Midgley",
+            "githubUsername": "midgleyc",
+            "url": "https://github.com/midgleyc"
+        }
+    ],
+    "main": "",
+    "types": "index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/elasticsearch"
+    },
+    "scripts": {},
+    "dependencies": {},
+    "typesPublisherContentHash": "9bc9acddd4f5e82cdfe7fb6391bcc67a50329b916b6a4621ac7570f0ce5ace38",
+    "typeScriptVersion": "4.5"
+}

@@ -1,0 +1,97 @@
+KEYWORDS[[ACM/ICPC][Graph Theory]]KEYWORDS
+## Dijkstra's Single Source Shortest Path Algorithm
+
+Dijkstra's algorithm can calculate the shortest path from a starting point to every other point, also known as the Single Source Shortest Path (SSSP). This feature makes Dijkstra's algorithm often used as a preprocessing step for other algorithms. The code for calculating the shortest path using Dijkstra's algorithm is as follows:
+
+> Note: Code comments refer to "Introduction to Algorithms - Training Guide" by Liu Rujia.
+
+```cpp
+struct Dijkstra{
+    int n, m;
+    vector<E> e;
+    vector<int> G[maxn];
+    bool done[maxn];
+    int d[maxn];
+    int p[maxn];
+    void init(int n){
+        this->n = n;
+        FOR(i, 0, n - 1) G[i].clear();
+        e.clear();
+    }
+    void addE(int from, int to, int dist){
+        e.pb(E(from, to, dist));
+        m = e.size();
+        G[from].pb(m - 1);
+    }
+    void dijkstra(int s){
+        priority_queue<HeapNode> Q;
+        FOR(i, 0, n - 1) d[i] = int_inf;
+        d[s] = 0;
+        clr(done, 0);
+        Q.push(HeapNode(0, s));
+        while(!Q.empty()){
+            HeapNode x = Q.top(); Q.pop();
+            int u = x.u;
+            if(done[u]) continue;
+            done[u] = 1;
+            int sz = G[u].size();
+            FOR(i, 0, sz - 1){
+                E &y = e[G[u][i]];
+                if(d[y.to] > d[u] + y.dist){
+                    d[y.to] = d[u] + y.dist;
+                    p[y.to] = G[u][i];
+                    Q.push(HeapNode(d[y.to], y.to));
+                }
+            }
+        }
+    }
+};
+```
+## Bellman-Ford Algorithm
+
+One important application of the Bellman-Ford algorithm is detecting negative cycles. If it is still possible to perform a relaxation operation after iterating $n-1$ times, it indicates the presence of a negative cycle. If using a queue implementation, the presence of a negative cycle can be detected when a certain node has been enqueued $n$ times. The code is as follows:
+
+```cpp
+struct Bellman_Ford{
+    int n, m;
+    vector<E> e;
+    vector<int> G[maxn];
+    bool inq[maxn];
+    int d[maxn];
+    int p[maxn];
+    int cnt[maxn];
+    void init(int n){
+        this->n = n;
+        FOR(i, 0, n - 1) G[i].clear();
+        e.clear();
+    }
+    void addE(int from, int to, int dist){
+        e.pb(E(from, to, dist));
+        m = e.size();
+        G[from].pb(m - 1);
+    }
+    bool negCyc(){
+        queue<int> Q;
+        clr(inq, 0), clr(cnt, 0);
+        FOR(i, 0, n - 1) d[i] = 0, inq[i] = 1, Q.push(i);
+        while(!Q.empty()){
+            int u = Q.front(); Q.pop();
+            inq[u] = 0;
+            int sz = G[u].size();
+            FOR(i, 0, sz - 1){
+                E &y = e[G[u][i]];
+                if(d[y.to] > d[u] + y.dist){
+                    d[y].to = d[u] + y.dist;
+                    p[e.to] = G[u][i];
+                    if(!inq[y.to]){
+                        Q.push(y.to);
+                        inq[y.to] = 1;
+                        if(++cnt[y.to] > n) return 1;
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+};
+```
