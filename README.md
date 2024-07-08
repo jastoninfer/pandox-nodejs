@@ -34,16 +34,16 @@ Frontend URL: [The Pandox Blog Platform](https://pandox-reactjs.vercel.app/)
 
 ## Technologies Used
 
-- **Node.js** - Runtime environment
-- **TypeScript** - Programming language
-- **Express.js** - Web framework
-- **Sequelize** - ORM for MySQL database management
-- **MySQL** - Database for storing blog posts, user information, etc.
-- **Redis** - Database for managing user permissions
-- **Elasticsearch** - Search engine for search functionality
-- **WebSocket** - Real-time communication (Pending Implementation)
-- **ESLint** - Linting tool for maintaining code quality
-- **Prettier** - Code formatter
+- [Node.js](https://github.com/nodejs/node) - Runtime environment
+- [TypeScript](https://github.com/microsoft/TypeScript) - Programming language
+- [Express.js](https://github.com/expressjs/express) - Web framework
+- [Sequelize](https://github.com/sequelize/sequelize) - ORM for MySQL database management
+- MySQL - Database for storing blog posts, user information, etc.
+- Redis - Database for managing user permissions
+- [Elasticsearch](https://github.com/elastic/elasticsearch) - Search engine for search functionality
+- WebSocket - Real-time communication (Pending Implementation)
+- [ESLint](https://github.com/eslint/eslint) - Linting tool for maintaining code quality
+- [Prettier](https://github.com/prettier/prettier) - Code formatter
 
 ## Installation
 
