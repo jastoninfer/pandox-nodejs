@@ -1,0 +1,5 @@
+{
+    "title": "123-123",
+    "content": "\nThis is my first post\n```js\nfunction A() {\n    const counter = 0;\n    const B = () => {\n        console.log(counter);\n    };\n    return B;\n}\nconst b = A();\nb();\n```\n\n***How about this page***\n\ntoday is good\n\n---\nhow are you\n\n---\n\n",
+    "author": "pandoxone"
+}

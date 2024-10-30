@@ -13,17 +13,20 @@ const DB_Thread = sequelize.models.thread;
 const DB_Comment = sequelize.models.comment;
 const DB_Page = sequelize.models.page;
 
-const mapComment2Page = async (threads: ThreadData[], pageId: number): Promise<void> => {
+const mapComment2Page = async (users:UserDict, threads: ThreadData[], pageId: number): Promise<void> => {
+    const user_list = Object.keys(users);
     for (const thread of threads) {
+        const threadOwner = user_list[Math.floor(Math.random()*user_list.length)];
         const threadDbData = await DB_Thread.create<M_Thread>({
-            author: 'pandoxone',
+            author: threadOwner,
             text: thread.body,
             pageId,
         });
         for (const comment of thread.comments) {
+            const commenter = user_list[Math.floor(Math.random()*user_list.length)];
             await DB_Comment.create({
-                from: 'pandoxone',
-                to: 'pandoxone',
+                from: commenter,
+                to: threadOwner,
                 text: comment,
                 threadId: threadDbData.dataValues.id,
             });
@@ -58,7 +61,7 @@ const initComments = async (users: UserDict): Promise<void> => {
         });
         for (let {dataValues: page} of pages) {
             if(page.id) {
-                await mapComment2Page(threads, +page.id);
+                await mapComment2Page(users, threads, +page.id);
             }
         }
     } catch (err) {

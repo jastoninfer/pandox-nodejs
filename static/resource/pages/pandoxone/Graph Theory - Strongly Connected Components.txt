@@ -1,12 +1,20 @@
 KEYWORDS[[ACM/ICPC][Graph Theory]]KEYWORDS
+
+![demo](https://www.pandox.xyz/api/db/images/pandoxone/640px-Scc-1.svg.png "50")
+
+## Theory
+
 The concept of `strongly connected components` (SCCs) is analogous to connected components in an undirected graph.
 
 The relationship $R$ defined by `mutual reachability` in a directed graph is an equivalent relationship. Each set from the partition induced by $R$ is referred to as a strongly connected component (SCC).
 
 If we consider each set as a node, all SCCs togother form a graph known as the SCC graph. Such a SCC graph does not contain any directed cycles, making it a Directed Acyclic Graph (DAG).
 
+## Tarjan's Algorithm
+
 Algorithms for finding strongly connected components in a directed graph are typically based on depth-first-search (DFS). Commonly used alogirhmths include Kosaraju's algorithm and Tarjan's alogorithm. Below is the code for the Tarjan's algorithm:
 
+### Code
 ```cpp
 vector<int> G[maxn];
 int pre[maxn], low_link[maxn], scc_no[maxn], dfs_clk, scc_cnt;
@@ -36,5 +44,10 @@ void find_scc(int n){
     FOR(i, 0, n - 1) if(!pre[i]) dfs(i);
 }
 ```
+### Explanation
 
-Since each vertex belongs to exactly one SCC, we aim to output the SCC when we first visit a node within that SCC and complete the traversal. It is essential to determine whether a particular node is the first one discovered in its SCC. Similar to the method for computing biconnected components in an undirected graph, for each node $u$, we use $lowlink(u)$ to represent the value of $pre(v)$ for the earliest ancestor point $v$ that $u$ and its descendants can trace back to. Therefore, $u$ is the first discovered point if and only if $lowlink(u)$ equals $pre(u)$.
+Since each vertex belongs to exactly one SCC, we aim to output the SCC when we first visit a node within that SCC and complete the traversal.
+
+It is essential to determine whether a particular node is the first one discovered in its SCC.
+Similar to the method for computing biconnected components in an undirected graph, for each node $u$, we use `lowlink(u)` to represent the value of `pre(v)` for the earliest ancestor point $v$ that $u$ and its descendants can trace back to.
+Therefore, $u$ is the first discovered point if and only if `lowlink(u)` equals `pre(u)`.

@@ -1,0 +1,142 @@
+KEYWORDS[[ACM/ICPC][HDU]]KEYWORDS
+
+![demo](https://www.pandox.xyz/api/db/images/mshao/pexels-jeremy-bishop-1260133-2922672.jpg "20")
+
+## Problem Statement
+
+Little White recently likes playing Tower Defence.
+She wants to make a map.
+The map is an undirected graph which has $n$ vertices(graph may not connect).
+The length of each edge is $1$ .The shortest distance of vertice $1$ to any other vertices is not equal to $k$ .
+She wants to know how many graphs which satisfy all these conditions.
+If two vertices is disconnected, the distance between them is infinite.
+
+## Solution
+
+We only need to consider the nodes that are in the same connected component as node $1$ .
+Consider the equivalence class division of the connected graph containing node $1$ :
+
+> (i) the number of nodes;
+> 
+> (ii) the maximum of the shortest distances from all nodes to node $1$ ;
+> 
+> (iii) the number of nodes where the shortest distance equals this maximum.
+
+Thus, we use $dp(i, j, k)$ to represent the number of graphs in the same connected component as node $1$ , where the number of nodes is $i$ , the maximum shortest distance is $k$ , and the number of nodes at the maximum distance from node $1$ is $j$ .
+
+Now, consider the construction of such a graph: in the graph $(i, j, k)$ , the nodes at distance $k$ from node $1$ must be the direct successors of the nodes in a subgraph where the distance to node $1$ is $k-1$ .
+Therefore, consider removing these $j$ nodes, which results in a graph $(i-j, u, k-1)$ , where $u$ represents the number of nodes at distance $k-1$ from node $1$ in the subgraph.
+
+Since the internal connections between the $j$ nodes do not affect (or reduce) their distances, all $2^{\frac{j(j-1)}{2}}$ connection methods are valid.
+Each node must be a successor of at least one of the $u$ nodes, so there are $(2^{u}-1)^j$ ways to make these connections.
+Additionally, because all nodes are distinct, the combination coefficient is $\textrm {C}_{i-1}^{j}$ .
+Therefore, we can compute the total number of graphs in class $(i,j,k)$ as follows:
+
+$$
+dp(i, j, k) = \sum_{u=1}^{i-j}{dp(i-j,u,k-1) \cdot \textrm{C}_{i-1}^{j} \cdot {(2^{u}-1)}^j \cdot 2^{\frac{j(j-1)}{2}}}
+$$
+
+Now, considering the boundary condition, clearly $dp(1,1,0) = 1$ , and all other values are initialized to zero. The preprocessing time complexity is $O(n^3 \cdot n) = O(n^4)$ (treating fast exponentiation as constant time).
+
+## Code
+
+```cpp
+#include <algorithm>
+#include <cstdio>
+#include <cstring>
+#include <string>
+#include <queue>
+#include <map>
+#include <set>
+#include <stack>
+#include <ctime>
+#include <cmath>
+#include <iostream>
+#include <assert.h>
+#define PI acos(-1.)
+#pragma comment(linker, "/STACK:102400000,102400000")
+#define max(a, b) ((a) > (b) ? (a) : (b))
+#define min(a, b) ((a) < (b) ? (a) : (b))
+#define mp std :: make_pair
+#define st first
+#define nd second
+#define keyn (root->ch[1]->ch[0])
+#define lson (u << 1)
+#define rson (u << 1 | 1)
+#define pii std :: pair<int, int>
+#define pll pair<ll, ll>
+#define pb push_back
+#define type(x) __typeof(x.begin())
+#define foreach(i, j) for(type(j)i = j.begin(); i != j.end(); i++)
+#define FOR(i, s, t) for(int i = (s); i <= (t); i++)
+#define ROF(i, t, s) for(int i = (t); i >= (s); i--)
+#define dbg(x) std::cout << x << std::endl
+#define dbg2(x, y) std::cout << x << " " << y << std::endl
+#define clr(x, i) memset(x, (i), sizeof(x))
+#define maximize(x, y) x = max((x), (y))
+#define minimize(x, y) x = min((x), (y))
+using namespace std;
+typedef long long ll;
+const int int_inf = 0x3f3f3f3f;
+const ll ll_inf = 0x3f3f3f3f3f3f3f3f;
+const int INT_INF = (int)((1ll << 31) - 1);
+const double double_inf = 1e30;
+const double eps = 1e-14;
+typedef unsigned long long ul;
+typedef unsigned int ui;
+
+const int maxn = 65;
+const int mod = 1e9 + 7;
+ll power(ll a, ll p, ll mod){
+    ll ans = 1;
+    a %= mod;
+    while(p){
+        if(p & 1) ans = ans * a % mod;
+        p >>= 1;
+        a = a * a % mod;
+    }
+    return ans;
+}
+ll dp[maxn][maxn][maxn];
+ll C[maxn][maxn];
+ll pow2[maxn * maxn];
+ll pow_pow[maxn][maxn];
+void init(){
+    clr(dp, 0), clr(C, 0);
+    int lim = 60;
+    clr(C, 0);
+    C[0][0] = 1;
+    FOR(i, 1, lim) C[i][0] = C[i][i] = 1;
+    FOR(i, 1, lim) FOR(j, 1, i - 1) C[i][j] = (C[i - 1][j] + C[i - 1][j - 1]) % mod;
+    pow2[0] = 1;
+    FOR(i, 1, lim * lim) pow2[i] = pow2[i - 1] * 2 % mod;
+    FOR(i, 1, lim) FOR(j, 1, lim) pow_pow[i][j] = power((1ll << i) - 1, j, mod);
+    dp[1][1][0] = 1;
+    FOR(i, 0, lim) FOR(k, 1, i) FOR(j, 1, i) FOR(u, 1, i - j){
+        ll tem = C[i - 1][j] * pow_pow[u][j] % mod * pow2[C[j][2]] % mod;
+        dp[i][j][k] = (dp[i][j][k] + dp[i - j][u][k - 1] * tem % mod) % mod;
+    }
+}
+ll cal(int n, int k){
+    ll ans = 0;
+    FOR(u, 1, n) FOR(i, 0, k - 1) FOR(j, 1, u){
+        ll para = pow2[C[n - u][2]] * C[n - 1][n - u] % mod;
+        ans = (ans + para * dp[u][j][i] % mod) % mod;
+    }
+    return ans;
+}
+int main(){
+    //data_gen(); return 0;
+    //C(); return 0;
+    int debug = 0;
+    if(debug) freopen("in.txt", "r", stdin);
+    //freopen("out.txt", "w", stdout);
+    init();
+    int T = readint();
+    while(T--){
+        int n = readint(), k = readint();
+        printf("%lld\n", cal(n, k));
+    }
+    return 0;
+}
+```

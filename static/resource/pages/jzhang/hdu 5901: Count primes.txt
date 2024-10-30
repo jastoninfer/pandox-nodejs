@@ -1,0 +1,125 @@
+KEYWORDS[[ACM/ICPC][HDU]]KEYWORDS
+
+![demo](https://www.pandox.xyz/api/db/images/jzhang/pexels-alex-sever-89807754-28994472.jpg "30")
+
+
+## Problem Statement
+
+Count the number of prime numbers in the interval $[1, n]$ where $1 \leq n \leq 10^{11}$ .
+
+## Solution
+
+Here, we introduce a dynamic programming approach.
+
+First, it's important to mention that the `layering` idea is crucial in dynamic programming, and the following method is based on this concept.
+
+Let $dp[i]$ represent the number of prime numbers in the interval $[1, \frac{n}{i}]$ , and let $c[i]$ represent the number of primes in the interval $[1, i]$ .
+
+What we are looking for is $dp[1]$ . Since the maximum value of $n$ is $10^{11}$ , the smallest prime factor of any composite number in any interval does not exceed $\sqrt{10^{11}}$ . To filter out primes, we need to iteratively eliminate the multiples of each prime starting from 2, 3, 5, etc., from the entire range. Thus, we enumerate primes $i$ from smallest to largest.
+
+Correspondingly, $dp[i]$ represents a set $DP(i)$ : when prime $i$ is enumerated, $dp[i]$ corresponds to the set $DP(i)$ , which is the set obtained by removing all numbers in the interval $[1, \frac{n}{i}]$ that contain prime factors less than or equal to $i$ . The value of $dp[i]$ is the size (cardinality) of the set $DP(i)$ . When prime $i$ is added, we update $dp[j]$ as follows:
+
+$$
+dp[j] \leftarrow dp[j] - (dp[i * j] - c[i - 1]) (*)
+$$
+
+Note that the set $DP(i * j)$ shares the first part with $DP(j)$ ; $DP(i * j)$ is the set obtained from the interval $[1, \frac{n}{i * j}]$ after removing all numbers that contain prime factors smaller than $i$ , which naturally includes all primes smaller than $i$ . Therefore,
+
+$dp[i * j] - c[i - 1]$ contains exactly the elements we need to remove when updating $dp[j]$ . It is important to notice that $dp[i * j]$ is equivalent to $c[n / i / j]$ or $c[n / (i * j)]$ (because as $j$ increases in the inner loop, $(i * j) | n$ corresponds to an integer position).
+
+Since we are enumerating the smallest prime factor $i$ , while ensuring $n / i / j \geq i - 1$ , we control the outer loop with $i \leq \sqrt{n} AND n / i / j \geq i - 1$ .
+
+For the inner loop $j$ , we only update those that will be used later, ensuring that when using the equation $(*)$ , $i * j \leq \sqrt{n}$ , thus $j \leq \sqrt{n}$ .
+
+When $i * j > \sqrt{n}$ , use the equation $dp[j] \leftarrow dp[j] - (c[n / i / j] - c[i - 1])$ to replace the previous state transition equation.
+
+This ensures that the space used by both $dp[]$ and $c[]$ is $O(\sqrt{n})$ .
+
+Next, consider the update for $c[]$ :
+
+$$
+c[j] \leftarrow c[j] - (c[j / i] - c[i - 1]) \text{ case } j / i \geq i - 1
+$$
+
+## Code
+
+```cpp
+#include <algorithm>
+#include <cstdio>
+#include <cstring>
+#include <string>
+#include <queue>
+#include <map>
+#include <set>
+#include <stack>
+#include <ctime>
+#include <functional>
+#include <cmath>
+#include <iostream>
+#include <assert.h>
+#pragma comment(linker, "/STACK:102400000,102400000")
+#define max(a, b) ((a) > (b) ? (a) : (b))
+#define min(a, b) ((a) < (b) ? (a) : (b))
+#define mp std :: make_pair
+#define st first
+#define nd second
+#define keyn (root->ch[1]->ch[0])
+#define lson (u << 1)
+#define rson (u << 1 | 1)
+#define pii std :: pair<int, int>
+#define pll pair<ll, ll>
+#define pb push_back
+#define type(x) __typeof(x.begin())
+#define foreach(i, j) for(type(j)i = j.begin(); i != j.end(); i++)
+#define FOR(i, s, t) for(int i = (s); i <= (t); i++)
+#define ROF(i, t, s) for(int i = (t); i >= (s); i--)
+#define dbg(x) std::cout << x << std::endl
+#define dbg2(x, y) std::cout << x << " " << y << std::endl
+#define clr(x, i) memset(x, (i), sizeof(x))
+#define maximize(x, y) x = max((x), (y))
+#define minimize(x, y) x = min((x), (y))
+using namespace std;
+typedef long long ll;
+const int int_inf = 0x3f3f3f3f;
+const ll ll_inf = 0x3f3f3f3f3f3f3f3f;
+const int INT_INF = (int)((1ll << 31) - 1);
+const double double_inf = 1e30;
+const double eps = 1e-14;
+typedef unsigned long long ul;
+typedef unsigned int ui;
+
+const int maxn = 4e5 + 10;
+int c[maxn];
+ll dp[maxn];
+ll n;
+
+ll solve() {
+    int mid = (int)sqrt(n + .5);
+    FOR(i, 1, mid) dp[i] = n / i - 1, c[i] = i - 1;
+    for (int i = 2; i <= mid; i++) {
+        if (c[i] == c[i - 1]) continue;
+        for (int j = 1; j <= mid && n / i / j >= i - 1; j++) {
+            if (j <= mid / i) dp[j] -= dp[i * j] - c[i - 1];
+            else dp[j] -= c[n / i / j] - c[i - 1];
+        }
+        ROF(j, mid, 1) {
+            if (j / i < i - 1) break;
+            c[j] -= c[j / i] - c[i - 1];
+        }
+    }
+    return dp[1];
+}
+
+int main() {
+    //data_gen(); return 0;
+    //C(); return 0;
+    int debug = 0;
+    if (debug) freopen("in.txt", "r", stdin);
+    //freopen("out.txt", "w", stdout);
+    while (~scanf("%lld", &n)) {
+        ll ans = solve();
+        printf("%lld\n", ans);
+    }
+    return 0;
+}
+```

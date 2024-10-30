@@ -27,7 +27,7 @@ const PORT = process.env.PORT || 8080;
 // Init WebSocket
 const server:HttpServer = http.createServer(app);
 
-const wsServer:WebSocketServer = new WebSocketServer({ server });
+export const wsServer:WebSocketServer = new WebSocketServer({ server });
 
 (async () => {
     try {
@@ -41,12 +41,12 @@ const wsServer:WebSocketServer = new WebSocketServer({ server });
         //     console.log(`WebSocket server is running on port 8000`);
         // });
 
-        // wsServer.on('connection', (ws) => {
-        //     console.log('WSS Client connected');
-        //     ws.on('message', (message) => {
-        //         // console.log('received message: ', message);
-        //     });
-        // });
+        wsServer.on('connection', (ws) => {
+            console.log('WSS Client connected');
+            ws.on('message', (message) => {
+                // console.log('received message: ', message);
+            });
+        });
     } catch (err) {
         console.error('Failed to sync db or failed to init database: ', err);
     }

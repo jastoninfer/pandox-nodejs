@@ -1,5 +1,7 @@
 KEYWORDS[[Machine Learning][PRML]]KEYWORDS
 
+![demo](https://www.pandox.xyz/api/db/images/pandoxone/640px-LagrangeMultipliers2D.svg.png "50")
+
 Lagrange multipliers, also known as undetermined multipliers, are used to find the stationary points of a function subject to one or more constraints. Consider finding the maximum of $f(\mathbf{x})$, with the constraint $g(\mathbf{x})=0$. We observe the conditions satisfied by such a stationary point $\mathbf{x}^*$. Clearly, $\mathbf{x}^*$ lies on the $(D-1)$ -dimensional surface in $D$ -dimensional space defined by the constraint $g(\mathbf{x})=0$, and the gradient $\nabla g(\mathbf{x})$ must be perpendicular to this surface (the normal vector to the tangent plane at this point).
 >Considering the Taylor expansion of $g(\mathbf{x})$, since $\mathbf{x}$ is on the surface $g(\mathbf{x})=0$, for $\mathbf{x}+\boldsymbol\epsilon$ also on this surface, we have
 >
@@ -41,7 +43,7 @@ g(\mathbf{x})&\geq0\\
 \lambda g(\mathbf{x})&=0,
 \end{aligned}
 $$
-which are the KKT (Karush-Kuhn-Tucker) conditions.
+which are the `KKT (Karush-Kuhn-Tucker) conditions`.
 >Clearly, the constraint on the sign of $\lambda$ here is still a first-order condition.
 
 If the function to be minimized is $f(\mathbf{x})$, then the Lagrangian function becomes

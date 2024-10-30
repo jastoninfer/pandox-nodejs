@@ -1,84 +1,119 @@
 KEYWORDS[[Machine Learning][PRML]]KEYWORDS
-线性分类模型
-===
----
-线性分类问题有三种解法，第一种是直接使用判别函数将特征向量关联到某个类别，第二种和第三种分别对条件概率 $p(\mathcal{C}_k|\mathbf{x})$ 和类别条件概率 $p(\mathbf{x} | \mathcal{C}_k)$ 建模。
 
-可以使用广义线性模型对后验（条件）概率进行建模，该概率值被记为
+
+There are three methods to solve linear classification problems.
+The first is to directly use a discriminant function to associate feature vectors with a certain class.
+The second and third methods model the conditional probability $p(\mathcal{C}_k|\mathbf{x})$ and the class conditional probability $p(\mathbf{x} | \mathcal{C}_k)$, respectively.
+
+A generalized linear model can be used to model the posterior (conditional) probability, which is denoted as:
 
 $$
 y(\mathbf{x})=f(\mathbf{w}^\text{T}\mathbf{x}+w_0),
 $$
-其中 $f(\cdot)$ 称为激活函数(它的逆也被称为链接(link)函数)，尽管激活函数是非线性的，但判决边界是线性于输入向量的。这意味着，假如我们需要解决的是一个二分类问题，那么决策边界仍然是一个超平面，只不过我们决定该超平面的位置不再取决于样本点距离该超平面的欧氏距离，而是该距离的某个非线性函数。你可以想象在 $\mathbf{w}$ 空间中，误差函数不再是一个超抛物面，而是一个其他形状的曲面，其极值点 $\mathbf{w^*}$ 依然对应样本空间 $\mathbf{x}$ 中的一个超平面。
-一般说的逻辑斯蒂回归模型（实际是分类）就属于这种广义线性模型。
 
-1 判别函数
----
----
-**1** 这里只考虑线性判别函数的情况。先考虑二分类的情况，最简单的线性判别函数形如
+where $f(\cdot)$ is called the activation function (its inverse is also called the link function). Although the activation function is nonlinear, the decision boundary is linear with respect to the input vector. This means that if we are dealing with a binary classification problem, the decision boundary is still a hyperplane.
+
+The commonly mentioned logistic regression model (which is actually for classification) belongs to this type of generalized linear model.
+
+## Discriminant Function
+
+**1** Here, we only consider the case of a linear discriminant function. Let's first consider the binary classification case. The simplest linear discriminant function is of the form
 
 $$
 y(\mathbf{x})=\mathbf{w}^\text{T}\mathbf{x}+w_0,
 $$
-此后我们根据判别函数的正负性决定 $\mathbf{x}$ 的所属类别。
 
-**2** 现在考虑将线性判别推广到多分类问题。我们会很自然地想到多次使用二分类解决多分类。通常有两种做法，即使用1v1或1vK(实际是K-1，为简单起见写成K)实现多分类，如果使用的是1v1，一般需要借助投票原则判定样本所属类别。但是这两种方法都有一个很大的缺点，就是不能将样本空间规范完整地划分为 $K$ 个子空间，即在某些情况下会出现不确定如何分类的样本。
-当然也存在别的思路。回顾上式， $y(\mathbf{x})$ 实际表示样本 $\mathbf{x}$ 到判决平面的有向距离，这里“有向”有两层意思，首先是说这个距离可正可负，然后是说正负性取决于原点 $O$ 是否属于当前类别。所以对于二分类问题，某个样本 $\mathbf{x}$ 属于类别 $\mathcal{C}_1$ ，它在类别1下的有向距离为 $+d(d>0)$ ，那么它在类别2下的有向距离必然为 $-d(d>0)$ ，由于 $d_{\mathcal{C}_1}(\mathbf{x})>d_{\mathcal{C}_2}(\mathbf{x})$ ，从而将 $\mathbf{x}$ 分类给 $\mathcal{C}_1$ 。这个性质可以方便地从二元划分推广到多元划分。对于每个类别 $\mathcal{C}_k$ ，我们假设有一个超平面 $(\mathbf{w}_k,w_{k0})$ ，它决定任意样本 $\mathbf{x}$ 属于该类别的“可比似然度”，“可比”指这种似然度可在任意类比之间直接比较，“似然度”是指给定当前类别，该样本点属于该类别的似然程度（类比于似然概率）。从而在所有类别无差别（均匀、等质、同先验）的假设下，我们将样本 $\mathbf x$ 划给类别 $\mathcal{C}_k$ 当且仅当它到此类别超平面有向距离最大
+After that, we decide the category to which $\mathbf{x}$ belongs based on the sign of the discriminant function.
+
+**2** Now, let's consider extending the linear discriminant to a multi-class problem.
+It is natural to think of solving multi-class classification by repeatedly using binary classification.
+There are generally two approaches: using 1v1 or 1vK (which is actually K-1, written as K for simplicity) to achieve multi-class classification.
+
+If we use 1v1, we typically need to rely on a voting principle to determine the category of the sample.
+However, both methods have a significant drawback: they cannot completely partition the sample space into $K$ subspaces, meaning that in some cases, there will be samples for which it is unclear how to classify them.  
+
+Of course, there are other approaches.
+Looking back at the previous equation, $y(\mathbf{x})$ actually represents the directed distance from the sample $\mathbf{x}$ to the decision plane.
+Here, "directed" has two meanings: first, this distance can be positive or negative; second, the sign depends on whether the origin $O$ belongs to the current category.
+
+Therefore, for a binary classification problem, if a sample $\mathbf{x}$ belongs to category $\mathcal{C}_1$ , its directed distance under category 1 is $+d (d>0)$ , which means its directed distance under category 2 must be $-d (d>0)$ .
+Since $d_{\mathcal{C}_1}(\mathbf{x})>d_{\mathcal{C}_2}(\mathbf{x})$ , we classify $\mathbf{x}$ as belonging to $\mathcal{C}_1$ .
+
+This property can be conveniently generalized from binary classification to multi-class classification.
+For each category $\mathcal{C}_k$ , we assume there is a hyperplane $(\mathbf{w}_k,w_{k0})$ that determines the "comparative likelihood" of any sample $\mathbf{x}$ belonging to that category.
+"Comparative" means this likelihood can be directly compared among any classes, and "likelihood" refers to the degree to which the sample point belongs to the current category given that category (analogous to likelihood probability).
+
+Thus, under the assumption that all categories are treated equally (uniform, homogenous, same prior), we assign the sample $\mathbf{x}$ to category $\mathcal{C}_k$ if and only if its directed distance to this category's hyperplane is maximized.
 
 $$
 y_k(\mathbf x)=\mathbf w_k^\text T\mathbf x+w_{k0}>y_j(\mathbf x), j\neq k.
 $$
-显然，我们使用这种方法可以将样本空间无歧义地划给 $K$ 类。某种程度上，这种思路类似于K近邻方法(KNN)。可以说明，这种方法下的判决区域(某类别的所属子空间)是单联通的凸区域。可以选取某类别区域任意两点，分析线段上某点的类别所属情况说明之。
+
+Clearly, using this method, we can unambiguously assign the sample space to $K$ classes. To some extent, this idea is similar to the `K-Nearest Neighbors (KNN)` method. It can be shown that the decision region (the subspace belonging to a certain category) under this method is a simply connected convex region.
+We can select any two points within a category's region and analyze the category assignment of a point along the line segment connecting them.
 
 ![o_Untitled Diagram](https://www.pandox.xyz/api/db/images/pandoxone/o_Untitled%20Diagram%207.png "80")
 
-以下分别介绍通过最小方差(平方误差/MSE)、Fisher线性判别和感知机算法学习线性判别函数的参数。
+The following sections introduce how to learn the parameters of the linear discriminant function using minimum variance (mean squared error/MSE), Fisher linear discriminant, and the perceptron algorithm.
 
-**3** 考虑使用最小方差优化参数，对于类别 $\mathcal{C}_k$ ，其超平面为
+**3** Consider optimizing the parameters using minimum variance. For the category $\mathcal{C}_k$ , its hyperplane is
 
 $$
 y_k(\mathbf x)=\mathbf w_k^\text T\mathbf x+w_{k0},
 $$
-将 $K$ 类输出值整合在一起，有
+Integrating the output values of the $K$ classes gives:
 
 $$
 \mathbf y(\mathbf x)=\mathbf W^\text T\mathbf x,
 $$
-为了记号简便，这里 $\mathbf W$ 的第 $k$ 行为 $(\mathbf w_k^\text T, w_{k0})$ ， $\mathbf x$ 为 $(\mathbf x^\text T, 1)^\text T$ 。
-假设我们的训练数据为 $\{\mathbf x_n, \mathbf t_n\}$ ，这里目标值使用1-K二元编码。从而对整个训练集，平方误差函数为
+
+For convenience of notation, the $k$ -th row of $\mathbf{W}$ is $(\mathbf{w}_k^T, w_{k0})$ , and $\mathbf{x}$ is $(\mathbf{x}^T, 1)^T$ . 
+
+Assuming our training data is $\{\mathbf{x}_n, \mathbf{t}_n\}$ , where the target values are encoded using 1-vs-K binary coding. Therefore, for the entire training set, the squared error function is:
 
 $$
 E(\mathbf W)=\frac{1}{2}\text{Tr}\left\{ \left(\mathbf{XW-T}\right)^\text T\left(\mathbf{XW-T} \right) \right\},
 $$
-这里 $\mathbf T$ 的第 $k$ 行为 $\mathbf t_k^\text T$ ，且使用结论 $\text{Tr}(\mathbf{AB})=\text{Tr}(\mathbf {BA})$ 。
-使用上式误差函数对 $\mathbf W$ 求导，有
+
+Here, the $k$ -th row of $\mathbf{T}$ is $\mathbf{t}_k^T$ , and we use the conclusion $\text{Tr}(\mathbf{AB}) = \text{Tr}(\mathbf{BA})$ .
+
+Taking the derivative of the error function with respect to $\mathbf{W}$ , we have:
 
 $$
 \frac{\partial E}{\partial \mathbf W}=\mathbf X\frac{\partial E}{\partial(\mathbf{XW-T})}=\mathbf{X(XW-T)},
 $$
-令其为零，推得
+
+Let it be $0$ , we have
 
 $$
 \mathbf W = (\mathbf X^\text T\mathbf X)^\text{-1}\mathbf X^\text T\mathbf T=\mathbf X^{\star}\mathbf T.
 $$
-从而预测函数可重新记为
+
+Thus, the prediction function can be rewritten as:
 
 $$
 \mathbf y(\mathbf x)=\mathbf{W}^\text T\mathbf x=\mathbf T^\text T{\mathbf X^{\star}}^{\text T}\mathbf x.
 $$
-此外，若训练数据满足，对任意目标向量 $\mathbf t_n$ ，存在常量 $\mathbf a$ 和 $b$ ，使得
+
+Moreover, if the training data satisfies that for any target vector $\mathbf{t}_n$ , there exist constants $\mathbf{a}$ and $b$ such that:
 
 $$
 \mathbf a^\text T\mathbf t_n+b=0,
 $$
-那么对任意样本 $\mathbf x$ ，模型输出必然也满足
+
+Then, for any sample $\mathbf x$ , the model output must also satisfy
 
 $$
 \mathbf a^\text T\mathbf y(\mathbf x)+b=0.
 $$
-特别地，如果我们使用的是1-K编码，这里 $\mathbf a^\text T\equiv(1,...,1), b \equiv -1$ 。也就是说，模型输出向量各分量之和为 $1$ 。特别地，如果我们面临的是二分类问题，属于某类别的样本目标向量在该分量上为 $+1$ ，反之为 $-1$ ，那么有 $\mathbf a^\text T\equiv(1,1),b\equiv 0$ ，此时模型输出向量各分量之和为 $0$ 。
-下面给出上述结论的一个证明。
->在之间的表达中，将 $\mathbf x$ 视作样本经过增广后的向量（ $x^{(1)}\equiv 1$ ），且对 $\mathbf w$ 也进行了增广。这为某些情形下的问题求解提供了方便，但在这里需要重新分离出偏置。记
+
+Specifically, if we use 1-K encoding, here $\mathbf{a}^\text{T} \equiv (1, \ldots, 1)$ and $b \equiv -1$. This means that the sum of the components of the model output vector is $1$.
+In particular, if we are dealing with a binary classification problem, the target vector for a sample belonging to a certain category is $+1$ in that component, while it is $-1$ otherwise.
+In this case, we have $\mathbf{a}^\text{T} \equiv (1, 1)$ and $b \equiv 0$ , so the sum of the components of the model output vector is $0$ .  
+
+The following provides a proof of the above conclusion.
+>In the expression above, $\mathbf{x}$ is considered as the augmented vector of the sample ( $x^{(1)} \equiv 1$ ), and $\mathbf{w}$ has also been augmented.
+>This provides convenience for solving problems in certain cases, but we need to separate out the bias here. Let’s denote it as follows:
 >
 >$$
 >y_k(\mathbf x)=\mathbf w_k^\text T\mathbf x+w_{k0},
@@ -91,18 +126,18 @@ $$
 >$$
 >\mathbf Y(\mathbf X)=\mathbf{XW}+\mathbf 1\mathbf w_0^\text T,
 >$$
->其中 $1$ 的长度为 $N$ (样本总数)的列向量， $\mathbf Y(\mathbf X)$ 的第 $n$ 行为第 $n$ 个样本的线性判别模型输出向量的转置。
->重写误差项
+>Here, the length of the column vector $1$ is $N$ (the total number of samples), and the $n$ -th row of $\mathbf{Y}(\mathbf{X})$ is the transpose of the output vector of the linear discriminant model for the $n$ -th sample.
+>Rewrite the error term:
 >
 >$$
 >E_D(\mathbf W,\mathbf w_0)=\frac{1}{2}\text{Tr}\left\{\left(\mathbf{XW}+\mathbf 1\mathbf w_0^\text T-\mathbf T\right)^\text T\left(\mathbf{XW}+\mathbf{1}\mathbf w_0^\text T-\mathbf T\right)\right\},
 >$$
->首先对 $\mathbf w_0$ 求梯度有
+>First, take the gradient of $\mathbf{w}_0$ to get:
 >
 >$$
 >\frac{\partial E_D}{\partial \mathbf w_0}=\left((\mathbf {XW-T)}^\text T+\mathbf w_0\mathbf 1^\text T\right)\mathbf 1,
 >$$
->令其为零，有
+>Setting it to zero gives:
 >
 >$$
 >\begin{aligned}
@@ -111,7 +146,7 @@ $$
 >\mathbf t^+-\mathbf W^\text T\mathbf x^+,
 >\end{aligned}
 >$$
->其中
+>where
 >
 >$$
 >\mathbf t^+=\frac{1}{N}\sum\mathbf t_n^\text T=\mathbf T^\text T\mathbf 1,
@@ -120,37 +155,37 @@ $$
 >$$
 >\mathbf x^+=\frac{1}{N}\sum\mathbf x_n^\text T=\mathbf X^\text T\mathbf 1.
 >$$
->现在对 $\mathbf W$ 求梯度，有
+>Now, taking the gradient with respect to $\mathbf W$ , we have:
 >
 >$$
 >\frac{\partial E_D}{\partial \mathbf W}=\mathbf X^\text T\left(\mathbf{XW}+\mathbf 1\mathbf w_0^\text T-\mathbf T\right),
 >$$
->令其为零，有
+>Setting it to zero gives:
 >
 >$$
 >\mathbf W=(\mathbf X^\text T\mathbf X)^{-1}\mathbf X^\text T(\mathbf T-\mathbf 1\mathbf w_0^\text T)
 >$$
->带入 $\mathbf w_0$ ，并记 $\mathbf T^+=\mathbf 1{\mathbf t^+}^\text T,\mathbf X^+=\mathbf 1{\mathbf x^+}^\text T$ ，得
+>Substitue into $\mathbf w_0$, and denote $\mathbf T^+=\mathbf 1{\mathbf t^+}^\text T,\mathbf X^+=\mathbf 1{\mathbf x^+}^\text T$ , we have
 >
 >$$
 >\mathbf W=(\mathbf X^\text T\mathbf X)^{-1}\mathbf X^\text T(\mathbf T-\mathbf T^++\mathbf X^+\mathbf W),
 >$$
->移项整理后
+>After rearranging the terms, we get:
 >
 >$$
 >\mathbf W=\mathbf M(\mathbf T-\mathbf T^+),
 >$$
->其中
+>where
 >
 >$$
 >\mathbf M=\left(\mathbf E-\mathbf X^\star\mathbf X^+\right)^{-1}\mathbf X^\star
 >$$
->并且
+>and
 >
 >$$
 >\mathbf X^\star=(\mathbf X^\text T\mathbf X)^{-1}\mathbf X^\text T.
 >$$
->从而
+>Hence,
 >
 >$$
 >\begin{aligned}
@@ -162,20 +197,29 @@ $$
 >$$
 
 
-如果我们使用平方误差作为线性分类模型的目标函数，则会面临两个主要的问题，其一是缺乏鲁棒性，对离群值敏感，而实际决策边界应该只由边界点确定；再者就是在某些情况下，分类效果奇差，而本来问题并不难。或许这是因为平方误差对应高斯条件分布假设下的似然估计，而1-K编码分布远离高斯分布【这句我也没看明白】。
+If we use the squared error as the objective function for the linear classification model, we face two main issues: one is the lack of robustness, making it sensitive to outliers, while the actual decision boundary should only be determined by the boundary points; another is that in some cases, the classification performance is poor, even though the problem is not difficult.
+This may be because the squared error corresponds to the likelihood estimation under the assumption of a Gaussian conditional distribution, while the 1-K encoding distribution is far from a Gaussian distribution.
 
-**4** 还有一种实现分类的思路是降维。例如在二维情形下，可以将样本点投影到某条直线上，通过投影点所在区域决定原样本点所属类别。然后我们需要做的就是考虑如何投影达到最佳的分类效果。一般有两条指示标准，一是我们希望不同类别尽可能离得远，二是同类别样本投影尽可能集中。可以分别用样本均值和方差量化之。具体来说，对于二分类问题，有 $N_1$ 个 $\mathcal C_1$ 样本， $N_2$ 个 $\mathcal C_2$ 样本，从而其均值 $\mathbf m_1$ 和 $\mathbf m_2$ 分别为
+**4** Another approach to achieve classification is dimensionality reduction.
+For example, in the two-dimensional case, we can project the sample points onto a certain line and determine the original sample point's category based on the area of the projected points.
+What we need to consider is how to project the points to achieve the best classification effect.
+
+Generally, there are two guiding criteria: first, we want different categories to be as far apart as possible; second, we want the projections of the same category samples to be as concentrated as possible.
+These can be quantified using the sample mean and variance.
+Specifically, for the binary classification problem, there are $N_1$ samples of $\mathcal{C}_1$ and $N_2$ samples of $\mathcal{C}_2$ , with their means $\mathbf{m}_1$ and $\mathbf{m}_2$ given by:
 
 $$
 \mathbf m_1=\frac{1}{N_1}\sum\mathbf x_n^{(1)},\text{ }\mathbf m_2=\frac{1}{N_2}\sum\mathbf x_n^{(2)}.
 $$
-投影直线的方向向量为 $\mathbf w$ ，从而在一维坐标系上，两均值的投影点之间的距离为
+
+The direction vector of the projection line is $\mathbf{w}$ , so in a one-dimensional coordinate system, the distance between the projection points of the two means is given by:
 
 $$
 m_2-m_1=\mathbf w^\text T(\mathbf m_2-\mathbf m_1),
 $$
 
-如果不考虑类间离散度，最大化该量会得到垂直于类别均值连线的投影方向，这种情况下，均值投影点是分得最开的，但可能会出现较多的误分（投影区域重合）。
+If the inter-class dispersion is not considered, maximizing this quantity will yield a projection direction that is perpendicular to the line connecting the class means. In this case, the projection points of the means are the farthest apart, but it may lead to a higher number of misclassifications (overlapping projection regions).
+
 >
 >$$
 >\begin{aligned}
@@ -184,58 +228,72 @@ $$
 >\end{aligned}
 >$$
 
-现在考虑类间投影离散度，即 $y$ 为样本点 $\mathbf x$ 的投影， $m_k$ 为类别 $\mathcal C_k$ 的均值的投影，从而类间方差为
+Now consider the inter-class projection dispersion, where $y$ is the projection of the sample point $\mathbf{x}$ , and $m_k$ is the projection of the mean of class $\mathcal{C}_k$ . Therefore, the inter-class variance is given by:
 
 $$
 s_k^2=\sum\left(y_n^{(k)}-m_k\right)^2.
 $$
-在二分类条件下，总的类内方差为 $\mathbf s_1^2+\mathbf s_2^2$ ，从而Fisher标准为下式
+
+Under the condition of binary classification, the total within-class variance is $\mathbf{s}_1^2 + \mathbf{s}_2^2$ , thus the Fisher criterion is given by the following expression:
 
 $$
 J(\mathbf w)=\frac{(m_1-m_2)^2}{s_1^2+s_2^2}=\frac{\mathbf w^\text T(\mathbf m_2-\mathbf m_1)(\mathbf m_2-\mathbf m_1)^\text T\mathbf w}{\sum \mathbf w^\text T(\mathbf x_n^{(1)}-\mathbf m_1)(\mathbf x_n^{(1)}-\mathbf m_1)^\text T\mathbf w+\sum\mathbf w^\text T(\mathbf x_n^{(2)}-\mathbf m_2)(\mathbf x_n^{(2)}-\mathbf m_2)^\text T\mathbf w}=\frac{\mathbf w^\text T\mathbf S_\text{B}\mathbf w}{\mathbf w^\text T\mathbf S_\text{W}\mathbf w},
 $$
-其中 $\mathbf S_\text B$ 和 $\mathbf S_\text W$ 分别被称为类间(between-class)和类内(within-class)协方差矩阵（二阶矩）。
-由于
+
+where $\mathbf{S}_\text{B}$ and $\mathbf{S}_\text{W}$ are referred to as the between-class and within-class covariance matrices (second-order moments), respectively.
+
+Since
 
 $$
 \frac{\partial J}{\partial \mathbf w}=\frac{1}{\partial\mathbf w}\partial \frac{\text{Tr}(\mathbf w^\text T\mathbf S_\text{B}\mathbf w)}{\text{Tr}(\mathbf w^\text T\mathbf S_\text{W}\mathbf w)}=\frac{(\mathbf S_\text B^\text T+\mathbf S_\text B)\mathbf w\mathbf w^\text T\mathbf S_\text W\mathbf w-\mathbf w^\text T\mathbf S_\text B\mathbf w(\mathbf S_\text W^\text T+\mathbf S_\text W)\mathbf w}{(\mathbf w^\text T\mathbf S_\text W\mathbf w)^2},
 $$
-利用两类协方差矩阵的对称性，并令该梯度为零，交换数量 $\mathbf w^\text T\mathbf S\mathbf w$ 在矩阵乘法中的位置，得到下式
+
+Utilizing the symmetry of the two class covariance matrices and setting the gradient to zero, we can swap the position of the term $\mathbf{w}^\text{T} \mathbf{S} \mathbf{w}$ in the matrix multiplication, resulting in the following equation:
 
 $$
 (\mathbf w^\text T\mathbf S_\text B\mathbf w)\mathbf S_\text W\mathbf w=(\mathbf w^\text T\mathbf S_\text W\mathbf w)\mathbf S_\text B\mathbf w.
 $$
-注意到 $\mathbf S_\text B\mathbf w=(\mathbf m_2-\mathbf m_1)(\mathbf m_2-\mathbf m_1)^\text T\mathbf w$ 始终与 $(\mathbf m_2-\mathbf m_1)$ 同向，再处理掉括号里的数量，得出关系
+Note that $\mathbf S_\text B\mathbf w=(\mathbf m_2-\mathbf m_1)(\mathbf m_2-\mathbf m_1)^\text T\mathbf w$ always has the same sign as $(\mathbf m_2-\mathbf m_1)$, we have
 
 $$
 \mathbf S_\text W\mathbf w\propto (\mathbf m_2-\mathbf m_1),
 $$
-进而
+
+Hence,
 
 $$
 \mathbf w \propto \mathbf S_\text W^{-1}(\mathbf m_2-\mathbf m_1).
 $$
-当类内样本协方差同心分布时， $\mathbf S_\text W$ 正比于单位阵，此时投影方向垂直于两类均值的连线。
-上述结果即Fisher线性判别，当然目前只给出了投影方向，没有决定在投影直线上何处属于第一类，何处属于第二类，这一步可以使用类别条件分布为高斯分布假设下的似然概率最大化确定需要的阈值。
+When the class-internal sample covariance is distributed concentrically, $\mathbf{S}_\text{W}$ is proportional to the identity matrix, and at this point, the projection direction is perpendicular to the line connecting the means of the two classes.
+The above result is known as Fisher's linear discriminant.
+However, so far we have only provided the projection direction without determining where along the projection line to classify samples into the first class or the second class.
+This step can be accomplished by maximizing the likelihood probability under the assumption that the class conditional distributions follow a Gaussian distribution to determine the required threshold.
 
-**5** 下面考虑最小平方误差与Fisher判别的关系。结论是，在二分类情形下，Fisher判别可作为最小平方误差的特例，当然，这时候最小平方误差不再使用1-K编码作为目标向量的表示。此时若 $\mathbf x_n$ 属于类别 $\mathcal C_1$ ，则 $t_n=\frac{N}{N_1}$ ；若 $\mathbf x_n$ 属于类别 $\mathcal C_2$ ，则 $t_n=-\frac{N}{N_2}$ ，在数值上，此时目标值不再是向量而是数量，且大小等于类别先验概率的倒数。这里 $\mathbf x_n$ 是对原样本进行增广后的向量，偏置也包含在 $\mathbf w$ 中。此时平方误差为
+**5** Next, we consider the relationship between the minimum squared error and Fisher's discriminant.
+The conclusion is that, in the case of binary classification, Fisher's discriminant can be seen as a special case of minimum squared error.
+
+Of course, at this point, the minimum squared error no longer uses 1-K encoding to represent the target vector.
+In this case, if $\mathbf{x}_n$ belongs to class $\mathcal{C}_1$ , then $t_n = \frac{N}{N_1}$ ; if $\mathbf{x}_n$ belongs to class $\mathcal{C}_2$ , then $t_n = -\frac{N}{N_2}$ .
+Numerically, at this point, the target value is no longer a vector but a scalar, and its magnitude is equal to the inverse of the class prior probabilities. Here, $\mathbf{x}_n$ is the augmented vector of the original sample, and the bias is also included in $\mathbf{w}$ .
+At this point, the squared error is given by
 
 $$
 E(\mathbf w)=\frac{1}{2}\sum\left(\mathbf w^\text T\mathbf x_n-t_n\right)^2,
 $$
-从而
+such that
 
 $$
 \frac{\partial E}{\partial \mathbf w}=\sum(\mathbf w^\text T\mathbf x_n-t_n)\mathbf x_n,
 $$
-令该梯度为零，得出
+Setting gradient to zero, we have
 
 $$
 \begin{aligned}
 \sum\mathbf w^\text T\mathbf x_n\mathbf x_n=&\sum t_n\mathbf x_n=N(\mathbf m_1-\mathbf m_2)\\=&\sum\mathbf x_n\mathbf x_n^\text T\mathbf w\\=&\sum(\mathbf x_n^{(1)}-\mathbf m_1+\mathbf m_1)(\mathbf x_n^\text{(1)}-\mathbf m_1+\mathbf m_1)^\text T\mathbf w+\sum(\mathbf x_n^{(2)}-\mathbf m_2+\mathbf m_2)(\mathbf x_n^{(2)}-\mathbf m_2+\mathbf m_2)^\text T\mathbf w\\=&\left(\mathbf S_\text W+N_1\mathbf m_1\mathbf m_1^\text{T}+N_2\mathbf m_2\mathbf m_2^\text T\right)\mathbf w,
 \end{aligned}
 $$
-由于
+
+Because of
 
 $$
 \begin{aligned}
@@ -244,69 +302,99 @@ N_1N_2\mathbf S_\text B=& N_1N_2(\mathbf m_1\mathbf m_1^\text T+\mathbf m_2\math
 =&N(N_1\mathbf m_1\mathbf m_1^\text T+N_2\mathbf m_2\mathbf m_2^\text T)-N^2\mathbf m\mathbf m^\text T\\N_1\mathbf m_1\mathbf m_1^\text T+N_2\mathbf m_2\mathbf m_2^\text T=&\frac{N_1N_2}{N}\mathbf S_\text B+N\mathbf m\mathbf m^\text T
 \end{aligned}
 $$
-代回上式，有
+
+Substitue back, we have
 
 $$
 (\mathbf S_\text W+\frac{N_1N_2}{N}\mathbf S_\text B+N\mathbf m\mathbf m^\text T)\mathbf w=N(\mathbf m_1-\mathbf m_2),
 $$
-由于 $\mathbf S_\text B\mathbf w$ 与 $(\mathbf m_1-\mathbf m_2)$ 同向，且不失一般性地，我们可以对训练数据进行平移预处理，使得 $\mathbf m=\mathbf 0$ ，从而得到
+
+Since $\mathbf S_\text{B} \mathbf w$ is in the same direction as $(\mathbf m_1 - \mathbf m_2)$ , and without loss of generality, we can perform a translation preprocessing on the training data such that $\mathbf m = \mathbf 0$ , resulting in:
 
 $$
 \mathbf w\propto \mathbf S_\text W^{-1}(\mathbf m_2-\mathbf m_1),
 $$
-这等同于在Fisher判别中得到的结果。基于误差评判标准，分类时，若 $\mathbf w^\text T\mathbf x>0$ ，则将其划为类 $\mathcal C_1$ 。
 
-**6** 下面考虑多分类情形下的Fisher判别。这里有个假设，样本空间的维度 $D$ 大于需要分类的类别数 $K$ ( $D>K$ )。基本的思路是相同的，我们想将 $D$ 维样本空间的分类问题转化为 $D^\prime$ 维空间中的分类问题，该空间又称特征空间。同样地，我们希望类内方差小，类间距离远。假设投影矩阵为 $\mathbf W^\text T$ ，对于样本 $\mathbf x$ ，其特征向量为 $\mathbf W^\text T\mathbf x$ ， $\mathbf W^\text T$ 的各行分别将 $\mathbf x$ 映射到特征空间中某维的分量值。类内方差记为各类类内方差（高维，实际是协方差）之和，即
+This is equivalent to the result obtained in Fisher's discriminant.
+Based on the error evaluation criteria, during classification, if $\mathbf{w}^\text{T}\mathbf{x} > 0$ , it is classified as class $\mathcal{C}_1$ .
+
+**6** Now we consider Fisher's discriminant in the case of multi-class classification.
+Here, we have a hypothesis that the dimension $D$ of the sample space is greater than the number of classes $K$ (i.e., $D > K$ ).
+
+The basic idea is the same: we want to transform the classification problem in the $D$ -dimensional sample space into a classification problem in a $D'$ -dimensional space, which is also known as the feature space.
+Similarly, we hope to minimize the within-class variance and maximize the distance between classes.
+
+Let the projection matrix be $\mathbf{W}^\text{T}$ .
+For a sample $\mathbf{x}$, its feature vector is $\mathbf{W}^\text{T}\mathbf{x}$ , where each row of $\mathbf{W}^\text{T}$ maps $\mathbf{x}$ to the component value in a certain dimension of the feature space.
+The within-class variance is defined as the sum of the within-class variances (high-dimensional, actually covariances) of each class, given by
 
 $$
 \mathbf S_\text W=\sum\mathbf S_k,
 $$
-类间距离 $\mathbf S_\text B$ 间接定义为总方差 $\mathbf S_\text T$ 与类内方差之差，即
+
+The between-class distance $\mathbf{S}_\text{B}$ is indirectly defined as the difference between the total variance $\mathbf{S}_\text{T}$ and the within-class variance, that is
 
 $$
 \mathbf S_\text B=\mathbf S_\text T-\mathbf S_\text W=\sum (\mathbf x_n-\mathbf m)(\mathbf x_n-\mathbf m)^\text T-\sum\mathbf S_k,
 $$
-实际上, $\mathbf S_\text B$ 为
+
+Essentially, $\mathbf S_\text B$ is
 
 $$
 \mathbf S_\text B=\sum N_k(\mathbf m_k-\mathbf m)(\mathbf m_k-\mathbf m)^\text T.
 $$
-在特征空间中，记上述各量分别为 $\mathbf s_\text B$ 和 $\mathbf s_\text W$ ，不难得到 $\mathbf s=\mathbf W\mathbf S\mathbf W^\text T$ 。
-一个Fisher判别尺度是
+
+In the feature space, denote the aforementioned quantities as $\mathbf{s}_\text{B}$ and $\mathbf{s}_\text{W}$ . It is not difficult to obtain $\mathbf{s} = \mathbf{W}\mathbf{S}\mathbf{W}^\text{T}$ . 
+
+A Fisher discriminant measure is given by
 
 $$
 J(\mathbf W)=\text{Tr}(\mathbf s_\text W^{-1}\mathbf s_\text B),
 $$
-最优化的投影矩阵由 $\mathbf S_\text W^\text{-1}\mathbf S_\text B$ 的最大的 $D^\prime$ 个特征值所对应的特征向量确定（该矩阵是 $D$ 维的）。
-假设我们需要面对的是 $K$ 分类问题，显然可以看出矩阵 $\mathbf S_\text B(D\times D)$ 的秩不超过 $K-1$ 。
 
-**7** 现在考虑除一般线性判别模型、Fisher线性判别模型外的第三类星星判别模型。它适用于解决二分类问题，样本 $\mathbf x$ 首先经固定的非线性映射函数 $\boldsymbol{\phi}(\cdot)$ 映射到特征 $\boldsymbol\phi(\mathbf x)$ ，再使用广义线性模型
+The optimal projection matrix is determined by the eigenvectors corresponding to the largest $D'$ eigenvalues of $\mathbf{S}_\text{W}^{-1}\mathbf{S}_\text{B}$ (this matrix is $D$ -dimensional).
+Assuming we are dealing with a $K$ -class classification problem, it is clear that the rank of the matrix $\mathbf{S}_\text{B} (D \times D)$ does not exceed $K-1$ .
+
+**7** Now, consider a third type of discriminative model, the star discriminative model, in addition to the general linear discriminative model and Fisher linear discriminative model.
+This model is suitable for solving binary classification problems, where the sample $\mathbf{x}$ is first mapped to the feature $\boldsymbol{\phi}(\mathbf{x})$ through a fixed nonlinear mapping function $\boldsymbol{\phi}(\cdot)$ , and then a generalized linear model is used.
 
 $$
 y(\mathbf x)=f(\mathbf w^\text T\boldsymbol\phi(\mathbf x)),
 $$
-这里激活函数 $f(\cdot)$ 是阶跃函数（不连续）。
-该模型也即感知机模型。
-很自然的想法是通过最小化某个误差函数确定 $\mathbf w$ ，例如误分类样本数。由于激活函数的特性，通过微分方法不可求解此问题。为此引入感知机准则作为误差函数，首先将二分类问题中样本的目标值分别标记为 $+1$ 或 $-1$ ，那么我们希望使属于类别 $\mathcal C_1$ 的样本 $\mathbf x_n$ 满足 $\mathbf w^\text T\boldsymbol\phi(\mathbf x_n)>0$ ，属于类别 $\mathcal C_2$ 的样本 $\mathbf x_n$ 满足 $\mathbf w^\text T\boldsymbol\phi(\mathbf x_n)<0$ ；即 $\mathbf w^\text T\boldsymbol\phi(\mathbf x_n)t_n>0$ ，从而我们不妨尝试最大化不等式左端的内容，并假设其可加，得到可最小化的目标误差函数
+
+Here, the activation function $f(\cdot)$ is a step function (discontinuous).
+This model is also known as the perceptron model.
+
+A natural idea is to determine $\mathbf{w}$ by minimizing some error function, such as the number of misclassified samples.
+Due to the nature of the activation function, this problem cannot be solved through differentiation methods.
+
+To address this, the perceptron criterion is introduced as the error function.
+First, in the binary classification problem, the target values of the samples are labeled as $+1$ or $-1$ .
+We want the samples $\mathbf{x}_n$ belonging to class $\mathcal{C}_1$ to satisfy $\mathbf{w}^\text{T}\boldsymbol{\phi}(\mathbf{x}_n) > 0$ , and those belonging to class $\mathcal{C}_2$ to satisfy $\mathbf{w}^\text{T}\boldsymbol{\phi}(\mathbf{x}_n) < 0$ ; that is, $\mathbf{w}^\text{T}\boldsymbol{\phi}(\mathbf{x}_n)t_n > 0$ .
+Therefore, we can attempt to maximize the left side of the inequality and assume it is additive, leading to a target error function that can be minimized.
 
 $$
 E_P(\mathbf w)=-\sum \mathbf w^\text T\boldsymbol\phi_{n:n\in\mathcal M}t_n,
 $$
-注意上式中只有误分类的样本。误差函数在 $\mathbf w$ 空间中是分段线性的，试想在 $\mathbf w$ 的某个邻域，分类结果不变，但 $E_P$ 是 $\mathbf w$ 的线性函数。
-使用随机梯度下降(SGD)更新$\mathbf w$
+
+Note that the above expression only includes misclassified samples.
+The error function is piecewise linear in the $\mathbf{w}$ space; consider that in some neighborhood of $\mathbf{w}$ , the classification results remain unchanged, but $E_P$ is a linear function of $\mathbf{w}$ . 
+
+We can update $\mathbf{w}$ using `stochastic gradient descent (SGD)`.
 
 $$
 \mathbf w^{(\tau+1)}\leftarrow\mathbf w^{(\tau)}-\eta \nabla E_P(\mathbf w)=\mathbf w^{(\tau)}+\eta\boldsymbol\phi_nt_n. 
 $$
-感知机收敛定理说明，如果二分类问题是完全可分的，那么执行感知机算法(SGD)可在有限步内解决该问题。实际上，可能会需要很多步，以至于不能确定是否完全可分（还是慢速收敛）。
 
-2 概率生成模型
----
----
-**1** 继线性判别模型之后，下面将要探讨的是产生线性决策边界的概率分类模型。
->一般来说，用于解决分类问题的模型包括判别模型和生成模型。
+The perceptron convergence theorem states that if a binary classification problem is completely separable, then executing the perceptron algorithm (SGD) can solve the problem in a finite number of steps. In practice, however, it may require many steps, making it uncertain whether the problem is completely separable or if it is converging slowly.
 
-为此，我们需要对数据的分布（样本空间中样本的分布）进行假设；更具体地，对类别条件概率以及类别先验概率进行建模。在二分类情境下，后验概率可写成
+
+## Probabilistic Generative Models
+
+**1** Following the linear discriminative model, we will next explore probabilistic classification models that produce linear decision boundaries.  
+> Generally, models used to solve classification problems include discriminative models and generative models.
+
+To achieve this, we need to make assumptions about the distribution of the data (the distribution of samples in the sample space); more specifically, we will model the class conditional probabilities and the class prior probabilities. In the binary classification context, the posterior probability can be written as
 
 $$
 \begin{aligned}
@@ -315,36 +403,41 @@ p(\mathcal C_1|\mathbf x)=&\frac{p(\mathcal C_1,\mathbf x)}{p(\mathbf x)}=\frac{
 \sigma(a),
 \end{aligned}
 $$
-其中
+
+where
 
 $$
 a=\ln\frac{p(\mathbf x,\mathcal C_1)}{p(\mathbf x,\mathcal C_2)}=\ln\frac{p(\mathcal C_1|\mathbf x)}{p(\mathcal C_2|\mathbf x)}=\ln\frac{p(\mathcal C_1|\mathbf x)}{1-p(\mathcal C_1|\mathbf x)},
 $$
-后验概率的比值又称为几率，从而 $a$ 就是所谓的对数几率(log odds)。这里 $\sigma(a)$ 即逻辑斯蒂(S型)函数， $a(\sigma)$ 即logit函数。
-对于多分类问题，后验概率为
+
+The ratio of posterior probabilities is also known as the odds, so $a$ is referred to as the log odds. Here, $\sigma(a)$ is the logistic (S-shaped) function, and $a(\sigma)$ is the logit function.
+For multi-class problems, the posterior probability is given by
 
 $$
 p(\mathcal C_k|\mathbf x)=\frac{p(\mathcal C_k)p(\mathbf x|\mathcal C_k)}{\sum p(\mathcal C_j)p(\mathbf x|\mathcal C_j)}=\frac{\exp(a_k)}{\sum\exp(a_j)},
 $$
-这时
+
+where
 
 $$
 a_k=\ln p(\mathcal C_k)p(\mathbf x|\mathcal C_k).
 $$
-这里规范化的指数函数即softmax函数。
-值得注意的是，这里 $a(\mathbf x)$ 与 $a_k(\mathbf x)$ 均应是 $\mathbf x$ 的（线性）函数。
+The normalized exponential function here is the softmax function. It is important to note that both $a(\mathbf x)$ and $a_k(\mathbf x)$ should be (linear) functions of $\mathbf x$ .
 
-**2** 首先，最自然地，用高斯分布对类别条件概率建模；此外，增加假设，即各类别条件高斯分布中协方差（矩阵）相同，从而，类别 $\mathcal C_k$ 的条件概率为
+**2** First, the most natural approach is to model the class conditional probabilities using a Gaussian distribution.
+Additionally, we add the assumption that the covariance (matrix) is the same across all class conditional Gaussian distributions, thus the conditional probability for class $\mathcal C_k$ is given by
 
 $$
 p(\mathbf x|\mathcal C_k)=\frac{1}{(2\pi)^{D/2}|\mathbf\Sigma|^{1/2}}\exp\left\{-\frac{1}{2}(\mathbf x-\boldsymbol\mu_k)^\text T\mathbf\Sigma^{-1}(\mathbf x-\boldsymbol\mu_k)\right\}.
 $$
-回到二分类问题，在那里，我们给出了 $a(\mathbf x)$ 的表达式
+
+Returning to the binary classification problem, where we provided the expression for $a(\mathbf x)$ .
 
 $$
 a(\mathbf x)=\ln\frac{p(\mathcal C_1)p(\mathbf x|\mathcal C_1)}{p(\mathcal C_2)p(\mathbf x|\mathcal C_2)},
 $$
-带入类别条件分布表达式，有
+
+Substituting in the expression for the class conditional distribution, we have
 
 $$
 \begin{aligned}
@@ -353,27 +446,31 @@ a(\mathbf x)=&\ln\frac{p(\mathcal C_1)}{p(\mathcal C_2)}-\frac{1}{2}\left((\math
 \ln\frac{p(\mathcal C_1)}{p(\mathcal C_2)}+\left(\mathbf\Sigma^{-1}(\boldsymbol\mu_1-\boldsymbol\mu_2)\right)^\text T\mathbf x-\frac{1}{2}\left(\boldsymbol\mu_1^\text T\mathbf\Sigma^{-1}\boldsymbol\mu_1-\boldsymbol\mu_2^\text T\mathbf\Sigma^{-1}\boldsymbol\mu_2\right),
 \end{aligned}
 $$
-从而 $a(\mathbf x)$ 是 $\mathbf x$ 的线性函数，
-可记作
+
+Thus, $a(\mathbf{x})$ is a linear function of $\mathbf{x}$ , which can be written as
 
 $$
 a(\mathbf x)=\mathbf w^\text T\mathbf x+w_0.
 $$
-由于在高斯分布中同协方差的假设，生成模型在样本空间中判别边界是线性的。对于多分类情形，由于关系的只是决策边界
+
+Due to the assumption of the same covariance in the Gaussian distribution, the decision boundary of the generative model in the sample space is linear. For the multi-class case, the relationship only concerns the decision boundaries.
 
 $$
 p(\mathcal C_k|\mathbf x)=p(\mathcal C_j|\mathbf x)\longleftrightarrow a_k=a_j,
 $$
-从而使用 $a_k^\prime(\mathbf x)$ 替换 $a_k(\mathbf x)$ 并将 $\mathbf x$ 判定为 $\mathcal C_k$ 类当且仅当 $a_k^\prime(\mathbf x)>a_j^\prime(\mathbf x), k\neq j$ 得到相同的判决边界，此时
+Thus, using $a_k'(\mathbf x)$ to replace $a_k(\mathbf x)$ and classifying $\mathbf x$ as belonging to class $\mathcal C_k$ if and only if $a_k'(\mathbf x) > a_j'(\mathbf x), k \neq j$ results in the same decision boundary.
+At this point,
 
 $$
 a_k^\prime(\mathbf x)=\left(\mathbf\Sigma^{-1}\boldsymbol\mu_k\right)^\text T\mathbf x-\frac{1}{2}\boldsymbol\mu_k^\text T\mathbf\Sigma^{-1}\boldsymbol\mu_k+\ln p(\mathcal C_k),
 $$
-是 $\mathbf x$ 的线性函数。
-如果放弃了同协方差假设，该模型将产生关于 $\mathbf x$ 的二次判决边界。
+is a linear function of $\mathbf x$ .
+If the assumption of equal covariance is abandoned, the model will produce a quadratic decision boundary with respect to $\mathbf x$ .
 
-**3** 既然有了利用贝叶斯方法通过计算后验概率判定 $\mathbf x$ 所属类别的模型，下面需要做的就是估计模型中各项参数，包括先验概率、类别均值以及共享协方差（矩阵）。这里考虑使用最大似然概率求解这些待定参数。
-先来考虑二分类的情形，类别条件概率依然假设为同协方差的高斯分布。训练数据为 $\{\mathbf x_n,t_n\}$ ，当 $t_n=1$ 时， $\mathbf x_n$ 所属类别为 $\mathcal C_1$ ；当 $t_n=0$ 时， $\mathbf x_n$ 所属类别为 $\mathcal C_2$ 。并记先验概率 $p(\mathcal C_1)=\pi$ ，从而 $p(\mathcal C_2)=1-\pi$ 。于是
+**3** Since we have a model that uses Bayesian methods to determine the category of $\mathbf x$ by calculating the posterior probabilities, the next step is to estimate the parameters in the model, including prior probabilities, class means, and shared covariance (matrix). Here, we consider using maximum likelihood estimation to solve for these unknown parameters.
+
+First, let’s consider the case of binary classification, where the class conditional probabilities are still assumed to follow Gaussian distributions with equal covariance. The training data consists of $\{\mathbf x_n, t_n\}$ . When $t_n=1$ , $\mathbf x_n$ belongs to class $\mathcal C_1$ ; when $t_n=0$ , $\mathbf x_n$ belongs to class $\mathcal C_2$ .
+Let the prior probability be denoted as $p(\mathcal C_1) = \pi$ , so $p(\mathcal C_2) = 1 - \pi$ . Thus,
 
 $$
 p(\mathcal C_1,\mathbf x)=p(\mathcal C_1)p(\mathbf x|\mathcal C_1)=\pi\mathcal N(\mathbf x_n|\boldsymbol\mu_1,\mathbf\Sigma),
@@ -382,7 +479,7 @@ $$
 $$
 p(\mathcal C_2,\mathbf x)=p(\mathcal C_2)p(\mathbf x|\mathcal C_2)=(1-\pi)\mathcal N(\mathbf x_n|\boldsymbol\mu_2,\mathbf\Sigma),
 $$
-似然概率为
+The likelihood probability is given by
 
 $$
 \begin{aligned}
@@ -390,7 +487,8 @@ p(\mathbf t,\mathbf X|\pi,\mathbf\Sigma,\boldsymbol\mu_1,\boldsymbol\mu_2)=&\pro
 \\=&\prod \left[\pi\mathcal N(\mathbf x_n|\boldsymbol\mu_1,\mathbf\Sigma)\right]^{t_n}\left[(1-\pi)\mathcal N(\mathbf x_n|\boldsymbol\mu_2,\mathbf\Sigma)\right]^{1-t_n}
 \end{aligned}
 $$
-从而
+
+so we have
 
 $$
 \ln p(\mathbf t)=\sum t_n\ln\left[\pi\mathcal N(\mathbf x_n|\boldsymbol\mu_1,\mathbf\Sigma)\right]+(1-t_n)\ln[(1-\pi)\mathcal N(\mathbf x_n|\boldsymbol\mu_2,\mathbf\Sigma)],
@@ -399,27 +497,28 @@ $$
 $$
 \frac{\partial \ln p}{\partial \pi}=\sum \frac{t_n}{\pi}-\frac{1-t_n}{1-\pi},
 $$
-令其为零，得对 $\pi$ 的最大似然估计为
+Setting it to zero, we obtain the maximum likelihood estimate for $\pi$ as follows:
 
 $$
 \pi=\sum t_n/N=\frac{N_{\mathcal C_1}}{N_{\mathcal C_1}+N_{\mathcal C_2}}.
 $$
-由于
+
+Note that
 
 $$
 \frac{\partial \ln p}{\partial \boldsymbol\mu_1}=\sum-t_n{\mathbf\Sigma^{-1}}^\text T(\mathbf x-\boldsymbol\mu_1),
 $$
-令其为零，得 $\boldsymbol\mu_1$ 的最大似然估计为
+Setting it to zero, we obtain the maximum likelihood estimate for $\boldsymbol\mu_1$ as follows:
 
 $$
 \boldsymbol\mu_1=\frac{\sum\mathbf x^{(1)}}{N_1},
 $$
-利用对称性，有 $\mathbf \mu_2$ 的最大似然估计值为
+Using symmetry, the maximum likelihood estimate for $\boldsymbol\mu_2$ is:
 
 $$
 \boldsymbol\mu_2=\frac{\sum\mathbf x^{(2)}}{N_2}.
 $$
-最后考虑协方差最大 $\mathbf\Sigma$ 的最大似然估计，由于
+Finally, consider the maximum likelihood estimate for the covariance $\mathbf \Sigma$ . Since
 
 $$
 \begin{aligned}
@@ -429,59 +528,70 @@ $$
 \frac{N}{2}\mathbf\Sigma-\frac{1}{2}(N_1\mathbf S_1^\text T+N_2\mathbf S_2^\text T),
 \end{aligned}
 $$
-令其为零，得
+Setting it to zero, we have
 
 $$
 \mathbf\Sigma =\frac{N_1}{N}\mathbf S_1+\frac{N_2}{N}\mathbf S_2,
 $$
-即 $\mathbf\Sigma$ 的最大似然估计是两类类内协方差的加权平均。
-上述推论可推广至多分类情形。
+That is, the maximum likelihood estimate for $\mathbf \Sigma$ is the weighted average of the within-class covariances of the two classes.
+This conclusion can be generalized to the multi-class situation.
 
-**4** 现在考虑样本空间是离散点的情形，先考虑样本各维取值在 $\{0,1\}$ 中的情况。假设样本向量长度为 $D$ ，生成方法要对样本分布情况建模。假设我们考虑的是互不相同的样本点，显然空间中共有 $2^D$ 个位置可取，考虑到样本在所有位置上的概率之和为 $1$ 这一约束条件，实际上需要 $2^D-1$ 个参数来确定。进一步假设样本空间各维取值互相独立（朴素贝叶斯假设），可以解决参数数量爆炸的问题，从而只需对 $D$ 维分别建模即可。假设属于类别 $\mathcal C_k$ 的样本 $\mathbf x$ 在 $i$ 维上取值为 $1$ 的概率为 $\mu_{ki}$ ，从而向量 $\mathbf x$ 的条件类别概率为
+**4** Now consider the case where the sample space consists of discrete points, starting with the situation where each dimension of the samples takes values in $\{0,1\}$ .
+Suppose the sample vector has a length of $D$ , and the generative model needs to model the distribution of the samples.
+Assuming we are considering distinct sample points, there are clearly $2^D$ possible positions in the space.
+Considering the constraint that the sum of the probabilities of the samples across all positions is $1$ , we actually need $2^D - 1$ parameters to determine this.
+
+Furthermore, by assuming that the values of each dimension in the sample space are independent (the naive Bayes assumption), we can address the explosion in the number of parameters, thus allowing us to model each of the $D$ dimensions separately.
+Suppose the probability that a sample $\mathbf x$ belonging to class $\mathcal C_k$ takes the value $1$ in the $i$ -th dimension is $\mu_{ki}$ , then the conditional class probability for the vector $\mathbf x$ is given by
 
 $$
 p(\mathbf x|\mathcal C_k)=\prod \mu_{ki}^{x_i}(1-\mu_{ki})^{1-x_i},
 $$
-利用式 $a_k=\ln p(\mathcal C_k)p(\mathbf x|\mathcal C_k)$ ，得
+
+Using $a_k=\ln p(\mathcal C_k)p(\mathbf x|\mathcal C_k)$, we have
 
 $$
 a_k=\ln p(\mathcal C_k)+\sum x_i\ln\mu_{ki}+(1-x_i)\ln(1-\mu_{ki}),
 $$
-从而满足线性条件。
+Thus satisfying the linear condition.
 
-**5** 实际上只要对类别条件分布的假设属于指数族分布，引入缩放系数 $s$ ，类别条件分布如下
+**5** In fact, as long as the assumption about the class conditional distribution belongs to the exponential family of distributions, by introducing a scaling factor $s$ , the class conditional distribution can be expressed as follows:
 
 $$
 p(\mathbf x|\boldsymbol\lambda_k,s)=\frac{1}{s}h(\frac{\mathbf x}{s})g(\boldsymbol\lambda_k)\exp\left\{\frac{1}{s}\boldsymbol\lambda_k^\text T\mathbf x\right\},
 $$
-可以验证，此时 $a(\mathbf x)$ 仍然是关于 $\mathbf x$ 的线性函数。
+It can be verified that, at this point, $a(\mathbf x)$ is still a linear function of $\mathbf x$ .
 
 
-3 概率判别模型
----
----
+## Probabilistic Discriminative Models
 
-**1** 在之前讨论的概率生成模型中，我们首先对样本的概率分布建模，通过似然估计确定模型参数，再通过计算后验概率，利用softmax或sigmoid函数确定样本所属类别。逻辑路线是概率分布模型估参 $\rightarrow$ 计算后验概率 $\rightarrow$ 划分样本类别。当然我们可以跳过对样本分布进行建模，直接对对数几率(log odds)或后验概率进行建模，使用似然估计直接确定该模型的参数。这种方法即概率判别模型。有一种高效算法可以完成此任务，即迭代重加权最小平法误差（最小二乘）算法(Iterative Reweighted Least Squares, IRLS)。
+**1** In the previously discussed probabilistic generative models, we first model the probability distribution of the samples, determine the model parameters through likelihood estimation, and then calculate the posterior probabilities to classify the samples using softmax or sigmoid functions.
+The logical flow is: model parameter estimation from the probability distribution $\rightarrow$ calculate posterior probabilities $\rightarrow$ classify samples.
 
+Of course, we can skip modeling the sample distribution and directly model the log odds or posterior probabilities, using likelihood estimation to directly determine the model parameters.
+This approach is known as the probabilistic discriminative model. An efficient algorithm to accomplish this task is the `Iterative Reweighted Least Squares (IRLS)` algorithm.
 
-
-**2** 首先考虑二分类问题。为了对后验概率直接建模，将sigmoid函数中的对数几率直接表示为样本 $\mathbf x$ 的特征 $\boldsymbol\phi$ 的线性函数，从而
+**2** First, consider the binary classification problem. To directly model the posterior probabilities, we represent the log odds in the sigmoid function as a linear function of the features $\boldsymbol\phi$ of the sample $\mathbf x$ , such that
 
 $$
 p(\mathcal C_1|\boldsymbol\phi)=y(\boldsymbol\phi)=\sigma(\mathbf w^\text T\boldsymbol\phi),
 $$
-显然这里 $\boldsymbol\phi$ 是增广后的形式。此模型即logistic回归模型。这种概率判别模型相比较生成模型，一个明显的优点是待调参数少（得多）。
-现在将训练数据记为 $\{\boldsymbol\phi_n,t_n\}$ ，其中 $t_n\in\{0,1\}$ ；使用似然概率的最大化调节判别模型的参数，从而似然概率为
+
+Clearly, here $\boldsymbol\phi$ is the augmented form.
+This model is known as the logistic regression model.
+A significant advantage of this probabilistic discriminative model compared to generative models is that it has far fewer parameters to tune.
+Now, let the training data be denoted as $\{\boldsymbol\phi_n, t_n\}$ , where $t_n \in \{0, 1\}$ ; the likelihood is maximized to adjust the parameters of the discriminative model, leading to the likelihood being expressed as
 
 $$
 p(\mathbf t|\mathbf w;\mathbf\Phi)=\prod y_n^{t_n}(1-y_n)^{1-t_n},
 $$
-将误差函数记为似然概率对数的相反数（实际上这也是样本数据集的交叉熵），
+
+Let the error function be defined as the negative log of the likelihood probability (which is essentially the cross-entropy of the sample dataset).
 
 $$
 E(\mathbf w)=-\sum\left(t_n\ln y_n+(1-t_n)\ln(1-y_n)\right),
 $$
-从而关于 $\mathbf w$ 的导数为
+Thus, the derivative with respect to $\mathbf w$ is given by:
 
 $$
 \begin{aligned}
@@ -490,19 +600,24 @@ $$
 \sum(y_n-t_n)\boldsymbol\phi_n.
 \end{aligned}
 $$
-值得注意的是，若无其他限制条件，若源数据在特征空间线性可分，那么 $\mathbf w\rightarrow \infty$ ，这是因为， $\mathbf w$ 总可以在已经正确分类所有样本时增大数值以产生更高的似然概率。似然模型会更易受到过拟合的影响。我们可以增加正则项或提供关于 $\mathbf w$ 的先验信息，从而最大化 $\mathbf w$ 的后验概率来避免这种情形。
+It is worth noting that, without any additional constraints, if the source data is linearly separable in the feature space, then $\mathbf w \rightarrow \infty$ . This is because $\mathbf w$ can always be increased in value after correctly classifying all samples to achieve a higher likelihood probability.
+Likelihood models are more susceptible to overfitting.
+We can mitigate this situation by adding a regularization term or providing prior information about $\mathbf w$ to maximize the posterior probability of $\mathbf w$ .
 
-**3** 在logistic回归中，误差函数是关于 $\mathbf w$ 的凸函数，尽管由于 $\sigma(\cdot)$ 函数的存在，无法给出封闭解。但可通过牛顿迭代法(Newton-Raphson method)求解。权值更新规则如下
+**3** In logistic regression, the error function is a convex function of $\mathbf w$ . Although a closed-form solution cannot be provided due to the presence of the $\sigma(\cdot)$ function, it can be solved using the Newton-Raphson method.
+The weight update rule is as follows:
 
 $$
 \mathbf w\leftarrow\mathbf w-\left(\frac{\partial^2 E}{\partial \mathbf w\partial\mathbf w^\text T}\right)^{-1}\frac{\partial E}{\partial\mathbf w}.
 $$
-由于
+
+Because of
 
 $$
 \frac{\partial E}{\partial\mathbf w}=\nabla E(\mathbf w)=\sum(y_n-t_n)\boldsymbol\phi_n=\mathbf\Phi^\text T(\mathbf y-\mathbf t),
 $$
-且
+
+and
 
 $$
 \begin{aligned}
@@ -510,12 +625,13 @@ $$
 \mathbf\Phi^\text T\frac{\partial\mathbf y}{\partial\mathbf w^\text T}=\mathbf\Phi^\text T\mathbf R\mathbf\Phi,
 \end{aligned}
 $$
- 其中
+
+where
  
 $$
 \mathbf R=\text{diag}(y_1(1-y_1),...,y_i(1-y_i),...).
 $$
-从而牛顿迭代规则为
+Thus, the Newton iteration rule is as follows:
 
 $$
 \begin{aligned}
@@ -525,34 +641,38 @@ $$
 \end{aligned}
 $$
 
-**4** 将概率判别模型推广至多分类问题，使用多分类logisitc回归。后验概率形式为softmax函数，于是
+**4** To extend the probabilistic discriminative model to multi-class problems, we use multi-class logistic regression. The posterior probability takes the form of the softmax function, thus:
 
 $$
 p(\mathcal C_k|\boldsymbol\phi)=y_k(\boldsymbol\phi)=\frac{\exp(a_k)}{\sum\exp(a_j)},
 $$
-其中
+
+where
 
 $$
 a_k=\mathbf w_k^\text T\boldsymbol\phi.
 $$
-仍然使用最大似然概率的方法求参，目标向量使用1-K编码表示，从而似然概率
+We still use the maximum likelihood estimation method to estimate parameters, and the target vector is represented using 1-K encoding, resulting in the likelihood probability:
 
 $$
 p(\mathbf T|\mathbf W,\mathbf\Phi)=\prod_n\prod_k y_{nk}^{t_{nk}}(\mathbf\phi),
 $$
-从而交叉熵误差函数写为对数似然概率的相反数
+Thus, the cross-entropy loss function can be expressed as the negative of the log-likelihood probability.
 
 $$
 E(\mathbf W)=-\sum_n\sum_k t_{nk}\ln y_{nk}(\boldsymbol\phi).
 $$
 
-**5** 考虑一般性的概率判别下的广义线性模型，在二分类问题上
+**5** Consider the generalized linear model under general probabilistic discrimination for the binary classification problem.
 
 $$
 p(t=1|a)=f(a),
 $$
-其中 $a=\mathbf w^\text T\boldsymbol\phi$ ，且 $f(\cdot)$ 是激活函数。
-在判别样本所属类别时，对于特征 $\mathbf\phi$ ，如果 $a=\mathbf w^\text T\boldsymbol\phi\geq \theta$ ，将 $\boldsymbol\phi$ 归类为类别 $t=1$ ；否则归类为 $t=0$ 。除了将 $\theta$ 固定为某一常数外，我们还可以将其视为某个随机变量，例如我们假设 $\theta\sim \mathcal N(0,1)$ ，从而
+
+where $a = \mathbf{w}^\text{T} \boldsymbol{\phi}$ , and $f(\cdot)$ is the activation function. 
+
+When classifying the category of a sample, for the feature $\boldsymbol{\phi}$ , if $a = \mathbf{w}^\text{T} \boldsymbol{\phi} \geq \theta$ , we classify $\boldsymbol{\phi}$ as category $t = 1$ ; otherwise, we classify it as $t = 0$ . In addition to fixing $\theta$ as a constant, we can also treat it as a random variable.
+For example, we assume $\theta \sim \mathcal{N}(0,1)$ , so that
 
 $$
 \begin{aligned}
@@ -561,50 +681,57 @@ f(a)=&p(t=1|a)\\=&
 \Phi(a),
 \end{aligned}
 $$
-这就引出了所谓的新的激活函数，probit函数 $\Phi(\cdot)$ ，即标准正态分布的分布函数。与sigmoid作为激活函数相比，probit函数更易受离群值影响。
+This leads to the introduction of the so-called new activation function, the probit function $\Phi(\cdot)$ , which is the distribution function of the standard normal distribution.
+Compared to the sigmoid function as an activation function, the probit function is more sensitive to outliers.
 
-**6** 现在对上面讨论的概率判别模型作以总结归纳，给出一般性的结论。这里需要给出两个假设，其一是假设样本目标变量（而不是概率生成模型中样本本身的分布）服从指数族分布；此外假设激活函数为规范链接函数(canonical link function)的形式。将样本目标变量分布写成如下形式
+**6** Now, let’s summarize and generalize the probability discriminative model discussed above, providing general conclusions.
+Here, we need to make two assumptions: one is that the sample target variables (rather than the distribution of the samples themselves in the probability generative model) follow an exponential family distribution; additionally, we assume that the activation function takes the form of a canonical link function.
+The distribution of the sample target variables can be expressed as follows:
 
 $$
 p(t|\eta,s)=\frac{1}{s}h\left(\frac{t}{s}\right)g(\eta)\exp\frac{\eta t}{s},
 $$
-考虑到概率分布的约束条件
+Considering the constraints of the probability distribution.
 
 $$
 \int p(t|\eta,s)\text{ d}t=1\longleftrightarrow g(\eta)\int h\left(\frac{t}{s}\right)\exp\frac{\eta t}{s}\text{ d}t=s,
 $$
-对 $\eta$ 求导，有
+
+Taking derivative of $\eta$ gives
 
 $$
 g^\prime(\eta)\int h\left(\frac{t}{s}\right)\exp\frac{\eta t}{s}\text{ d}t+g(\eta)\int h\left(\frac t s\right)\frac{t}{s}\exp\frac{\eta t}{s}\text{ d}t=0,
 $$
-考虑到
+
+Considering that
 
 $$
 \mathbb E[t|\eta,s]=\int p(t|\eta,s)t\text{ d}t,
 $$
-带入上式，得
+Substituting back, we have
 
 $$
 \mathbb E[t|\eta,s]=-\frac{g^\prime(\eta)}{g(\eta)}s=-s\frac{\text{d}}{\text d\eta}\ln g(\eta).
 $$
-将样本目标值期望记为 $y$ ，从而
+
+Let the expected value of the sample target be denoted as $y$ , thus
 
 $$
 y\equiv -s\frac{\text d\ln g(\eta)}{\text d\eta}=\psi^{-1}(\eta).
 $$
-广义线性模型输出
+
+Generalized liner model outputs
 
 $$
 y=f(\mathbf w^\text T\boldsymbol\phi),
 $$
-其中 $f(\cdot)$ 是激活函数（机器学习）， $f^{-1}(\cdot)$ 是链接函数（统计学）。
-对数似然概率为（作为 $\eta$ 的函数，注意对于每个特征 $\boldsymbol\phi_n$ ， $\eta_n$ 是 $\boldsymbol\phi_n$ 的函数）
+where $f(\cdot)$ is the activation function (in machine learning) and $f^{-1}(\cdot)$ is the link function (in statistics).
+The log-likelihood probability is given by (as a function of $\eta$ ; note that for each feature $\boldsymbol{\phi}_n$ , $\eta_n$ is a function of $\boldsymbol{\phi}_n$ ):
 
 $$
 \ln p(\mathbf t|\eta, s)=\text C+\sum \ln g(\eta_n)+\frac{\eta_n t_n}{s},
 $$
-从而
+So that
 
 $$
 \begin{aligned}
@@ -612,51 +739,55 @@ $$
 \sum\left(\frac{t_n-y_n}{s}\right)\psi^\prime(y_n)f^\prime(\mathbf w^\text T\boldsymbol\phi_n)\boldsymbol\phi_n,
 \end{aligned}
 $$
-对于一般性的链接函数 $\psi(y)$ ，如果我们调整 $g(\cdot)$ 使得
+For a general link function $\psi(y)$ , if we adjust $g(\cdot)$ such that
 
 $$
 f^{-1}(y)\equiv \psi(y),
 $$
-那么 $f(\psi)=y$ ，从而 $f^\prime(\psi)\psi^\prime(y)=1$ ，再由于 $f(\mathbf w^\text T\boldsymbol\phi)=y$ ，于是 $\mathbf w^\text T\boldsymbol\phi=f^{-1}(y)=\psi(y)$ ，于是
+
+We have $f(\psi)=y$ , so that $f^\prime(\psi)\psi^\prime(y)=1$ .
+Additionally, because of $f(\mathbf w^\text T\boldsymbol\phi)=y$ , so we have $\mathbf w^\text T\boldsymbol\phi=f^{-1}(y)=\psi(y)$, eventually we have
 
 $$
 \psi^\prime(y_n)f^\prime(\mathbf w^\text T\boldsymbol\phi_n)=1,
 $$
-带入对数似然概率对 $\mathbf w$ 的梯度，有
+
+Substituting into the gradient of the log-likelihood probability with respect to $\mathbf w$ , we have
 
 $$
 \frac{\partial\ln p}{\partial\mathbf w}=\frac 1 s\sum(t_n-y_n)\mathbf\phi_n.
 $$
-从而误差函数的梯度满足：每个样本对其贡献是特征向量拉伸某个倍数，这个倍数即目标值与当前模型输出值之差。
+Thus, the gradient of the error function satisfies: the contribution of each sample is the feature vector stretched by a certain multiple, which is the difference between the target value and the current model output value.
 
 
-4 拉普拉斯逼近
----
----
+## Laplace Approximation
 
-**1** 由于高斯函数的良性质，在某些时候我们希望对一般性质的函数作高斯近似，此过程也称拉普拉斯逼近（近似）。在单变量情形下，考虑在原函数的极大值点进行二阶泰勒展开得到近似的高斯函数。具体地，记需近似的概率密度函数为 $p(z)$
+**1** Due to the favorable properties of the Gaussian function, there are times when we wish to approximate a general function with a Gaussian, a process also known as Laplace approximation.
+In the univariate case, we consider a second-order Taylor expansion around the maximum point of the original function to obtain the approximate Gaussian function.
+Specifically, let the probability density function to be approximated be $p(z)$ .
 
 $$
 p(z)=\frac{1}{Z}f(z),
 $$
-这里 $Z$ 是独立于 $z$ 的规范化系数。假设 $z_0$ 是函数的极大值点(mode)，从而 $\ln f(z)$ 在 $z_0$ 处的二阶泰勒展开
+Here, $Z$ is a normalization constant that is independent of $z$ . Let $z_0$ be the mode (maximum point) of the function, thus the second-order Taylor expansion of $\ln f(z)$ around $z_0$ is given by:
 
 $$
 \ln f(z)\simeq \ln f(z_0)+\frac{1}{2}\left(\ln f(z_0)\right)^{\prime\prime}(z-z_0)^2,
 $$
-记 $A=-\left(\ln f(z_0)\right)^{\prime\prime}$，从而
+
+Denote $A=-\left(\ln f(z_0)\right)^{\prime\prime}$, we have
 
 $$
 f(z)\simeq f(z_0)\exp{\left(-\frac{A}{2}(z-z_0)^2\right)},
 $$
-此时 $f(\cdot)$ 具备了高斯函数的形式，考虑将其规范化得到 $p(\cdot)$ 的近似 $q(\cdot)$ ，
+
+At this point, $f(\cdot)$ has the form of a Gaussian function.
+Considering its normalization, we obtain the approximation $q(\cdot)$ for $p(\cdot)$ :
 
 $$
 q(z)=\sqrt{\frac{A}{2\pi}}\exp\left(-\frac A 2(z-z_0)^2\right)^2.
 $$
-这里对于 $z_0$ 的选取有两个要求，其一是作为 $\ln f(\cdot)$ 驻点，从而展开式消去一次项；其二是二阶导为负，从而使得 $A>0$。
+Here, there are two requirements for the selection of $z_0$ : first, it must be a critical point of $\ln f(\cdot)$ so that the expansion eliminates the linear term; second, the second derivative must be negative to ensure that $A > 0$ .
 
 
-5 贝叶斯逻辑斯蒂回归
----
----
+## Bayesian Logistic Regression

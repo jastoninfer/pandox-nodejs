@@ -1,57 +1,54 @@
 KEYWORDS[[Machine Learning][PRML]]KEYWORDS
-概率分布
-===
----
 
-1 二元变量
----
----
+# Probability Distributions
 
-**1** 伯努利(Bernoulli)分布的形式如下
+## Binary Variables
+
+**1** The form of the `Bernoulli distribution` is as follows:
 
 $$
 \text{Bern}(x|\mu)=\mu^x(1-\mu)^{1-x}.
 $$
-> 实际上伯努利分布没有自己的记号，考虑其作为二项分布的一个特例，可以用 $B(1,\mu)$ 作为伯努利实验结果的表示。即若 $X\sim B(1,\mu)$ ，则
+> In fact, the Bernoulli distribution does not have its own notation. Considering it as a special case of the binomial distribution, it can be represented as $B(1,\mu)$ to denote the result of a Bernoulli trial. That is, if $X\sim B(1,\mu)$ , then
 >
 > $$
 > P\left(X=x\right)=\text{Bern}(x|\mu).
 > $$
 
-容易得出，其均值与方差分别为
+It is easy to derive that its mean and variance are, respectively
 
 $$
 \begin{aligned}
 \mathbb E[x]&=\mu\\\text{var}[x]&=\mu(1-\mu).
 \end{aligned}
 $$
-假定我们有 $N$ 个独立观察到的样本构成的数据集 $\mathcal{D}=\left\{x_1,...,x_N\right\}$ ，则似然函数为
+Assuming we have a dataset $\mathcal{D}=\left\{x_1,...,x_N\right\}$ consisting of $N$ independently observed samples, the likelihood function is
 
 $$
 p(\mathcal D|\mu)=\prod_{n=1}^Np(x_n|\mu)=\prod_{n=1}^N\mu^{x_n}(1-\mu)^{1-x_n},
 $$
-似然对数为
+The log likelihood is
 
 $$
 \ln p(\mathcal D|\mu)=\sum_{n=1}^N\ln p(x_n|\mu)=\sum_{n=1}^N\left\{x_n\ln\mu+(1-x_n)\ln(1-\mu)\right\},
 $$
-关于 $\mu$ 的梯度为零，求得最大似然估计为
+Setting the gradient with respect to $\mu$ to zero, the maximum likelihood estimate is
 
 $$
 \mu_\text{ML}=\frac{1}{N}\sum_{n=1}^Nx_n.
 $$
-二项分布形式如下
+The form of the binomial distribution is as follows
 
 $$
 \text{Bin}(m|N,\mu)=\left(\begin{matrix}N\\m\end{matrix}\right)\mu^m(1-\mu)^{N-m}.
 $$
-> 假设 $X\sim B(N,\mu)$ ，则
+> Suppose $X\sim B(N,\mu)$ , then
 > 
 > $$
 > P(X=m)=\text{Bin}(m|N,\mu).
 > $$
 
-其均值和方差分别由下式给出
+Its mean and variance are given by the following equations
 
 $$
 \begin{aligned}
@@ -60,17 +57,18 @@ $$
 \end{aligned}
 $$
 
-**2** 注意到通过 $N$ 次独立伯努利实验对参数 $\mu$ 进行估计时，似然函数为 $\mu$ 和 $1-\mu$ 指数之积，由此引入如下beta先验分布
+**2** Note that when estimating the parameter $\mu$ through $N$ independent Bernoulli trials, the likelihood function is the product of the exponents of $\mu$ and $1 - \mu$ .
+This leads to the introduction of the following beta prior distribution
 
 $$
 \text{Beta}(\mu|a,b)=\frac{\Gamma(a+b)}{\Gamma(a)\Gamma(b)}\mu^{a-1}(1-\mu)^{b-1},\text{ }\text{ }0\leq\mu\leq1.
 $$
-其中 $\Gamma(a+b)/\Gamma(a)\Gamma(b)$ 是归一化常数， $\Gamma(\cdot)$ 形式如下
+Where $\Gamma(a+b)/\Gamma(a)\Gamma(b)$ is the normalization constant, and $\Gamma(\cdot)$ is in the following form
 
 $$
 \Gamma(x)\equiv \int_0^\infty u^{x-1}e^{-u}\text{ d}u.
 $$
-该分布的均值和方差分别为
+Its mean and variance are given by the following equations
 
 $$
 \begin{aligned}
@@ -78,132 +76,139 @@ $$
 \text{var}[\mu]&= \frac{ab}{(a+b)^2(a+b+1)}.
 \end{aligned}
 $$
-由于后验分布正比于先验分布于似然分布之积（倍数为与随机变量无关的某常数），因此在对二项分布进行参数估计时，后验分布满足
+Since the posterior distribution is proportional to the product of the prior distribution and the likelihood (with a constant factor independent of the random variable), the posterior distribution for estimating the parameters of a binomial distribution satisfies
 
 $$
 p(\mu|m,l,a,b)\propto\mu^{m+a-1}(1-\mu)^{l+b-1},
 $$
-其中 $l$ 满足
+where $l$ satisfies
 
 $$
 m+l=N.
 $$
-通过简单对比，容易给出后验分布的完整表示
+By simple comparison, it is easy to provide the complete representation of the posterior distribution.
 
 $$
 p(\mu|m,l,a,b)=\frac{\Gamma(N+a+b)}{\Gamma(m+a)(l+b)}\mu^{m+a-1}(1-\mu)^{l+b-1}.
 $$
->当数据规模趋于无穷时，贝叶斯估计和最大似然估计相同。
+>When the data scale approaches infinity, Bayesian estimation and maximum likelihood estimation are the same.
 
 
-2 多元变量
----
----
-**1** 考虑伯努利分布的 $K$ 维扩展，使用 $\mathbf{x}=\{x_1,...,x_K\}$ 表示状态随机变量，满足
+## Multivariable
+
+**1** Consider the $K$ -dimensional extension of the Bernoulli distribution, using $\mathbf{x}=\{x_1,...,x_K\}$ to represent the state random variables, satisfying
 
 $$
 \begin{aligned}x_k\in\{0,1\},\\
 \sum_{k=1}^K x_k=1.
 \end{aligned}
 $$
-若以下概率条件成立
+If the following probability condition holds
 
 $$
 P(x_k=1)=\mu_k,
 $$
-则随机变量的分布为
+The distribution of the random variable is given by
 
 $$
 p(\mathbf{x}|\boldsymbol{\mu})=\prod_{k=1}^K\mu_k^{x_k},
 $$
-其中 $\boldsymbol\mu=(\mu_1,...,\mu_K)^\text T$ ，约束条件为 $\mu_k\geq 0$ 且 $\sum_k\mu_k=1$ 。
-现在假定我们有 $N$ 个独立观察到的样本构成的数据集 $\mathcal D=\{\mathbf{x}_1,...,\mathbf x_K\}$ ，则似然函数为
+where $\boldsymbol\mu=(\mu_1,...,\mu_K)^\text T$ , with the constraints $\mu_k\geq 0$ and $\sum_k\mu_k=1$ .
+Now, suppose we have a dataset $\mathcal D=\{\mathbf{x}_1,...,\mathbf x_K\}$ consisting of $N$ independently observed samples; the likelihood function is given by
 
 $$
 p(\mathcal D|\boldsymbol\mu)=\prod_{n=1}^N\prod_{k=1}^K\mu_k^{x_{nk}}=\prod_{k=1}^K\mu_k^{\sum_nx_{nk}}=\prod_{k=1}^K \mu_k^{m_k},
 $$
-对数似然函数为
+The log-likelihood function is given by
 
 $$
 \ln p(\mathcal D|\boldsymbol\mu)=\sum_{k=1}^K m_k\ln\mu_k,
 $$
-考虑到约束条件
+Taking into account the constraints
 
 $$
 \sum_{k=1}^K\mu_k=1,
 $$
-利用拉格朗日乘子法可求得最大似然解
+The maximum likelihood solution can be obtained using the Lagrange multiplier method?
 
 $$
 \mu_k^{\text{ML}}=\frac{m_k}{N}.
 $$
-给定参数 $\boldsymbol\mu$ ，在 $N$ 次独立观测中 $m_1,...,m_K$ 的联合分布即多项分布（二项分布的扩展）
+Given the parameter $\boldsymbol\mu$, the joint distribution of $m_1,...,m_K$ in $N$ independent observations is the multinomial distribution (an extension of the binomial distribution).
 
 $$
 \text{Mult}(m_1,m_2,...,m_K|\boldsymbol\mu,N)=\left(\begin{matrix}
 N\\m_1m_2...m_K\end{matrix}\right)\prod_{k=1}^K\mu_k^{m_k},
 $$
-其中
+where
 
 $$
 \left(\begin{matrix}
 N\\m_1m_2...m_K\end{matrix}\right)=\frac{N!}{m_1!m_2!...m_K!},
 $$
-同时有约束条件
+At the same time, there are constraints:
 
 $$
 \sum_{k=1}^K m_k=N.
 $$
 
-**2** 通过比较，多项分布的共轭先验应该具有如下形式
+**2** By comparison, the conjugate prior for the multinomial distribution should have the following form:
 
 $$
 p(\boldsymbol\mu|\boldsymbol\alpha)\propto\prod_{k=1}^K \mu_k^{\alpha_k-1},
 $$
-其中 $0\leq\mu_k\leq 1$ 且 $\sum_k\mu_k=1$ ， $\boldsymbol\alpha=(\alpha_1,...,\alpha_K)^\text T$ 。归一化后的狄利克雷分布为
+where $0\leq\mu_k\leq 1$ and $\sum_k\mu_k=1$ , $\boldsymbol\alpha=(\alpha_1,...,\alpha_K)^\text T$ . 归一化后的狄利克雷分布为
 
 $$
 \text{Dir}(\boldsymbol\mu|\boldsymbol\alpha)=\frac{\Gamma(\alpha_0)}{\Gamma(\alpha_1)\cdots\Gamma(\alpha_K)}\prod_{k=1}^K\mu_k^{\alpha_k-1},
 $$
-其中
+where
 
 $$
 \alpha_0=\sum_{k=1}^K\alpha_k.
 $$
 
 
-3 高斯分布
----
----
-4 指数族分布
----
----
-5 非参数化方法
----
----
-**1** 参数化方法的运行结果依赖于模型的选择（多大程度上正确描述了真实数据的分布情况），相较而言，非参数化方法所作的假设要少得多。非参数化方法也分为基于频率和贝叶斯两类，这里主要讨论前者。考虑最简单的使用直方图进行密度估计，假设随机变量 $x$ 为一维连续变量，将 $x$ 的取值区间切分为若干宽度为 $\Delta_i$ 的小块，落到第 $i$ 块内的观测样本数为 $n_i$ ，总样本数为 $N$ ，从而给出对该块概率密度 $p_i$ 的估计为
+## Gaussian Distribution
+
+## Exponential Family Distribution
+
+## Nonparametric Methods
+
+**1** The results of parametric methods depend on the choice of model (to what extent it correctly describes the distribution of the true data), whereas nonparametric methods make significantly fewer assumptions. Nonparametric methods are also divided into two categories: frequency-based and Bayesian, with a focus here on the former. Consider the simplest case of density estimation using a histogram.
+
+Suppose the random variable $x$ is a one-dimensional continuous variable, and the range of $x$ is divided into several small intervals of width $\Delta_i$ .
+The number of observed samples falling into the $i$ -th interval is $n_i$ , and the total number of samples is $N$ , thus providing an estimate of the probability density $p_i$ for that interval as
 
 $$
 p_i=\frac{n_i}{N\Delta_i},
 $$
-显然这种估计方法给出的密度估计呈阶梯状，当选取的块宽 $\Delta_i$ 较小时，由绘制出的频数直方图可见，此时的密度估计对样本（尤其是其随机性）较为敏感，
->我们说密度估计对样本随机性敏感是指这种估计过分还原了样本作为真实分布反映的特性从而损失了其对原本分布共性的复原。在极端情形下，当块宽极小时，密度估计和样本可以近似等价（相互无损失转换）。
+Clearly, this estimation method yields a stepwise density estimate. When the chosen interval width $\Delta_i$ is small, the frequency histogram drawn shows that the density estimate is quite sensitive to the samples (especially their randomness).
 
-其平滑性较差，而当块宽 $\Delta_i$ 较大时，此时的密度估计容易丢失重要的分布特征，如下图所示（第一行）。实际上适当的 $\Delta_i$ 的选取才能给出对原始分布的最佳估计，这与所谓模型复杂度或控制模型复杂度的正则化参数的选取殊途同归。
+> We say that density estimation is sensitive to the randomness of the samples when this estimation overly reduces the characteristics that the samples reflect as the true distribution, thereby losing the recovery of the commonalities of the original distribution. In extreme cases, when the interval width is very small, the density estimation and the samples can be approximately equivalent (with no loss in conversion between the two).
+
+Its smoothness is poor, and when the interval width $\Delta_i$ is large, the density estimation is likely to lose important distribution features, as shown in the figure below (first row).
+In fact, the appropriate selection of $\Delta_i$ can provide the best estimate of the original distribution, which aligns with the selection of model complexity or regularization parameters that control model complexity.
+
 ![o_Many_Points_Example](https://www.pandox.xyz/api/db/images/pandoxone/o_Many_Points_Example.jpg "30")
-直方图估计的缺点主要是密度估计不连续以及维数受限的问题。在 $D$ 维空间中，每一维使用 $M$ 个小块，总需 $M^D$ 个小块，随着 $D$ 的增大，该数量呈指数式上升。此外所需的训练数据规模也以该速度增加。为了解决维数扩展的问题，以下介绍两种非参数化密度估计方法，分别是**核估计**和**最近邻**。
 
-**2** 受直方图估计的启发，密度估计应该在待估计点的附近(locality)进行。假设观测数据由某个定义在 $D$ 维空间的密度函数 $p(\mathbf{x})$ 给出，考虑包含 $\mathbf{x}$ 的一个小区域 $\mathcal{R}$ ，其概率为
+The main drawbacks of histogram estimation are the discontinuity of the density estimate and the limitations imposed by dimensionality. In a $D$ -dimensional space, using $M$ intervals for each dimension requires a total of $M^D$ intervals, which increases exponentially as $D$ increases.
+Furthermore, the amount of training data required also grows at this rate.
+To address the issue of dimensionality expansion, two nonparametric density estimation methods are introduced: **kernel estimation** and **nearest neighbors**.
+
+**2** Inspired by histogram estimation, density estimation should be conducted in the vicinity (locality) of the point to be estimated.
+Suppose the observed data is given by a density function $p(\mathbf{x})$ defined in $D$ -dimensional space.
+Consider a small region $\mathcal{R}$ that contains $\mathbf{x}$ , with its probability given by
 
 $$
 P=\int_\mathcal{R}{p(\mathbf{x})}{\rm{d}}\mathbf{x},
 $$
-假设观测数据规模（包含的观测点数目）为 $N$ ，落在区域 $\mathcal{R}$ 内的数目为 $K$ ，从而 $K$ 作为随机变量，其分布满足
+Assuming the size of the observed data (the number of observation points) is $N$ , and the number of points falling within the region $\mathcal{R}$ is $K$ , then $K$ as a random variable follows the distribution given by
 
 $$
 P\{B(N,P)=K\}=\binom{N}{K}P^K(1-P)^{N-K},
 $$
-由于 $\mathbb{E}[K/N]=\mathbb{E}[K]/N=P$ ，且 $\text{var}[K/N]=\text{var}[K]/N^2=P(1-P)/N$ ，从而当 $N$ 充分大时，满足
+Since $\mathbb{E}[K/N]=\mathbb{E}[K]/N=P$ , and $\text{var}[K/N]=\text{var}[K]/N^2=P(1-P)/N$ , it follows that when $N$ is sufficiently large, it satisfies
 
 $$
 K\simeq NP,
@@ -217,53 +222,67 @@ $$
 > \lim_{N\rightarrow \infty}\text{var}\left[\frac{K-NP}{NP}\right]=\lim_{N\rightarrow \infty}\frac{1-P}{NP}=0.
 > $$
 
-假设 $\mathcal{R}$ 足够小，从而概率密度近似为某定值，满足
+Assuming that $\mathcal{R}$ is sufficiently small, the probability density can be approximated as a constant value, satisfying
 
 $$
 P\simeq p(\mathbf{x})V,
 $$
-从而对 $p(\mathbf{x})$ 的估计为
+Thus, the estimate for $p(\mathbf{x})$ is given by
 
 $$
 p(\mathbf{x})=\frac{K}{NV},
 $$
-值得注意的是，为了给出对概率密度“足够好”的估计，我们使用了两条不一致的假设。一方面， $\mathcal{R}$ 应该充分小，从而区域密度恒定；另一方面， $\mathcal{R}$ 也应该足够大从而保证落入该区域的观测点数目足够接近 $NVp(\mathbf{x})$ 。
->当 $N$ 充分大时， $K/V$ 充分大（ $K$ 增 $V$ 减）， $p(\mathbf{x})$ 将收敛于真实密度。
 
-核方法固定 $V$ 调整 $K$ ，而最近邻固定 $K$ ，调整 $V$ 。
+It is worth noting that to provide a "sufficiently good" estimate of the probability density, we have used two inconsistent assumptions.
+On one hand, $\mathcal{R}$ should be sufficiently small so that the density in the region is constant; on the other hand, $\mathcal{R}$ should also be large enough to ensure that the number of observation points falling into that region is close to $NVp(\mathbf{x})$ .  
 
-**3** 核函数法固定体积统计频数。区域 $\mathcal{R}$ 是以 $D$ 维空间中的点 $\mathbf{x}$ 为中心的超立方体，其边长为 $h$ ,定于如下核函数（此处亦称Parzen窗）
+> When $N$ is sufficiently large, $K/V$ becomes sufficiently large ( $K$ increases while $V$ decreases), and $p(\mathbf{x})$ will converge to the true density.
+
+The kernel method fixes $V$ while adjusting $K$ , whereas the nearest neighbors fix $K$ while adjusting $V$ .
+
+**3** The kernel function method fixes the volume and counts the statistics.
+The region $\mathcal{R}$ is a hypercube centered at the point $\mathbf{x}$ in $D$ -dimensional space, with side length $h$ , defined by the following kernel function (also known as the Parzen window).
 
 $$
 k(\mathbf{u})=\left\{\begin{aligned}1,\text{ }\text{ }\text{ }&|u_i|\leq \frac{1}{2},\text{ }\text{ }\text{ }\text{ }\text{ }\text{ }i=1,...,D,\\0,\text{ }\text{ }\text{ }&\text{其他},\end{aligned}\right.
 $$
-显然当且 $\mathbf{x_n}$ 落在 $\mathcal{R}$ 内（或边界上）时，核函数值 $k((\mathbf{x}-\mathbf{x_n})/h)$ 为 $1$ 。从而落在 $\mathcal{R}$ 内数据点总数 $K$ 满足
+
+Clearly, when $\mathbf{x_n}$ falls within (or on the boundary of) $\mathcal{R}$ , the value of the kernel function $k((\mathbf{x}-\mathbf{x_n})/h)$ is $1$ . Thus, the total number of data points falling within $\mathcal{R}$ , $K$ , satisfies
 
 $$
 K=\sum_{n=1}^Nk\left(\frac{\mathbf{x}-\mathbf{x}_n}{h}\right),
 $$
-从而对点 $\mathbf{x}$ 处的密度估计为
+Thus, the density estimate at the point $\mathbf{x}$ is given by
 
 $$
 \begin{aligned}p(\mathbf{x})&=\frac{K}{NV}\\&=\frac{1}{N}\sum_{n=1}^{N}{\frac{1}{h^D}k\left(\frac{\mathbf{x}-\mathbf{x}_n}{h}\right)},\end{aligned}
 $$
-与直方图估计法一样，该核函数的选取意味着超立方体边界处密度估计值不连续，为此可以选取平滑的核函数，如高斯核:
+Similar to the histogram estimation method, the choice of the kernel function implies that the density estimate values at the boundaries of the hypercube are discontinuous.
+To address this, a smooth kernel function can be selected, such as the Gaussian kernel:
 
 $$
 k(\mathbf{u})=\exp\left\{-\frac{\Vert\mathbf{x}-\mathbf{x}_n\Vert^2}{2h^2}\right\},
 $$
-从而核密度估计模型为
+Thus, the kernel density estimation model is given by
 
 $$
 p(\mathbf{x})=\frac{1}{N}\sum_{n=1}^N{\frac{1}{\sqrt{2\pi}h}\exp\left\{-\frac{\Vert\mathbf{x}-\mathbf{x}_n\Vert^2}{2h^2}\right\}}.
 $$
-很显然，该模型是以 $N$ 个数据点为中心的 $D$ 维高斯模型的混合，常系数 $1/{N\sqrt{2\pi}h}$ 使得该密度模型正确规范化。
-推而广之，核密度估计或Parzen估计模型只需选取的核函数满足如下两个条件
+
+It is evident that this model is a mixture of $D$ -dimensional Gaussian models centered on $N$ data points, with the constant coefficient $1/{N\sqrt{2\pi}h}$ ensuring that the density model is correctly normalized.  
+More generally, the kernel density estimation or Parzen estimation model requires the chosen kernel function to satisfy the following two conditions:
+
 > 
 > $$
 > \begin{aligned}k(\mathbf{u})&\geq 0,\\\int k(\mathbf{u})&=1.\end{aligned}
 > $$
 
-该估计方法在训练阶段计算代价为 $0$ ，在测试阶段计算代价为 $O(N)$ 。
+The computational cost of this estimation method during the training phase is $0$ , while the cost during the testing phase is $O(N)$ .
 
-**4** 核估计的一个缺点是参数 $h$ 的选取（决定平滑程度/模型复杂度）是全局的，而实际上我们希望 $h$ 可以自适应地根据数据点位置进行调整。 $K$ 近邻方法是固定 $K$ 调整 $V$ 进行密度估计的方法：选取以 $\mathbf{x}$ 为中心恰好能包含 $K$ 个数据点的球体，其体积记为 $V$ ，从而该出的密度估计值为 $p(\mathbf{x})=K/VN$ 。这里控制模型复杂度的参数为 $K$ 。利用贝叶斯公式可将该模型用于分类问题，误分率最低的决策是将 $\mathbf{x}$ 赋给球内出现频数最高的类别。特别地，当 $K=1$ 使，将 $\mathbf{x}$ 赋给距离其最近的数据点所属类别，当 $N$ 趋于无穷大时，其误分率不会超过最优决策（按真实类别分布计算）的两倍。
+**4** One drawback of kernel estimation is that the parameter $h$ (which determines the degree of smoothing/model complexity) is fixed globally, whereas we would prefer $h$ to adaptively adjust based on the positions of the data points.
+The $K$ nearest neighbors method is a density estimation approach that fixes $K$ and adjusts $V$ : it selects a sphere centered at $\mathbf{x}$ that contains exactly $K$ data points, with its volume denoted as $V$ .
+
+Thus, the resulting density estimate is given by $p(\mathbf{x})=K/VN$ .
+Here, the parameter controlling model complexity is $K$ .
+Using Bayes' theorem, this model can be applied to classification problems, where the decision with the lowest misclassification rate is to assign $\mathbf{x}$ to the category with the highest frequency within the sphere.
+Specifically, when $K=1$ , $\mathbf{x}$ is assigned to the category of the nearest data point, and as $N$ approaches infinity, its misclassification rate will not exceed twice that of the optimal decision (calculated based on the true class distribution).

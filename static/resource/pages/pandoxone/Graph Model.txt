@@ -1,260 +1,286 @@
 KEYWORDS[[Machine Learning][PRML]]KEYWORDS
-图模型
-===
 
-1 贝叶斯网络
----
----
-**1** 虽然可以通过代数运算表示、操作概率模型，但有时使用图来描述概率分布是十分方便并且有益的，这类模型也被称为概率图模型。
+## Bayesian Network
 
-**2** 贝叶斯网络也称有向图模型，其中结点表示一个或一组随机变量，有向边表示变量之间的概率关系。马尔科夫随机场则又称无向图模型，与贝叶斯网络不同，模型中的无向边表示随机变量的软约束关系而非因果关系。
+**1** Although probabilistic models can be represented and manipulated through algebraic operations, it is sometimes more convenient and beneficial to use graphs to describe probability distributions. Such models are also known as probabilistic graph models.
 
-**3** 假设贝叶斯网络中有 $K$ 个结点，则随机变量联合分布为
+**2** A Bayesian network, also called a directed graph model, represents random variables as nodes (which may represent one or more random variables) and directed edges to represent probabilistic relationships between variables. A Markov random field, or undirected graph model, differs from a Bayesian network in that undirected edges represent soft constraints between random variables rather than causal relationships.
+
+**3** Suppose a Bayesian network contains $K$ nodes, then the joint distribution of random variables is represented as
 
 $$
 p(\mathbf{x})=\prod_{k=1}^Kp(x_k|\text{pa}_k),
 $$
-其中 $\text{pa}_k$ 表示结点 $x_k$ 的父结点， $\mathbf{x}=\{x_1,...,x_K\}$ 。
 
-**4** 我们讨论的有向图一般是无环的，也即有向无环图(DAG)。特别地，通过重新安排结点编号，可使父结点的编号值始终小于子结点。
+where $\text{pa}_k$ denotes the parent node of $x_k$, $\mathbf{x}=\{x_1,...,x_K\}$ 。
 
-**5** 重新考虑多项式回归问题，其中随机变量包括多项式系数 $\mathbf{w}$ 以及观测数据 $\mathbf{t}$ ，
->观测数据应该是随机变量，因为我们假设观测值是有噪的，第一次的观测值和第二次未必相同，它服从某个概率分布，我们得到是观测值（样本）而不是分布本身。
+**4** The directed graphs we discuss are generally acyclic, meaning they are directed acyclic graphs (DAGs). Specifically, by rearranging the numbering of nodes, the value of a parent node's number can always be made smaller than that of its child node.
 
-此外模型还包括输入数据 $\mathbf{x}=\left(x_1,...,x_N\right)^\text{T}$ 以及噪声方差 $\sigma^2$ 、系数先验的精度 $\alpha$ 。随机变量（ $\mathbf{w}$ 和 $\mathbf{t}$ ）的联合分布为
+**5** Reconsider the polynomial regression problem, where the random variables include the polynomial coefficients $\mathbf{w}$ and the observed data $\mathbf{t}$,
+> The observed data should be treated as random variables because we assume that the observations are noisy. The first observation and the second may not be the same, as they follow a certain probability distribution. What we obtain are the observed values (samples), not the distribution itself.
+
+Additionally, the model includes input data $\mathbf{x} = \left(x_1, ..., x_N\right)^\text{T}$, noise variance $\sigma^2$, and the precision of the prior on the coefficients, $\alpha$. The joint distribution of the random variables ( $\mathbf{w}$ and $\mathbf{t}$ ) is then
 
 $$
 p(\mathbf{t,w})=p(\mathbf{w})\prod_{n=1}^Np(t_n|\mathbf{w}),
 $$
 
-其图表示如下
-![o_Untitled Diagram](https://www.pandox.xyz/api/db/images/pandoxone/o_Untitled%20Diagram%201.png "80")
-为了使表示更加紧凑，将 $N$ 个同类型的节点合并并增加一个方框。将除随机变量外的其余数据增加到图结构中，由于
+Illustrated as
 
+![o_Untitled Diagram](https://www.pandox.xyz/api/db/images/pandoxone/o_Untitled%20Diagram%201.png "80")
+
+To make the representation more compact, merge the $N$ nodes of the same type and enclose them in a single box. Add the remaining data, except for the random variables, into the graph structure. Since
 
 $$
 p(\mathbf{t,w}|\mathbf{x},\alpha,\sigma^2)=p(\mathbf{w}|\alpha)\prod_{n=1}^Np(t_n|\mathbf{w},x_n,\sigma^2),
 $$
-得到如下网络结构
+
+We have the following network structure
 <span id = "anchor1"></span>
 ![o_Untitled Diagram](https://www.pandox.xyz/api/db/images/pandoxone/o_Untitled%20Diagram%202.png "80")
-在图模型中，将随机变量分为两类，一类是**观测变量(observed)**,一类是**隐含变量(latent)**(又称隐藏变量)，在本例中， $\mathbf{t}$ 属于前者，而 $\mathbf{w}$ 属于后者,在图形表示中，将观测变量涂上阴影。
-在预测阶段，给定新的输入变量 $\hat{x}$ ，模型给出输出变量 $\hat{t}$ 的概率分布，满足
+
+In graph models, random variables are divided into two categories: `observed variables` and `latent variables` (also known as hidden variables).
+In this case, $\mathbf{t}$ belongs to the former, while $\mathbf{w}$ belongs to the latter. In the graph representation, observed variables are shaded.
+
+During the prediction phase, given a new input variable $\hat{x}$, the model provides the probability distribution of the output variable $\hat{t}$, satisfying
 
 $$
 p(\hat{t}|\hat{x},\mathbf{x,t},\alpha,\sigma^2)\propto \int p(\hat{t},\mathbf{t,w}|\hat{x},\mathbf{x},\alpha,\sigma^2) \rm  d\mathbf{w},
 $$
-其网络结构如下
+
+which has the following network structure
+
 ![o_Untitled Diagram](https://www.pandox.xyz/api/db/images/pandoxone/o_Untitled%20Diagram%203.png "80")
 
-**6** 考虑离散随机变量 $\mathbf{x}=\left(x_1,...,x_K\right)^\text{T}$ 有 $K$ 种不同状态 $\left(x_i\in\{0,1\},P(x_i=1)=\mu_i,\sum_{i}x_i=1\right)$ ，从而其概率分布为
+**6** Consider the discrete random variable $\mathbf{x} = \left(x_1, \dots, x_K\right)^\text{T}$, which has $K$ different states $\left(x_i \in \{0,1\}, P(x_i = 1) = \mu_i, \sum_{i} x_i = 1\right)$, and thus its probability distribution is
 
 $$
 p(\mathbf{x}|\boldsymbol{\mu})=\prod_{k=1}^K{\mu_k^{x_k}},
 $$
-这里有 $K-1$ 个自由参数。同时考虑 $M$ 个离散随机变量 $\mathbf{x}_1,...,\mathbf{x}_M$ ，其中每个随机变量具有 $K$ 种状态，则自由参数为 $K^M-1$ 个，这对应表示联合分布的有向图为全联通的情况(任意低编号结点和高编号结点之间存在一条有向边)。当有向图不存在边时，自由参数为 $M(K-1)$ 。
 
-**7** 有两种减少模型独立参数的方法，其一是参数( $\boldsymbol\mu$ )共享，此外可以使用参数化方法（而不是真值表）描述条件概率分布。假设所有结点具有两种状态 $1$ 或 $0$ ，结点 $y$ 的前驱结点为 $x_1,...,x_M$ ，从而若使用真值表确定概率分布的方法，计算
+There are $K-1$ degrees of freedom. Now consider $M$ discrete random variables $\mathbf{x}_1, \dots, \mathbf{x}_M$, where each random variable has $K$ states. The number of free parameters is $K^M - 1$, which corresponds to a fully connected directed graph (where there is a directed edge between any lower-indexed node and a higher-indexed node). When there are no edges in the directed graph, the number of free parameters is $M(K-1)$.
+
+**7** There are two ways to reduce the independent parameters in the model. One is parameter sharing ( $\boldsymbol\mu$ ), and another is to use a parameterized method (instead of a truth table) to describe the conditional probability distribution. Suppose all nodes have two states, $1$ or $0$, and the predecessor nodes of node $y$ are $x_1, \dots, x_M$. In this case, if the probability distribution is determined using a truth table, the calculation
 
 $$
 p(y=1|x_1,...,x_M)
 $$
-需要 $2^M$ 个自由参数，从而
+which requires $2^M$ free parameters, such that
 
 $$
 p(y=1|x_1,...,x_M)=\prod_{i=1}^{2^M}\mu_i^{[x_1,...,x_M]_i},
 $$
-而若引入参数 $\mathbf{w}=\left(w_0,w_1,...,w_M\right)^\text{T},$ 可使用下式
+
+If we introduce parameter $\mathbf{w}=\left(w_0,w_1,...,w_M\right)^\text{T},$ we can use the following equation
 
 $$
 p(y=1|x_1,...,x_M)=\sigma\left(\mathbf{w}^\text{T}\mathbf{x}\right)
 $$
-确定分布形式，这里只用到了 $M+1$ 个自由参数。
+to determine the distribution form，where only $M+1$ parameters are used。
 
-**8** 我们也可以使用有向无环图表示多元高斯分布，即所谓**线性高斯模型**，其应用包括**概率主成分分析(probabilistic PCA)**、**因子分析**、 **线性动态系统**等。在有向图中，结点服从高斯分布，均值为其父节点取值的线性组合，方差为 $v_i$ ，从而
+**8** We can also use directed acyclic graphs to represent multivariate Gaussian distributions, known as `linear Gaussian models`. Their applications include `probabilistic principal component analysis (probabilistic PCA)`, `factor analysis`, `linear dynamical systems`, and others. In a directed graph, the nodes follow a Gaussian distribution, with the mean being a linear combination of the values of their parent nodes and the variance being $v_i$. Thus,
 
 $$
 p(x_i|\text{pa}_i)=\mathcal{N}\left(x_i| \sum_{j\in\text{pa}_i}w_{ij}x_j+b_i,v_i\right),
 $$
-于是联合分布对数为
+
+Thus, the log of the joint distribution is
 
 $$
 \begin{aligned}\ln p(\mathbf{x})&=\sum_{i=1}^D\ln p(x_i|\text{pa}_i)\\&=-\sum_{i=1}^D\frac{1}{2v_i}\left(x_i-\sum_{j\in\text{pa}_i}{w_{ij}x_j}-b_i\right)^2+\text{const},\end{aligned}
 $$
-其中 $\mathbf{x}=\left(x_1,...,x_D\right)^\text{T}$ ，由于取对数的结果是 $\mathbf{x}$ 的二次函数，因而联合分布是多元高斯分布。
-当 $i$ 结点父结点状态给定时，该结点上随机变量 $x_i$ 满足下式
+where $\mathbf{x}=\left(x_1,...,x_D\right)^\text{T}$. Since the result of taking the logarithm is a quadratic function of $\mathbf{x}$, the joint distribution is a multivariate Gaussian distribution.  
+When the states of the parent nodes of node $i$ are given, the random variable $x_i$ at that node satisfies the following equation:
 
 $$
 x_i=\sum_{j\in\text{pa}_i}w_{ij}x_j+b_i+\sqrt{v_i}\epsilon_i,
 $$
-其中 $\epsilon_i\sim\mathcal{N}(0,1)$ ，且 $\mathbb{E}(\epsilon_i\epsilon_j)=I_{ij}$ ，从而 $x_i$ 期望为
+where $\epsilon_i\sim\mathcal{N}(0,1)$ ，且 $\mathbb{E}(\epsilon_i\epsilon_j)=I_{ij}$, hence the expectation of $x_i$ is
 
 $$
 \mathbb{E}[x_i]=\sum_{j\in\text{pa}_i}{w_{ij}\mathbb{E}[x_j]}+b_i,
 $$
-协方差计算如下
+Covariance is calculated as
 
 $$
 \begin{aligned}\text{cov}[x_i,x_j]&=\mathbb{E}[(x_i-\mathbb{E}[x_i])(x_j-\mathbb{E}[x_j])]\\&=\mathbb{E}\left[ (x_i-\mathbb{E}[x_i])\left(\sum_{k\in\text{pa}_j}w_{jk}(x_k-\mathbb{E}[x_k])+\sqrt{v_j}\epsilon_j\right)\right]\\&=\sum_{k\in\text{pa}_j}w_{jk}\text{cov}[x_i,x_k]+\mathbb{E}\left[\sqrt{v_iv_j}\epsilon_i\epsilon_j\right]\\&=\sum_{k\in\text{pa}_j}w_{jk}\text{cov}[x_i,x_k]+I_{ij}v_j.\end{aligned}
 $$
 
-2 条件独立性
----
----
-**1** 考虑三个随机变量 $a$ ， $b$ 和 $c$ ，如果满足 $p(a,b|c)=p(a|c)p(b|c)$ ，则称 $a$ 、 $b$ 条件独立（给定 $c$ ）。一般来说，给定一个由多个条件概率分布相乘得到的联合分布函数，可以反复利用加法、乘法原理检验变量之间的条件独立性，除此之外，我们还可以使用**d-分离**(d表示有向)的方法，利用图的结构判定条件独立性。
+## Conditional Independence
 
-**2** 考虑只有3个随机变量 $a,b,c$ 构成的图，
+**1** Consider three random variables $a$, $b$, and $c$. If it holds that $p(a,b|c)=p(a|c)p(b|c)$, then $a$ and $b$ are said to be conditionally independent given $c$. In general, given a joint distribution function obtained by multiplying multiple conditional probability distributions, we can repeatedly use the principles of addition and multiplication to check the conditional independence between variables. Additionally, we can use the method of **d-separation** (where "d" stands for directed) to determine conditional independence using the structure of the graph.
+
+**2** Consider a graph composed of only three random variables $a, b, c$.
+
 ![o_Untitled Diagram](https://www.pandox.xyz/api/db/images/pandoxone/o_Untitled%20Diagram%204.png "80")
-其联合分布函数为
+
+The joint distribution is
 
 $$
 p(a,b,c)=p(a|c)p(b|c)p(c),
 $$
-可以说明， $a$ 、 $b$ 两变量不独立(积掉 $c$ 后)，而关于 $c$ 条件独立，并称 $c$ 结点为尾到尾型(tail-to-tail)。再考虑如下图结构，
+
+It can be shown that the variables $a$ and $b$ are not independent (after marginalizing out $c$ ), while they are conditionally independent given $c$. The node $c$ is referred to as tail-to-tail. Now consider the following graph structure:
+
 ![o_Untitled Diagram](https://www.pandox.xyz/api/db/images/pandoxone/o_Untitled%20Diagram%206.png "80")
-其联合分布函数为
+
+Its joint distribution is
 
 $$
 p(a,b,c)=p(a)p(c|a)p(b|c),
 $$
-同样， $a$ 、 $b$ 仅关于 $c$ 条件独立，此时 $c$ 结点为头到尾型(head-to-tail)。而如下的图结构
+Similarly, the variables $a$ and $b$ are conditionally independent only given $c$, in which case the node $c$ is referred to as head-to-tail. The following graph structure illustrates this:
+
 ![o_Untitled Diagram](https://www.pandox.xyz/api/db/images/pandoxone/o_Untitled%20Diagram%205.png "80")
-表示的联合分布为
+
+The joint distribution represented is:
 
 $$
 p(a,b,c)=p(a)p(b)p(c|a,b),
 $$
-此时 $a$ 、 $b$ 相互独立，但在给定 $c$ 的情况下不独立，此处 $c$ 为头到头型(head-to-head)。实际上 $c$ 的任意后代给定， $a$ 、 $b$ 都将呈现相关性。
+At this point, $a$ and $b$ are independent of each other, but not independent when given $c$. Here, $c$ is of the head-to-head type. In fact, given any descendants of $c$, $a$ and $b$ will show correlation.
 
-**2** 首先给出d-分离的规范表述，考虑任一个有向图， $A$ 、 $B$ 、 $C$ 是三个不相交的图上结点集合，那么给定 $C$ ,
->-  $A$ 和 $B$ 条件独立当且仅当所有从 $A$ 中任意结点到 $B$ 中任意结点的路径均被 $C$ 阻隔；
->- 路径被 $C$ 阻隔当且仅当路径上存在一个 $c$ 类结点；
->- 若路径上结点 $p\in C$ ，且 $p$ 是头到尾型或尾到尾型，则 $p$ 是 $c$ 类结点；
->- 若路径上结点 $p$ 是头到头型，且 $p$ 及其任意后代均不在 $C$ 中，则 $p$ 是 $c$ 类结点。
+**2** First, let's provide a normative statement of d-separation. Consider any directed graph, where $A$, $B$, and $C$ are three disjoint sets of nodes on the graph. Then, given $C$,
 
-在[似然分布有向图](#anchor1)中， $\alpha$ 及 $\sigma^2$ 参数作为观测结点没有前驱，任意经过这些结点的路径必然被阻隔（观测结点必然是尾到尾型）。因此将这些结点从DAG中移除不影响条件独立性的判定。
-> 需要注意的是，我们之前考虑从概率分布出发构建有向图，事实上，图结构本身蕴含了变量之间的独立性信息（独立或条件独立），独立性信息由图中缺失的边（相对全联通图）呈现，而条件独立性信息则依赖于观测变量（结点）的指定。可以将图作为一个过滤器（filter)看待，只能通过那些满足图上独立条件的分布函数，将这些函数构成的集合记为 $\mathcal{DF}$ ，显然随着独立条件加强， $\mathcal{DF}$ 的规模将降低。
+> - $A$ and $B$ are conditionally independent if and only if all paths from any node in $A$ to any node in $B$ are blocked by $C$ ;
+> - A path is blocked by $C$ if and only if there exists a $c$ type node on the path;
+> - If a node $p$ on the path is in $C$, and $p$ is of head-to-tail or tail-to-tail type, then $p$ is a $c$ type node;
+> - If a node $p$ on the path is of head-to-head type, and neither $p$ nor any of its descendants are in $C$, then $p$ is a $c$ type node.
 
-3 马尔科夫随机场
----
----
-**1** 马尔科夫场又称马尔科夫网络或无向图模型，假设 $A$ 、 $B$ 、 $C$ 是图上的三个不相交结点集合，给定 $C$ ， $A$ 和 $B$ 条件独立当且仅当 $C$ 是原图的一个割集使得 $A$ 、 $B$ 分属不同的联通分量。相对而言，无向图模型的重点在因子分解上，即给定一张无向图，每个结点代表一个随机变量，该无向图如何将联合分布 $p(\mathbf{x})$ 分解为若干因子的乘积，也就是无向图本身表达了何种条件独立特性。这种分解是重要的，因为任意两点均有边相连的图并不携带任何（独立性）信息。在因子分解的过程中依据的一个原则是：**不邻接的两点不同属一个因子**。换句话说，一个因子包含的点必然两两邻接，构成一个团。在此基础上，为了计算、表示的效率和简单，施加一个更强的条件，即要求因子中的点集作为团必须是极大团。
+In the [likelihood distribution directed graph](#anchor1), parameters $\alpha$ and $\sigma^2$ as observation nodes have no predecessors, and any paths passing through these nodes must be blocked (observation nodes must be of tail-to-tail type). Therefore, removing these nodes from the DAG does not affect the determination of conditional independence.
+  
+It is important to note that we previously considered constructing directed graphs from probability distributions. In fact, the graph structure itself contains information about the independence between variables (independent or conditionally independent). The independence information is presented by the missing edges in the graph (relative to a fully connected graph), while the conditional independence information depends on the specification of observed variables (nodes). The graph can be viewed as a filter; only distribution functions that meet the independence conditions specified by the graph can pass through. The set of these functions is denoted as $\mathcal{DF}$, and it is clear that as the independence conditions become stricter, the size of $\mathcal{DF}$ will decrease.
 
-**2** 用 $C$ 表示一个团， $\mathbf{x}_C$ 表示团中的变量，联合分布可以写成势函数(potential function)的乘积：
+## Markov Random Fields
+
+**1** Markov fields, also known as Markov networks or undirected graph models, assume that $A$, $B$, and $C$ are three disjoint sets of nodes on the graph. Given $C$, $A$ and $B$ are conditionally independent if and only if $C$ is a cut set of the original graph that separates $A$ and $B$ into different connected components. In contrast, the focus of undirected graph models is on factorization, meaning that given an undirected graph where each node represents a random variable, how the joint distribution $p(\mathbf{x})$ can be factored into the product of several factors, which reflects the conditional independence properties expressed by the undirected graph itself. This factorization is important because a graph in which any two points are connected by an edge does not carry any (independence) information. One principle underlying the factorization process is: **non-adjacent points belong to different factors**. In other words, a factor must include points that are all adjacent to each other, forming a clique. On this basis, for the sake of efficiency and simplicity in computation and representation, a stronger condition is imposed, requiring that the set of points in the factor be a maximal clique.
+
+**2** Let $C$ denote a clique, and $\mathbf{x}_C$ denote the variables within the clique. The joint distribution can be expressed as the product of potential functions:
 
 $$
 p(\mathbf{x})=\frac{1}{Z}\prod_C \psi_C(\mathbf{x}_C),
 $$
-其中 $Z$ 是作为归一化常数的配分函数(partition function)，满足
+where $Z$ is the partition function serving as the normalization constant, satisfying
 
 $$
 Z=\sum_\mathbf{x}\prod_C\psi_C(\mathbf{x}_C).
 $$
-与有向图分布的因子不同，势函数本身没有直接的概率意义解释。
+Unlike the factors of directed graph distributions, the potential function itself does not have a direct probabilistic interpretation.
 
-**3** 设 $\mathcal{UI}$ 表示满足给定无向图蕴含的条件独立性的分布集合， $\mathcal{UF}$ 表示满足可按极大团分解的分布集合，哈默斯利-克利福德说明 $\mathcal{UI}$ 和 $\mathcal{UF}$ 相等。假设势函数 $\psi_C(\mathbf{x}_C)>0$ ，将其写成：
+**3** Let $\mathcal{UI}$ denote the set of distributions that satisfy the conditional independence implied by a given undirected graph, and $\mathcal{UF}$ denote the set of distributions that can be decomposed by maximal cliques. The Hammersley-Clifford theorem states that $\mathcal{UI}$ and $\mathcal{UF}$ are equal. Assuming the potential function $\psi_C(\mathbf{x}_C) > 0$, it can be written as:
 
 $$
 \psi_C(\mathbf{x}_C)=\exp\{-E(\mathbf{x}_C)\},
 $$
-其中 $E(\mathbf{x}_C)$ 称为能量函数，该指数表示也称玻尔兹曼分布。联合分布的总能量是各极大团能量之和。
 
-**4** 图像降噪是可应用无向图模型的一个例子。假设图像是二值的，观测到的像素值为 $y_i\in\{-1,+1\},\text{ }i\in\{1,...,D\}$ ，无噪原图为 $x_i$ ： $1\leq i\leq D$ 。此外假设随机噪声以某个较小的概率翻转原图单个像素点的取值。由于噪声强度较小，像素点 $x_i$ 与 $y_i$ 之间呈现较强的相关性（表示似然概率）；此外自然图像的连续性说明原图中邻接的两点 $x_i$ 与 $x_j$ 以较高的概率取值相同（表示先验概率）。在能量函数中分别以 $-\eta x_iy_i$ 和 $-\beta x_ix_j$ 表示此前后两项。此外，对于原图中的每个像素点，在能量函数中增添 $hx_i$ 项以表示模型偏置（偏好两个像素取值中的其中一个）（**?**），从而模型的能量函数为
+Where $E(\mathbf{x}_C)$ is called the energy function, and this exponential representation is also known as the Boltzmann distribution. The total energy of the joint distribution is the sum of the energies of each maximal clique.
+
+**4** Image denoising is an example where undirected graph models can be applied. Assume the image is binary, with observed pixel values $y_i \in \{-1, +1\}, \text{ } i \in \{1, ..., D\}$, and the noise-free original image is $x_i$: $1 \leq i \leq D$. Additionally, assume that random noise flips the value of a single pixel in the original image with a small probability. Due to the low intensity of noise, there is a strong correlation between pixel $x_i$ and $y_i$ (indicating likelihood probability); furthermore, the continuity of natural images suggests that adjacent points in the original image $x_i$ and $x_j$ are likely to take the same value (indicating prior probability). In the energy function, these two contributions are represented by $-\eta x_iy_i$ and $-\beta x_ix_j$, respectively. Moreover, for each pixel in the original image, the term $hx_i$ is added to the energy function to represent the model bias (favoring one of the two pixel values) ( **?** ), so the model's energy function is:
 
 $$
 E(\mathbf{x},\mathbf{y})=h\sum_{i}x_i-\beta\sum_{\{i,j\}}x_ix_j-\eta \sum_i x_iy_i,
 $$
-联合分布为
+
+The joint distribution is
 
 $$
 p(\mathbf{x},\mathbf{y})=\frac{1}{Z}\exp\{-E(\mathbf{x},\mathbf{y})\}.
 $$
-给定 $\mathbf{y}$ 已观测到，可以直接计算条件概率 $p(\mathbf{x}|\mathbf{y}),$ 为此可用ICM(Iterated Conditional modes)迭代方法得到一个局部最优解，其主要过程如下：
-> 1. 初始化 $\{x_i\}$ :  $x_i\leftarrow y_i;$ 
-> 2. 给定 $\{x_i\}$ 的一个排列，对元素按其出现顺序重新编号， $j \leftarrow 1;$ 
-> 3. 若执行 $x_j \leftarrow -x_j$ 后， $p(\mathbf{x},\mathbf{y})$ 未增大， $x_j\leftarrow -x_j$ ， $j\leftarrow j + 1$ ;
-> 4. 若 $j = D+1$ ，且终止条件被触发，结束，否则执行(2)；若 $j < D+1$ ，执行(3)。
 
-**最大乘积算法(max-product)** 可以作为对ICM的改进，尽管它也不产生全局最优解。对于某些类别的模型，基于无向图的割的算法可以给出全局最优解。
+Given that $\mathbf{y}$ has been observed, the conditional probability $p(\mathbf{x}|\mathbf{y})$ can be directly computed. To do this, the Iterated Conditional Modes (ICM) method can be used to obtain a local optimal solution, with the main process as follows:
 
-**5** 考虑由某个有向图确定的概率分布向无向图表示的转化。一般来说，我们会将若干条件概率乘积项映射到无向图模型中的某个势函数，从而归一化常数 $Z=1$ 。需要注意的是，将超过一个条件概率项合并到某个势函数中即意味着丢弃无向图模型中的部分条件独立性，以下给出的转换方法通过增添尽可能少的边从而保留尽可能多的条件独立性质。
->对于有向图中的每个结点，将其父结点集合中的任意两点用无向边连接，再用无向边替换图中的剩余有向边，得到道德图(moral graph)。此外，对于每一个包含条件概率 $p_i(·)$ 项中结点集合的（极大）团 $C$ ，执行 $p_C(\mathbf{x}_C)\leftarrow p_C(\mathbf{x}_C)p_i(·)$ （ $p_C(\mathbf{x}_C)$ 初始化为 $1$ ）。
+> 1. Initialize $\{x_i\}$: $x_i \leftarrow y_i;$
+> 2. Given a permutation of $\{x_i\}$, renumber the elements in the order of their appearance, $j \leftarrow 1;$
+> 3. If executing $x_j \leftarrow -x_j$ does not increase $p(\mathbf{x},\mathbf{y})$, then set $x_j \leftarrow -x_j$, and $j \leftarrow j + 1;$
+> 4. If $j = D + 1$ and the termination condition is triggered, end; otherwise, execute (2); if $j < D + 1$, execute (3).
 
-该转换过程在联合树算法(junction tree)中有重要作用。
+`The maximum product algorithm (max-product)` can be considered an improvement over ICM, although it does not produce a global optimal solution. For certain classes of models, algorithms based on cuts in undirected graphs can yield a global optimal solution.
 
-**6** 如果某个图反映了某个分布的所有条件独立性质，称该图是分布的 $D$  *map*（相关性）如果某个分布满足某个图中的所有条件独立性质，则称图是分布式 $I$  *map*（独立性）。显然无边图（只存在结点）是任何分布的 $D$  *map*，而全连接图（任意两点有边相连）是任何分布的 $I$  *map*。对于某个分布，如果某个图同时是该分布的 $D$  *map*和 $I$  *map*，则该图称为该分布的完美图。一个有向完美图未必有对应的（保持所有条件独立性质）无向完美图，反之亦然。链图是一种同时包含有向边和无向边的图，尽管其表达能力更强，但仍存在某些概率分布，它们的完美链图不存在。
+**5** Consider the transformation of a probability distribution determined by a directed graph into an undirected graph representation. In general, we map several conditional probability product terms to a potential function in the undirected graph model, thus normalizing the constant $Z = 1$. It is important to note that combining more than one conditional probability term into a potential function means discarding some conditional independence properties in the undirected graph model. The following transformation method adds as few edges as possible to retain as many conditional independence properties as possible.
 
+For each node in the directed graph, connect any two points in its parent node set with an undirected edge, and replace the remaining directed edges in the graph with undirected edges to obtain the moral graph. Additionally, for each (maximal) clique $C$ that includes the node set of the conditional probability term $p_i(·)$, execute $p_C(\mathbf{x}_C) \leftarrow p_C(\mathbf{x}_C) p_i(·)$ (with $p_C(\mathbf{x}_C)$ initialized to $1$).
 
-4 图模型中的推断
----
----
-**1** 图模型中的推断即固定某些结点为已观测值，计算某个剩余结点子集的后验分布。首先考虑无向图中的链（马尔科夫链），假设不存在已观测结点，计算某个结点变量的边缘分布。由于联合分布为
+This transformation process plays an important role in the junction tree algorithm.
+
+**6** If a graph reflects all the conditional independence properties of a distribution, it is called the distribution's $D$ *map* (correlation). If a distribution satisfies all the conditional independence properties in a graph, the graph is called the distribution's $I$ *map* (independence). Clearly, a graph with no edges (only nodes) is the $D$ *map* for any distribution, while a fully connected graph (with edges connecting every pair of points) is the $I$ *map* for any distribution. For a given distribution, if a graph is both the $D$ *map* and the $I$ *map*, it is called the perfect graph for that distribution. A directed perfect graph does not necessarily have a corresponding undirected perfect graph that preserves all conditional independence properties, and vice versa. A chain graph is a type of graph that contains both directed and undirected edges; although it has greater expressive power, there still exist certain probability distributions for which their perfect chain graph does not exist.
+
+## Inference in Graph Models
+
+**1** In Graph Models, inference involves fixing certain nodes as observed values and calculating the posterior distribution of a subset of remaining nodes. First, consider a chain (Markov chain) in an undirected graph, assuming there are no observed nodes, to compute the marginal distribution of a node variable. Since the joint distribution is
 
 $$
 p(\mathbf{x})=\frac{1}{Z}\psi_{1,2}(x_1,x_2)\psi_{2,3}(x_2,x_3)\cdots\psi_{N-1,N}(x_{N-1},x_N),
 $$
-假设结点均为离散随机变量，有 $K$ 中状态， $x_n$ 的边缘分布为
+
+Assume the nodes are discrete random variables with $K$ states, the marginal distribution of $x_n$ is
 
 $$
 p(x_n)=\sum_{x_1}\cdots\sum_{x_{n-1}}\sum_{x_{n+1}}\cdots\sum_{x_N}p(\mathbf{x}),
 $$
-利用条件独立性，重写上式
+
+Using conditional independence, rewrite the above equation:
 
 $$
 p(x_n)=\frac{1}{Z}\mu_\alpha(x_n)\mu_\beta(x_n),
 $$
->这里 $\mu_\alpha\mu_\beta$ 表示两个（ $K$ 维）列向量的Hardmard乘积(对应元素相乘)。
 
-其中
+> Here, $\mu_\alpha\mu_\beta$ represents the Hadamard product of two ( $K$ -dimensional) column vectors (element-wise multiplication).
+
+where
 
 $$
 \begin{aligned}\mu_\alpha(x_n)&=\left[\sum_{x_{n-1}}\psi_{n-1,n}(x_{n-1,n})\cdots\left[\sum_{x_2}\psi_{2,3}(x_2,x_3)\left[\sum_{x_1}\psi_{1,2}(x_1,x_2)\right]\right]\right]\\\mu_\beta(x_n)&=\left[\sum_{x_{n+1}}\psi_{n,n+1}(x_n,x_{n+1})\cdots\left[\sum_{x_N}\psi_{N-1,N}(x_{N-1},x_N)\right]\right],
 \end{aligned}
 $$
-容易看出，相对于无条件独立性的情形，计算复杂度从 $O(K^N)$ 降到了 $O(NK^2)$ 。递归规则为
+It is easy to see that, compared to the case of unconditional independence, the computational complexity is reduced from $O(K^N)$ to $O(NK^2)$. The recursive rule is
 
 $$
 \begin{aligned}\mu_\alpha(x_n)&=\sum_{x_{n-1}}\psi_{n-1,n}(x_{n-1},x_n)\mu_\alpha(x_{n-1}),\\\mu_\beta(x_n)&=\sum_{x_{n+1}}\psi_{n+1,n}(x_{n+1},x_n)\mu_\beta(x_{n+1}).
 \end{aligned}
 $$
-若存在已观测结点，其联合分布计算方法类似，直接将观测值带入公式，同时移除某些求和符号。
+If there are observed nodes, the method for calculating the joint distribution is similar; simply substitute the observed values into the formula while removing certain summation symbols.
 
-**2** 使用**和积算法(sum-product algorithm)**，可以在树形结构上完成同样有效率的推断。无向树指任意两个结点有且仅有一条路径的无向图；而有向树指除根结点没有父节点外，其余结点恰有一个父结点的有向图。
->显然，有向树和无向树之间不需要增减任何边即可完成转换。此外，在不考虑边的方向的前提下，任意两个结点恰存在一条路径的有向图的非有向树称为polytree，如下图所示。
->![o_Untitled Diagram](https://www.pandox.xyz/api/db/images/pandoxone/o_Untitled%20Diagram%202%201.png "80")
+**2** Using the `sum-product algorithm`, efficient inference can also be performed on tree structures. An undirected tree is an undirected graph where there is exactly one path between any two nodes; a directed tree is a directed graph in which all nodes, except for the root node, have exactly one parent node.
 
-**3** 有向或无向图将联合分布表达为若干定义在结点（变量）子集上的因子（函数）的乘积。**因子图**则包含两类结点，其一是变量，此外还有因子函数本身。将联合分布重写为如下形式
+> Obviously, a directed tree and an undirected tree can be converted between each other without adding or removing any edges. Furthermore, a directed graph in which there is exactly one path between any two nodes, without considering the direction of the edges, is called a polytree, as shown in the figure below.
+> ![o_Untitled Diagram](https://www.pandox.xyz/api/db/images/pandoxone/o_Untitled%20Diagram%202%201.png "80")
+
+**3** Directed or undirected graphs express joint distributions as the product of several factors (functions) defined on subsets of nodes (variables). **Factor graphs** contain two types of nodes: one is the variables, and the other is the factor functions themselves. The joint distribution is rewritten in the following form:
 
 $$
 p(\mathbf{x})=\prod_sf_s(\mathbf{x}_s),
 $$
-其中 $\mathbf{x}_s$ 变量结点变量的子集，  $f_s(\cdot)$ 为因子函数。
-因子图必然是二分图，即变量结点与因子结点之间没有边相连。使用某种规则可将无向树或有向树转换为同为树结构的因子图。如果有向图是polytree，也可将其转换为树形因子图。
 
-**4** 假定原图是有向树或无向树或polytree中的一种，从而对应的因子图为树。进一步假设所有结点均为隐含离散变量，对于结点 $x$ ，其边缘分布为
+where $\mathbf{x}_s$ is a subset of variable nodes, and $f_s(\cdot)$ is the factor function. Factor graphs are necessarily bipartite, meaning there are no edges connecting variable nodes to factor nodes. Using certain rules, undirected trees or directed trees can be converted into factor graphs that are also tree structures. If the directed graph is a polytree, it can also be converted into a tree-shaped factor graph.
+
+**4** Assume the original graph is one of a directed tree, an undirected tree, or a polytree, so the corresponding factor graph is a tree. Furthermore, assume all nodes are latent discrete variables; for node $x$ , its marginal distribution is
 
 $$
 p(x)=\sum_{\mathbf{x}\backslash x}p(\mathbf{x}),
 $$
-考虑将 $x$ 作为树的根结点，由于图是二分的，因此 $x$ 的所有子结点均为因子函数结点，联合分布可记为如下形式
+
+Consider $x$ as the root node of the tree. Since the graph is bipartite, all of $x$'s child nodes are factor function nodes, and the joint distribution can be expressed in the following form:
 
 $$
 p(\mathbf{x})=\prod_{s\in\text{ne}(x)}F_s(x,X_s),
 $$
-其中 $\text{ne}(x)$ 表示 $x$ 的邻接（儿子）结点集合， $X_s$ 表示 $f_s$ 子树中变量结点集合， $F_s(x, X_s)$ 表示 $x$ 的 $f_s$ 子树中所有因子的乘积，示意图如下。
+
+where $\text{ne}(x)$ represents the set of neighbors (children) of $x$, $X_s$ denotes the set of variable nodes in the subtree $f_s$, and $F_s(x, X_s)$ represents the product of all factors in the subtree $f_s$ of $x$, as illustrated in the following diagram.
 ![o_Untitled Diagram](https://www.pandox.xyz/api/db/images/pandoxone/o_Untitled%20Diagram%202%202.png "80")
-利用各因子之间的独立性，通过变换乘法和加法次序，可将边缘分布重写
+
+By utilizing the independence between the factors and rearranging the order of multiplication and addition, the marginal distribution can be rewritten.
 
 $$
 \begin{aligned}p(x)&=\sum_{\mathbf{x}\backslash x}p(\mathbf{x})\\&=\sum_{\cup X_s:s\in\text{ne}(x)}\prod_{s}F_s(x,X_s)\\&=\prod_{s\in\text{ne}(x)}\left[\sum_{X_s}F_s(x,X_s)\right]\\&=\prod_{s\in\text{ne}(x)}\mu_{f_s\rightarrow x}(x),
 \end{aligned}
 $$
-把 $\mu_{f_s\rightarrow x}(x)$ 看做从因子结点 $f_s$ 传送给变量结点 $x$ 的消息(message)函数，从而 $x$ 的边缘分布等于其所有因子子节点传送给根结点的消息函数之积。由于
+Treating $\mu_{f_s\rightarrow x}(x)$ as the message function sent from the factor node $f_s$ to the variable node $x$, the marginal distribution of $x$ equals the product of the message functions sent to the root node from all its factor subnodes. Since
 
 $$
 F_s(x,X_s)=f_s(x,x_1,...,x_M)G_1(x_1,X_{s_1})...G_M(x_M,X_{s_{M}}),
 $$
-这里 $x_1,...,x_M$ 均为 $f_s$ 的子变量结点， $X_{s_{m}}$ 表示结点 $x_m$ 为根的子树中变量结点的集合， $G_m(\cdot)$ 是与 $F_s(\cdot)$ 同型的函数。于是消息函数为
+Here $x_1,...,x_M$ are all child variable nodes of $f_s$, $X_{s_{m}}$ denotes the set of variable nodes in the subtree rooted at node 
+$x_m$ , and $G_m(\cdot)$ is a function that is structurally similar to $F_s(\cdot)$ . Thus, the message function is
 
 $$
 \begin{aligned}
@@ -265,26 +291,31 @@ $$
 \sum_{x_m\in\text{ne}(f_s)\backslash x}f_s(x,x_1,...,x_M)\left[\prod_{x_m\in\text{ne}(f_s)\backslash x}\mu_{x_m\rightarrow f_s}(x_m)\right],
 \end{aligned}
 $$
-这里 $\mu_{x_m\rightarrow f_s}$ 是从变量结点 $x_m$ 传送给因子结点 $f_s$ 的消息函数。下面考虑 $G_m(x_m,X_{s_m})$ 的计算，很显然应该有
+
+Here, $\mu_{x_m\rightarrow f_s}$ is the message function transmitted from the variable node $x_m$ to the factor node $f_s$. Next, consider the computation of $G_m(x_m,X_{s_m})$ ; it is clear that there should be
 
 $$
 G_m(x_m,X_{s_m})=\prod_{l\in\text{ne}(x_m)\backslash f_s}F_l(x_m,X_{m_l}),
 $$
-从而消息函数满足
+Thus, the message function satisfies
 
 $$
 \begin{aligned}\mu_{x_m\rightarrow f_s}(x_m)&=\sum_{X_{s_m}}G_m(x_m,X_{s_m})\\&=
 \prod_{l\in\text{ne}(x_m)\backslash f_s}\mu_{f_l\rightarrow x_m}(x_m),\end{aligned}
 $$
-于是我们建立的递归关系，从而边缘分布的计算只与消息函数的计算有关。
-如果需要计算整棵树上所有结点的边缘分布，只需要注意到消息函数是有方向的，在得到某个结点的边缘分布同时，由该根节点直至叶结点反方向计算消息函数，从而得到计算任意结点所需所有方向的消息函数，将其相乘即是其边缘分布。其计算代价是计算单个结点的两倍。
-对于与某个因子结点 $f_s$ 关联的所有变量结点 $\mathbf{x}_s$ ，其联合分布由下式给出
+Thus, the recursive relationship we established means that the computation of the marginal distribution is only related to the calculation of the message functions. 
+
+If we need to compute the marginal distribution of all nodes in the entire tree, we only need to note that the message functions are directed. While obtaining the marginal distribution of a certain node, we can compute the message functions in the reverse direction from that root node to the leaf nodes, thereby obtaining all the message functions in the necessary directions for computing any node, and multiplying them will yield its marginal distribution. The computational cost is twice that of calculating a single node.
+
+For all variable nodes $\mathbf{x}_s$ associated with a certain factor node $f_s$, its joint distribution is given by:
 
 $$
 p(\mathbf{x}_s)=f_s(\mathbf{x}_s)\prod_{i\in\text{ne}(f_s)}\mu_{x_i\rightarrow f_s}(x_i),
 $$
-只需要先将与 $f_s$ 邻接的边删除再重新考虑即可。
-现在考虑存在已观测变量的情形，将 $\mathbf{x}$ 分为隐含变量 $\mathbf{u}$ 和已观测变量 $\mathbf{v}$ 两部分，观测值为 $\mathbf{\hat v}$ ，从而联合分布为
+
+We only need to first remove the edges adjacent to $f_s$ and then reconsider. 
+
+Now, consider the case where there are observed variables. We can divide $\mathbf{x}$ into two parts: the hidden variables $\mathbf{u}$ and the observed variables $\mathbf{v}$, with the observed values being $\mathbf{\hat v}$. Thus, the joint distribution is given by:
 
 $$
 p(\mathbf{u},\mathbf{v}=\mathbf{\hat{v}})=p(\mathbf{x})\prod_{i}I(v_i=\hat{v}_i).

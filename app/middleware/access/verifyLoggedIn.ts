@@ -6,6 +6,8 @@ import config from '../../config/auth.config';
 import { redisDb } from '../../models';
 // const { redisDb } = require('../../models');
 import type { Md_Func } from "../types";
+import  { VerifyErrors, TokenExpiredError } from 'jsonwebtoken';
+import { wsServer } from '../../../server';
 
 const ifTokenValid:Md_Func = (req, res, next) => {
     const token = req.headers['x-access-token'] as string | undefined;
@@ -46,6 +48,14 @@ const isTokenValid:Md_Func = (req, res, next) => {
 
     jwt.verify(token, config.secret, async (err, decoded) => {
         if (err || !decoded || typeof decoded === 'string') {
+            if(err instanceof TokenExpiredError){
+                wsServer.clients.forEach((client) => {
+                    
+                });
+                return res.status(401).send({
+                    message: 'TokenExpiredError',
+                });
+            }
             return res.status(401).send({
                 message: 'Unauthorized! Token invalid.',
             });

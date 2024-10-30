@@ -1,6 +1,8 @@
 KEYWORDS[[Machine Learning][PRML]]KEYWORDS
-### Dual Representation
----
+
+![demo](https://www.pandox.xyz/api/db/images/pandoxone/640px-Kernel_trick_idea.svg.png "50")
+
+## Dual Representation
 
 **1** We derive the form of the kernel function from a linearly parameterized model. Consider a linear regression model with an $L_2$ regularization term (parameter squared error term), the error function is given by
 
@@ -70,8 +72,7 @@ $$
 
 It is important to note that to solve for $\mathbf a$, we need to compute the inverse of an $N\times N$ matrix, where $N$ is the number of samples; whereas if we solve directly for $\mathbf w$, we need to compute the inverse of an $M\times M$ matrix in feature space, where $M$ is the dimensionality of the feature space. Generally, $M\ll N$, so it appears that the computational cost is increased. However, the new model input relies entirely on the kernel function $k(\mathbf x, \mathbf x^\prime)$ (in addition to the input data itself), allowing us to bypass the feature vector $\boldsymbol\phi(\mathbf x)$ and avoid the constraints of feature dimensionality.
 
-### Constructing Kernel Functions
----
+## Constructing Kernel Functions
 
 **1** There are two ways to construct kernel functions. One is to use the feature function $\mathbf\phi(\cdot)$ to indirectly represent the kernel function $k(\cdot)$, where $k(\mathbf x,\mathbf x^\prime)=\boldsymbol\phi(\mathbf x)^\text T\boldsymbol\phi(\mathbf x^\prime)$. The other way is to construct the kernel function directly, but the selection of kernel functions is not arbitrary, as they implicitly determine a certain feature function. For example, consider the kernel function
 
@@ -93,7 +94,7 @@ where $\boldsymbol\phi(\mathbf x)=\left(x_1^2, x_2^2,\sqrt 2x_1x_2\right)^\text 
 > When the two input vectors are equal, the kernel function represents the norm squared in the feature space.
 > When the feature vectors are normalized (unit length), the kernel function represents the cosine distance between the two vectors.
 
-There is a necessary and sufficient condition for a kernel function to be valid (Shawe Taylor and Cristianini, 2004), a kernel function is valid if and only if the Gram matrix in the input space is positive semi-definite (recall the Gram matrix $K_{ij}=k(\mathbf x_i,\mathbf x_j)$). The kernel function measures the similarity between two input vectors (similarity measure), and in practice, new kernel functions can be constructed based on existing ones, with several criteria ensuring the constructed kernel functions are valid.
+There is a necessary and sufficient condition for a kernel function to be valid (Shawe Taylor and Cristianini, 2004), a kernel function is valid if and only if the Gram matrix in the input space is positive semi-definite (recall the Gram matrix $K_{ij}=k(\mathbf x_i,\mathbf x_j)$ ). The kernel function measures the similarity between two input vectors (similarity measure), and in practice, new kernel functions can be constructed based on existing ones, with several criteria ensuring the constructed kernel functions are valid.
 > We have already observed that the kernel function $k(\mathbf x, \mathbf z)=\left(\mathbf x^\text T\mathbf z\right)^2$ corresponds to a feature vector containing only quadratic terms. Furthermore, we have the kernel function $k(\mathbf x, \mathbf z)=\left(\mathbf x^\text T\mathbf z+c\right)^2$ for $c>0$, corresponding to a feature vector containing 0th, 1st, and 2nd order terms; this conclusion can be generalized to $k(\mathbf x,\mathbf z)=\left(\mathbf x^\text T\mathbf z+c\right)^M$.
 
 The Gaussian kernel function is of the form
@@ -139,7 +140,7 @@ where $\mathbf F$ is the Fisher information matrix:
 $$
 \mathbf F=\mathbb E_\mathbf x[\mathbf g(\boldsymbol\theta, \mathbf x)\mathbf g(\boldsymbol\theta, \mathbf x)^\text T],
 $$
-Here, the Fisher matrix ensures that the Fisher kernel is invariant to nonlinear transformations of the model parameters (e.g., $\boldsymbol\theta \rightarrow \boldsymbol\psi(\theta)$).。
+Here, the Fisher matrix ensures that the Fisher kernel is invariant to nonlinear transformations of the model parameters (e.g., $\boldsymbol\theta \rightarrow \boldsymbol\psi(\theta)$ ).
 
 The sigmoid Gaussian kernel function is of the form:
 
@@ -148,8 +149,7 @@ k(\mathbf x,\mathbf x^\prime)=\tanh\left(a\mathbf x^\text T\mathbf x+b\right),
 $$
 Generally, the Gram matrix corresponding to this form of kernel function does not satisfy the semi-positive definite condition.
 
-### Radial Basis Function Networks
----
+## Radial Basis Function Networks
 
 **1** Derive the Nadaraya-Watson model. Assume the training data is ${\mathbf x_n, t_n}$, using Parzen density estimation to model the joint distribution $p(\mathbf x, t)$:
 
@@ -195,8 +195,7 @@ $$
 \sum k(\mathbf x,\mathbf x_n) = 1.
 $$
 
-### Gaussian Processes
----
+## Gaussian Processes
 
 **1** For the following linear regression model
 

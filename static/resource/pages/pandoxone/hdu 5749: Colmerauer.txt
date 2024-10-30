@@ -1,445 +1,185 @@
 KEYWORDS[[ACM/ICPC][HDU]]KEYWORDS
-题意：对于给定的 $n \times m$ 矩阵 $M$ ，定义 $S(a,b)$ 为 $M$ 的所有 $a \times b$ 子矩阵的权重之和。一个矩阵的权重是指矩阵中所有马鞍点权值之和，在一个矩阵中某点是马鞍点当且仅当它在所在行是唯一一个最小的，同时在所在列中是唯一一个最大的。现在输入矩阵 $M$ ，要求计算 $W= \sum\sum{abS(a,b)}, 1 \leq a \leq n, 1 \leq b \leq m$ 。数据范围 $1 \leq n, m \leq 1000, 0 \leq M(i, j) \leq 1000000$ 。
 
-分析： 考虑每个马鞍点对答案 $W$ 的贡献，答案可以重写为每个马鞍点的权值与其所在子矩阵面积的和的积的和。考虑位于 $i$ 行 $j$ 列的点，我们设在 $j$ 列从该点出发向上连续的 $y_1$ 个点中除了点 $(i, j)$ 其余点对应的权值均严格小于该点权值，并假设 $y_1$ 是最大的。记 $y1$ 为该点的最大向上关联长度，同理我们可以得到向下，向左，向右的最大关联长度，显然这些长度至少为 $1$ ，按照左右上下的顺序得到关于 $(i, j)$ 的四元组 $(x_1, x_2, y_1, y_2)$ ，把四个方向对应到坐标轴方向，该点对应到原点，可以得到四个所谓的象限。那么如果该点在某个子矩阵内为马鞍点，必然有该子矩阵左上顶点在第二象限，右下顶点在第四象限（可以通过画图很直观得看出来）。那么所有子矩阵的面积之和为 $g(i, j) = \sum\sum\sum\sum{(p + q  + 1)(r + s + 1)}$ 其中 $p, q, r, s$ 分别独立地在 $[0, x_1), [0, x_2), [0, y_1), [0, y_2)$ 中取值，那么不难将其展开得到关于 $x_1, x_2, y_1, y_2$ 的代数表达式。那么最终答案应该是 $\sum\sum{g(i, j)w(i, j)}$ ， $w$ 是权值函数。于是现在只需要对每个点计算其四元组，可以采用rmq+二分的方法（尽管这种做法并非最优）。这样我们算法的复杂度就是 $O(n^2log(n))$ 。取模使用unsigned int自然溢出就可以了。代码如下：
+![demo](https://www.pandox.xyz/api/db/images/pandoxone/pexels-nextvoyage-1470405.jpg "30")
+
+## Problem Statement
+
+For a given $n \times m $ matrix $M$ , define $S(a,b)$ as the sum of weights of all $a \times b$ submatrices of $M$ .
+The weight of a matrix refers to the sum of the weights of all saddle points in the matrix.
+A point in a matrix is a saddle point if and only if it is the only minimum in its row and the only maximum in its column.
+
+Now input matrix $M$ and compute $W= \sum\sum{abS(a,b)}, 1 \leq a \leq n, 1 \leq b \leq m$ .
+The data range is $1 \leq n, m \leq 1000, 0 \leq M(i, j) \leq 1000000$ .
+
+## Solution
+
+Consider the contribution of each saddle point to the answer $W$ . The answer can be rewritten as the sum of the products of the weight of each saddle point and the area of its corresponding submatrix. For a point located at row $i$ and column $j$ , let $y_1$ be the number of points directly above this point in column $j$, such that all points except for $(i, j)$ have weights that are strictly less than the weight at $(i, j)$, and assume $y_1$ is the maximum. Let $y_1$ represent the maximum upward association length for this point.
+
+Similarly, we can obtain the maximum association lengths downward, leftward, and rightward.
+Clearly, these lengths are at least $1$ .
+By considering the order of left, right, up, and down, we can derive a quadruple $(x_1, x_2, y_1, y_2)$ corresponding to $(i, j)$, where these four directions correspond to the coordinate axes and the point itself corresponds to the origin, thus creating four so-called quadrants.
+
+If this point is a saddle point within a certain submatrix, the top-left corner of that submatrix must lie in the second quadrant, and the bottom-right corner must lie in the fourth quadrant (this can be intuitively observed through a diagram). The total area of all submatrices is given by 
+
+$$
+g(i, j) = \sum\sum\sum\sum{(p + q + 1)(r + s + 1)}
+$$
+
+where $ p, q, r, s $ independently take values in $ [0, x_1), [0, x_2), [0, y_1), [0, y_2) $ respectively. It is straightforward to expand this to obtain an algebraic expression in terms of $x_1, x_2, y_1, y_2$ . Therefore, the final answer should be 
+
+$$
+\sum\sum{g(i, j)w(i, j)}
+$$
+
+where $w$ is the weight function. Now, we only need to compute the quadruple for each point, which can be done using an `RMQ (Range Minimum Query)` combined with binary search method (although this approach is not optimal). Thus, the complexity of our algorithm is $O(n^2 \log(n))$ . We can use unsigned int for modular operations, allowing natural overflow.
+
+## Code
 
 ```cpp
-1 #include <algorithm>
-  2 #include <cstdio>
-  3 #include <cstring>
-  4 #include <string>
-  5 #include <queue>
-  6 #include <map>
-  7 #include <set>
-  8 #include <stack>
-  9 #include <ctime>
- 10 #include <cmath>
- 11 #include <iostream>
- 12 #include <assert.h>
- 13 #define PI acos(-1.)
- 14 #pragma comment(linker, "/STACK:102400000,102400000")
- 15 #define max(a, b) ((a) > (b) ? (a) : (b))
- 16 #define min(a, b) ((a) < (b) ? (a) : (b))
- 17 #define mp std :: make_pair
- 18 #define st first
- 19 #define nd second
- 20 #define keyn (root->ch[1]->ch[0])
- 21 #define lson (u << 1)
- 22 #define rson (u << 1 | 1)
- 23 #define pii std :: pair<int, int>
- 24 #define pll pair<ll, ll>
- 25 #define pb push_back
- 26 #define type(x) __typeof(x.begin())
- 27 #define foreach(i, j) for(type(j)i = j.begin(); i != j.end(); i++)
- 28 #define FOR(i, s, t) for(int i = (s); i <= (t); i++)
- 29 #define ROF(i, t, s) for(int i = (t); i >= (s); i--)
- 30 #define dbg(x) std::cout << x << std::endl
- 31 #define dbg2(x, y) std::cout << x << " " << y << std::endl
- 32 #define clr(x, i) memset(x, (i), sizeof(x))
- 33 #define maximize(x, y) x = max((x), (y))
- 34 #define minimize(x, y) x = min((x), (y))
- 35 using namespace std;
- 36 typedef long long ll;
- 37 const int int_inf = 0x3f3f3f3f;
- 38 const ll ll_inf = 0x3f3f3f3f3f3f3f3f;
- 39 const int INT_INF = (int)((1ll << 31) - 1);
- 40 const double double_inf = 1e30;
- 41 const double eps = 1e-14;
- 42 typedef unsigned long long ul;
- 43 typedef unsigned int ui;
- 44 inline int readint(){
- 45     int x;
- 46     scanf("%d", &x);
- 47     return x;
- 48 }
- 49 inline int readstr(char *s){
- 50     scanf("%s", s);
- 51     return strlen(s);
- 52 }
- 53 //Here goes 2d geometry templates
- 54 struct Point{
- 55     double x, y;
- 56     Point(double x = 0, double y = 0) : x(x), y(y) {}
- 57 };
- 58 typedef Point Vector;
- 59 Vector operator + (Vector A, Vector B){
- 60     return Vector(A.x + B.x, A.y + B.y);
- 61 }
- 62 Vector operator - (Point A, Point B){
- 63     return Vector(A.x - B.x, A.y - B.y);
- 64 }
- 65 Vector operator * (Vector A, double p){
- 66     return Vector(A.x * p, A.y * p);
- 67 }
- 68 Vector operator / (Vector A, double p){
- 69     return Vector(A.x / p, A.y / p);
- 70 }
- 71 bool operator < (const Point& a, const Point& b){
- 72     return a.x < b.x || (a.x == b.x && a.y < b.y);
- 73 }
- 74 int dcmp(double x){
- 75     if(abs(x) < eps) return 0;
- 76     return x < 0 ? -1 : 1;
- 77 }
- 78 bool operator == (const Point& a, const Point& b){
- 79     return dcmp(a.x - b.x) == 0 && dcmp(a.y - b.y) == 0;
- 80 }
- 81 double Dot(Vector A, Vector B){
- 82     return A.x * B.x + A.y * B.y;
- 83 }
- 84 double Len(Vector A){
- 85     return sqrt(Dot(A, A));
- 86 }
- 87 double Angle(Vector A, Vector B){
- 88     return acos(Dot(A, B) / Len(A) / Len(B));
- 89 }
- 90 double Cross(Vector A, Vector B){
- 91     return A.x * B.y - A.y * B.x;
- 92 }
- 93 double Area2(Point A, Point B, Point C){
- 94     return Cross(B - A, C - A);
- 95 }
- 96 Vector Rotate(Vector A, double rad){
- 97     //rotate counterclockwise
- 98     return Vector(A.x * cos(rad) - A.y * sin(rad), A.x * sin(rad) + A.y * cos(rad));
- 99 }
-100 Vector Normal(Vector A){
-101     double L = Len(A);
-102     return Vector(-A.y / L, A.x / L);
-103 }
-104 void Normallize(Vector &A){
-105     double L = Len(A);
-106     A.x /= L, A.y /= L;
-107 }
-108 Point GetLineIntersection(Point P, Vector v, Point Q, Vector w){
-109     Vector u = P - Q;
-110     double t = Cross(w, u) / Cross(v, w);
-111     return P + v * t;
-112 }
-113 double DistanceToLine(Point P, Point A, Point B){
-114     Vector v1 = B - A, v2 = P - A;
-115     return abs(Cross(v1, v2)) / Len(v1);
-116 }
-117 double DistanceToSegment(Point P, Point A, Point B){
-118     if(A == B) return Len(P - A);
-119     Vector v1 = B - A, v2 = P - A, v3 = P - B;
-120     if(dcmp(Dot(v1, v2)) < 0) return Len(v2);
-121     else if(dcmp(Dot(v1, v3)) > 0) return Len(v3);
-122     else return abs(Cross(v1, v2)) / Len(v1);
-123 }
-124 Point GetLineProjection(Point P, Point A, Point B){
-125     Vector v = B - A;
-126     return A + v * (Dot(v, P - A) / Dot(v, v));
-127 }
-128 bool SegmentProperIntersection(Point a1, Point a2, Point b1, Point b2){
-129     //Line1:(a1, a2) Line2:(b1,b2)
-130     double c1 = Cross(a2 - a1, b1 - a1), c2 = Cross(a2 - a1, b2 - a1),
-131            c3 = Cross(b2 - b1, a1 - b1), c4 = Cross(b2 - b1, a2 - b1);
-132     return dcmp(c1) * dcmp(c2) < 0 && dcmp(c3) * dcmp(c4) < 0;
-133 }
-134 bool OnSegment(Point p, Point a1, Point a2){
-135     return dcmp(Cross(a1 - p, a2 - p)) == 0 && dcmp(Dot(a1 - p, a2 -p)) < 0;
-136 }
-137 Vector GetBisector(Vector v, Vector w){
-138     Normallize(v), Normallize(w);
-139     return Vector((v.x + w.x) / 2, (v.y + w.y) / 2);
-140 }
-141 
-142 bool OnLine(Point p, Point a1, Point a2){
-143     Vector v1 = p - a1, v2 = a2 - a1;
-144     double tem = Cross(v1, v2);
-145     return dcmp(tem) == 0;
-146 }
-147 struct Line{
-148     Point p;
-149     Vector v;
-150     Point point(double t){
-151         return Point(p.x + t * v.x, p.y + t * v.y);
-152     }
-153     Line(Point p, Vector v) : p(p), v(v) {}
-154 };
-155 struct Circle{
-156     Point c;
-157     double r;
-158     Circle(Point c, double r) : c(c), r(r) {}
-159     Circle(int x, int y, int _r){
-160         c = Point(x, y);
-161         r = _r;
-162     }
-163     Point point(double a){
-164         return Point(c.x + cos(a) * r, c.y + sin(a) * r);
-165     }
-166 };
-167 int GetLineCircleIntersection(Line L, Circle C, double &t1, double& t2, std :: vector<Point>& sol){
-168     double a = L.v.x, b = L.p.x - C.c.x, c = L.v.y, d = L.p.y - C.c.y;
-169     double e = a * a + c * c, f = 2 * (a * b + c * d), g = b * b + d * d - C.r * C.r;
-170     double delta = f * f - 4 * e * g;
-171     if(dcmp(delta) < 0) return 0;
-172     if(dcmp(delta) == 0){
-173         t1 = t2 = -f / (2 * e); sol.pb(L.point(t1));
-174         return 1;
-175     }
-176     t1 = (-f - sqrt(delta)) / (2 * e); sol.pb(L.point(t1));
-177     t2 = (-f + sqrt(delta)) / (2 * e); sol.pb(L.point(t2));
-178     return 2;
-179 }
-180 double angle(Vector v){
-181     return atan2(v.y, v.x);
-182     //(-pi, pi]
-183 }
-184 int GetCircleCircleIntersection(Circle C1, Circle C2, std :: vector<Point>& sol){
-185     double d = Len(C1.c - C2.c);
-186     if(dcmp(d) == 0){
-187         if(dcmp(C1.r - C2.r) == 0) return -1; //two circle duplicates
-188         return 0; //two circles share identical center
-189     }
-190     if(dcmp(C1.r + C2.r - d) < 0) return 0; //too close
-191     if(dcmp(abs(C1.r - C2.r) - d) > 0) return 0; //too far away
-192     double a = angle(C2.c - C1.c); // angle of vector(C1, C2)
-193     double da = acos((C1.r * C1.r + d * d - C2.r * C2.r) / (2 * C1.r * d));
-194     Point p1 = C1.point(a - da), p2 = C1.point(a + da);
-195     sol.pb(p1);
-196     if(p1 == p2) return 1;
-197     sol.pb(p2);
-198     return 2;
-199 }
-200 int GetPointCircleTangents(Point p, Circle C, Vector* v){
-201     Vector u = C.c - p;
-202     double dist = Len(u);
-203     if(dist < C.r) return 0;//p is inside the circle, no tangents
-204     else if(dcmp(dist - C.r) == 0){
-205         // p is on the circles, one tangent only
-206         v[0] = Rotate(u, PI / 2);
-207         return 1;
-208     }else{
-209         double ang = asin(C.r / dist);
-210         v[0] = Rotate(u, -ang);
-211         v[1] = Rotate(u, +ang);
-212         return 2;
-213     }
-214 }
-215 int GetCircleCircleTangents(Circle A, Circle B, Point* a, Point* b){
-216     //a[i] store point of tangency on Circle A of tangent i
-217     //b[i] store point of tangency on Circle B of tangent i
-218     //six conditions is in consideration
-219     int cnt = 0;
-220     if(A.r < B.r) { std :: swap(A, B); std :: swap(a, b); }
-221     int d2 = (A.c.x - B.c.x) * (A.c.x - B.c.x) + (A.c.y - B.c.y) * (A.c.y - B.c.y);
-222     int rdiff = A.r - B.r;
-223     int rsum = A.r + B.r;
-224     if(d2 < rdiff * rdiff) return 0; // one circle is inside the other
-225     double base = atan2(B.c.y - A.c.y, B.c.x - A.c.x);
-226     if(d2 == 0 && A.r == B.r) return -1; // two circle duplicates
-227     if(d2 == rdiff * rdiff){ // internal tangency
-228         a[cnt] = A.point(base); b[cnt] = B.point(base); cnt++;
-229         return 1;
-230     }
-231     double ang = acos((A.r - B.r) / sqrt(d2));
-232     a[cnt] = A.point(base + ang); b[cnt++] = B.point(base + ang);
-233     a[cnt] = A.point(base - ang); b[cnt++] = B.point(base - ang);
-234     if(d2 == rsum * rsum){
-235         //one internal tangent
-236         a[cnt] = A.point(base);
-237         b[cnt++] = B.point(base + PI);
-238     }else if(d2 > rsum * rsum){
-239         //two internal tangents
-240         double ang = acos((A.r + B.r) / sqrt(d2));
-241         a[cnt] = A.point(base + ang); b[cnt++] = B.point(base + ang + PI);
-242         a[cnt] = A.point(base - ang); b[cnt++] = B.point(base - ang + PI);
-243     }
-244     return cnt;
-245 }
-246 Point ReadPoint(){
-247     double x, y;
-248     scanf("%lf%lf", &x, &y);
-249     return Point(x, y);
-250 }
-251 Circle ReadCircle(){
-252     double x, y, r;
-253     scanf("%lf%lf%lf", &x, &y, &r);
-254     return Circle(x, y, r);
-255 }
-256 //Here goes 3d geometry templates
-257 struct Point3{
-258     double x, y, z;
-259     Point3(double x = 0, double y = 0, double z = 0) : x(x), y(y), z(z) {}
-260 };
-261 typedef Point3 Vector3;
-262 Vector3 operator + (Vector3 A, Vector3 B){
-263     return Vector3(A.x + B.x, A.y + B.y, A.z + B.z);
-264 }
-265 Vector3 operator - (Vector3 A, Vector3 B){
-266     return Vector3(A.x - B.x, A.y - B.y, A.z - B.z);
-267 }
-268 Vector3 operator * (Vector3 A, double p){
-269     return Vector3(A.x * p, A.y * p, A.z * p);
-270 }
-271 Vector3 operator / (Vector3 A, double p){
-272     return Vector3(A.x / p, A.y / p, A.z / p);
-273 }
-274 double Dot3(Vector3 A, Vector3 B){
-275     return A.x * B.x + A.y * B.y + A.z * B.z;
-276 }
-277 double Len3(Vector3 A){
-278     return sqrt(Dot3(A, A));
-279 }
-280 double Angle3(Vector3 A, Vector3 B){
-281     return acos(Dot3(A, B) / Len3(A) / Len3(B));
-282 }
-283 double DistanceToPlane(const Point3& p, const Point3 &p0, const Vector3& n){
-284     return abs(Dot3(p - p0, n));
-285 }
-286 Point3 GetPlaneProjection(const Point3 &p, const Point3 &p0, const Vector3 &n){
-287     return p - n * Dot3(p - p0, n);
-288 }
-289 Point3 GetLinePlaneIntersection(Point3 p1, Point3 p2, Point3 p0, Vector3 n){
-290     Vector3 v = p2 - p1;
-291     double t = (Dot3(n, p0 - p1) / Dot3(n, p2 - p1));
-292     return p1 + v * t;//if t in range [0, 1], intersection on segment
-293 }
-294 Vector3 Cross(Vector3 A, Vector3 B){
-295     return Vector3(A.y * B.z - A.z * B.y, A.z * B.x - A.x * B.z, A.x * B.y - A.y * B.x);
-296 }
-297 double Area3(Point3 A, Point3 B, Point3 C){
-298     return Len3(Cross(B - A, C - A));
-299 }
-300 class cmpt{
-301 public:
-302     bool operator () (const int &x, const int &y) const{
-303         return x > y;
-304     }
-305 };
-306 
-307 int Rand(int x, int o){
-308     //if o set, return [1, x], else return [0, x - 1]
-309     if(!x) return 0;
-310     int tem = (int)((double)rand() / RAND_MAX * x) % x;
-311     return o ? tem + 1 : tem;
-312 }
-313 void data_gen(){
-314     srand(time(0));
-315     freopen("in.txt", "w", stdout);
-316     int kases = 10;
-317     printf("%d\n", kases);
-318     while(kases--){
-319         int sz = 2e4;
-320         int m = 1e5;
-321         printf("%d %d\n", sz, m);
-322         FOR(i, 1, sz) printf("%d ", Rand(100, 1));
-323         printf("\n");
-324         FOR(i, 1, sz) printf("%d ", Rand(1e9, 1));
-325         printf("\n");
-326         FOR(i, 1, m){
-327             int l = Rand(sz, 1);
-328             int r = Rand(sz, 1);
-329             int c = Rand(1e9, 1);
-330             printf("%d %d %d %d\n", l, r, c, Rand(100, 1));
-331         }
-332     }
-333 }
-334 
-335 struct cmpx{
-336     bool operator () (int x, int y) { return x > y; }
-337 };
-338 const int maxn = 1e3 + 10;
-339 ui mt[maxn][maxn];
-340 ui x1[maxn][maxn], x2[maxn][maxn], y1[maxn][maxn], y2[maxn][maxn];
-341 int n, m;
-342 ui bg[maxn][15];
-343 ui query(int l, int r, int o){
-344     int len = (r - l + 1);
-345     int i = 0;
-346     while((1 << i) <= len) ++i;
-347     --i;
-348     int sp = r - (1 << i) + 1;
-349     if(o) return max(bg[l][i], bg[sp][i]);
-350     else return min(bg[l][i], bg[sp][i]);
-351 }
-352 int main(){
-353     //data_gen(); return 0;
-354     //C(); return 0;
-355     int debug = 0;
-356     if(debug) freopen("in.txt", "r", stdin);
-357     //freopen("out.txt", "w", stdout);
-358     int T = readint();
-359     while(T--){
-360         scanf("%d%d", &n, &m);
-361         FOR(i, 1, n) FOR(j, 1, m) scanf("%u", &mt[i][j]);
-362         FOR(i, 1, n) FOR(j, 1, m) x1[i][j] = x2[i][j] = y1[i][j] = y2[i][j] = 1;
-363         FOR(i, 1, n){
-364             FOR(j, 1, m) bg[j][0] = mt[i][j];
-365             for(int i = 1; (1 << i) <= m; i++){
-366                 int len = 1 << i;
-367                 for(int j = 1; j + len - 1 <= m; j++) bg[j][i] = min(bg[j][i - 1], bg[j + len / 2][i - 1]);
-368             }
-369             FOR(j, 1, m){
-370                 if(j == 1 || mt[i][j] >= mt[i][j - 1]) continue;
-371                 int l = 0, r = j - 1;
-372                 while(r - l > 1){
-373                     int mid = (l + r) >> 1;
-374                     ui tem = query(mid, r, 0);
-375                     if(tem > mt[i][j]) r = mid;
-376                     else l = mid;
-377                 }
-378                 x1[i][j] = j - r + 1;
-379             }
-380             FOR(j, 1, m){
-381                 if(j == m || mt[i][j] >= mt[i][j + 1]) continue;
-382                 int l = j + 1, r = m + 1;
-383                 while(r - l > 1){
-384                     int mid = (l + r) >> 1;
-385                     ui tem = query(l, mid, 0);
-386                     if(tem > mt[i][j]) l = mid;
-387                     else r = mid;
-388                 }
-389                 x2[i][j] = l - j + 1;
-390             }
-391         }
-392         FOR(j, 1, m){
-393             FOR(i, 1, n) bg[i][0] = mt[i][j];
-394             for(int i = 1; (1 << i) <= n; i++){
-395                 int len = 1 << i;
-396                 for(int j = 1; j + len - 1 <= n; j++) bg[j][i] = max(bg[j][i - 1], bg[j + len / 2][i - 1]);
-397             }
-398             FOR(i, 1, n){
-399                 if(i == 1 || mt[i][j] <= mt[i - 1][j]) continue;
-400                 int l = 0, r = i - 1;
-401                 while(r - l > 1){
-402                     int mid = (l + r) >> 1;
-403                     ui tem = query(mid, r, 1);
-404                     if(tem < mt[i][j]) r = mid;
-405                     else l = mid;
-406                 }
-407                 y1[i][j] = i - r + 1;
-408             }
-409             FOR(i, 1, n){
-410                 if(i == n || mt[i][j] <= mt[i + 1][j]) continue;
-411                 int l = i + 1, r = n + 1;
-412                 while(r - l > 1){
-413                     int mid = (l + r) >> 1;
-414                     ui tem = query(l, mid, 1);
-415                     if(tem < mt[i][j]) l = mid;
-416                     else r = mid;
-417                 }
-418                 y2[i][j] = l - i + 1;
-419             }
-420         }
-421         ui ans = 0;
-422         FOR(i, 1, n) FOR(j, 1, m){
-423             ui X1 = x1[i][j] * (x1[i][j] - 1) / 2;
-424             ui X2 = x2[i][j] * (x2[i][j] - 1) / 2;
-425             ui Y1 = y1[i][j] * (y1[i][j] - 1) / 2;
-426             ui Y2 = y2[i][j] * (y2[i][j] - 1) / 2;
-427             ui _x1 = x1[i][j], _x2 = x2[i][j], _y1 = y1[i][j], _y2 = y2[i][j];
-428             ui para = _x2 * _y2 * X1 * Y1 + X1 * Y2 * _x2 * _y1 + X2 * Y1 * _x1 * _y2 + X2 * Y2 * _x1 * _y1;
-429             para += X1 * _x2 * _y1 * _y2 + X2 * _x1 * _y1 * _y2 + Y1 * _x1 * _x2 * _y2 + Y2 * _x1 * _x2 * _y1;
-430             para += _x1 * _y1 * _y2 * _x2;
-431             ans += para * mt[i][j];
-432         }
-433         printf("%u\n", ans);
-434     }
-435     return 0;
-436 }
+#include <algorithm>
+#include <cstdio>
+#include <cstring>
+#include <string>
+#include <queue>
+#include <map>
+#include <set>
+#include <stack>
+#include <ctime>
+#include <cmath>
+#include <iostream>
+#include <assert.h>
+#define PI acos(-1.)
+#pragma comment(linker, "/STACK:102400000,102400000")
+#define max(a, b) ((a) > (b) ? (a) : (b))
+#define min(a, b) ((a) < (b) ? (a) : (b))
+#define mp std :: make_pair
+#define st first
+#define nd second
+#define keyn (root->ch[1]->ch[0])
+#define lson (u << 1)
+#define rson (u << 1 | 1)
+#define pii std :: pair<int, int>
+#define pll pair<ll, ll>
+#define pb push_back
+#define type(x) __typeof(x.begin())
+#define foreach(i, j) for(type(j)i = j.begin(); i != j.end(); i++)
+#define FOR(i, s, t) for(int i = (s); i <= (t); i++)
+#define ROF(i, t, s) for(int i = (t); i >= (s); i--)
+#define dbg(x) std::cout << x << std::endl
+#define dbg2(x, y) std::cout << x << " " << y << std::endl
+#define clr(x, i) memset(x, (i), sizeof(x))
+#define maximize(x, y) x = max((x), (y))
+#define minimize(x, y) x = min((x), (y))
+using namespace std;
+typedef long long ll;
+const int int_inf = 0x3f3f3f3f;
+const ll ll_inf = 0x3f3f3f3f3f3f3f3f;
+const int INT_INF = (int)((1ll << 31) - 1);
+const double double_inf = 1e30;
+const double eps = 1e-14;
+typedef unsigned long long ul;
+typedef unsigned int ui;
 
-code：
+struct cmpx{
+    bool operator () (int x, int y) { return x > y; }
+};
+const int maxn = 1e3 + 10;
+ui mt[maxn][maxn];
+ui x1[maxn][maxn], x2[maxn][maxn], y1[maxn][maxn], y2[maxn][maxn];
+int n, m;
+ui bg[maxn][15];
+ui query(int l, int r, int o){
+    int len = (r - l + 1);
+    int i = 0;
+    while((1 << i) <= len) ++i;
+    --i;
+    int sp = r - (1 << i) + 1;
+    if(o) return max(bg[l][i], bg[sp][i]);
+    else return min(bg[l][i], bg[sp][i]);
+}
+int main(){
+    //data_gen(); return 0;
+    //C(); return 0;
+    int debug = 0;
+    if(debug) freopen("in.txt", "r", stdin);
+    //freopen("out.txt", "w", stdout);
+    int T = readint();
+    while(T--){
+        scanf("%d%d", &n, &m);
+        FOR(i, 1, n) FOR(j, 1, m) scanf("%u", &mt[i][j]);
+        FOR(i, 1, n) FOR(j, 1, m) x1[i][j] = x2[i][j] = y1[i][j] = y2[i][j] = 1;
+        FOR(i, 1, n){
+            FOR(j, 1, m) bg[j][0] = mt[i][j];
+            for(int i = 1; (1 << i) <= m; i++){
+                int len = 1 << i;
+                for(int j = 1; j + len - 1 <= m; j++) bg[j][i] = min(bg[j][i - 1], bg[j + len / 2][i - 1]);
+            }
+            FOR(j, 1, m){
+                if(j == 1 || mt[i][j] >= mt[i][j - 1]) continue;
+                int l = 0, r = j - 1;
+                while(r - l > 1){
+                    int mid = (l + r) >> 1;
+                    ui tem = query(mid, r, 0);
+                    if(tem > mt[i][j]) r = mid;
+                    else l = mid;
+                }
+                x1[i][j] = j - r + 1;
+            }
+            FOR(j, 1, m){
+                if(j == m || mt[i][j] >= mt[i][j + 1]) continue;
+                int l = j + 1, r = m + 1;
+                while(r - l > 1){
+                    int mid = (l + r) >> 1;
+                    ui tem = query(l, mid, 0);
+                    if(tem > mt[i][j]) l = mid;
+                    else r = mid;
+                }
+                x2[i][j] = l - j + 1;
+            }
+        }
+        FOR(j, 1, m){
+            FOR(i, 1, n) bg[i][0] = mt[i][j];
+            for(int i = 1; (1 << i) <= n; i++){
+                int len = 1 << i;
+                for(int j = 1; j + len - 1 <= n; j++) bg[j][i] = max(bg[j][i - 1], bg[j + len / 2][i - 1]);
+            }
+            FOR(i, 1, n){
+                if(i == 1 || mt[i][j] <= mt[i - 1][j]) continue;
+                int l = 0, r = i - 1;
+                while(r - l > 1){
+                    int mid = (l + r) >> 1;
+                    ui tem = query(mid, r, 1);
+                    if(tem < mt[i][j]) r = mid;
+                    else l = mid;
+                }
+                y1[i][j] = i - r + 1;
+            }
+            FOR(i, 1, n){
+                if(i == n || mt[i][j] <= mt[i + 1][j]) continue;
+                int l = i + 1, r = n + 1;
+                while(r - l > 1){
+                    int mid = (l + r) >> 1;
+                    ui tem = query(l, mid, 1);
+                    if(tem < mt[i][j]) l = mid;
+                    else r = mid;
+                }
+                y2[i][j] = l - i + 1;
+            }
+        }
+        ui ans = 0;
+        FOR(i, 1, n) FOR(j, 1, m){
+            ui X1 = x1[i][j] * (x1[i][j] - 1) / 2;
+            ui X2 = x2[i][j] * (x2[i][j] - 1) / 2;
+            ui Y1 = y1[i][j] * (y1[i][j] - 1) / 2;
+            ui Y2 = y2[i][j] * (y2[i][j] - 1) / 2;
+            ui _x1 = x1[i][j], _x2 = x2[i][j], _y1 = y1[i][j], _y2 = y2[i][j];
+            ui para = _x2 * _y2 * X1 * Y1 + X1 * Y2 * _x2 * _y1 + X2 * Y1 * _x1 * _y2 + X2 * Y2 * _x1 * _y1;
+            para += X1 * _x2 * _y1 * _y2 + X2 * _x1 * _y1 * _y2 + Y1 * _x1 * _x2 * _y2 + Y2 * _x1 * _x2 * _y1;
+            para += _x1 * _y1 * _y2 * _x2;
+            ans += para * mt[i][j];
+        }
+        printf("%u\n", ans);
+    }
+    return 0;
+}
 ```

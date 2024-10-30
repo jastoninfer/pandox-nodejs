@@ -1,0 +1,239 @@
+KEYWORDS[[ReactJS][NodeJS][Web Application][Oracle Linux][Deployment]]KEYWORDS
+## 硬件与操作系统
+
+机器是ARM架构的, 4核OCPU, 4Gbps网络带宽, 25GB内存
+
+操作系统是Oracle Linux (Version 8)
+This is my first post
+
+## 基础环境搭建
+
+1.  安装Git
+
+Oracle Linux通常使用`yum`包管理器。使用如下命令安装Git:
+
+```bash
+sudo yum install git
+```
+
+2.  拷贝后端代码
+
+```bash
+git clone https://github.com/jastoninfer/pandox-nodejs.git
+```
+
+3.  安装NodeJS
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+nvm install 22
+node -v
+npm -v
+```
+
+4. 安装`ts-node`, `typescript`
+
+```bash
+npm install ts-node --save-dev
+npm install typescript --save-dev
+```
+
+5. 安装并配置MySQL
+
+Reference: [Installing MySQL on Linux Using the MySQL Yum Repository](https://docs.oracle.com/cd/E17952_01/mysql-8.0-en/linux-installation-yum-repo.html)
+
+使用如下命令在Oracle Linux上安装MySQL:
+
+```bash
+sudo yum install https://dev.mysql.com/get/mysql84-community-release-el8-1.noarch.rpm
+dnf repolist enabled | grep "mysql.*-community.*"
+
+sudo dnf module disable mysql
+sudo dnf install mysql-community-server
+```
+
+使用如下命令启用并查看MySQL状态:
+
+```bash
+sudo systemctl start mysqld
+sudo systemctl status mysqld
+```
+
+使用如下命令重置`root`用户密码:
+
+```bash
+sudo grep 'temporary password' /var/log/mysqld.log
+mysql -u root -p
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'MyNewPass4!';
+```
+并且新建名为`testdb`的数据库, 然后退出:
+
+```sql
+CREATE DATABASE testdb;
+SHOW DATABASES;
+EXIT
+```
+
+6.  安装Redis
+
+使用如下命令安装Redis:
+
+```bash
+sudo dnf install redis
+sudo systemctl start redis
+sudo systemctl enable redis
+sudo systemctl status redis
+```
+
+7.  安装并配置ElasticSearch
+
+Elasticsearch 需要 Java 运行环境. 运行以下命令安装 OpenJDK:
+
+```bash
+sudo dnf install java-11-openjdk-devel
+java --version
+```
+
+Download and install the public signing key:
+
+```bash
+sudo rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
+```
+
+运行命令 `sudo /etc/yum.repos.d/elasticsearch.repo` 并填入如下内容:
+
+```bash
+[elasticsearch]
+name=Elasticsearch repository for 8.x packages
+baseurl=https://artifacts.elastic.co/packages/8.x/yum
+gpgcheck=1
+gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+enabled=0
+autorefresh=1
+type=rpm-md
+```
+
+然后使用命令 `sudo dnf install --enablerepo=elasticsearch elasticsearch`
+来安装ElasticSearch.
+
+然后运行 `sudo vim /etc/elasticsearch/elasticsearch.yml` 编辑ElasticSearch的配置文件, 找到对应行修改为:
+
+```yml
+cluster.name: elasticsearch_pandox
+node.name: node-1
+network.host: 127.0.0.1
+```
+
+启动并查看ElasticSearch状态:
+
+```bash
+sudo systemctl start elasticsearch
+sudo systemctl enable elasticsearch
+sudo systemctl status elasticsearch
+```
+
+> TODO: 配置logstash 写ES数据库
+
+8.  运行后端服务
+
+在 `pandox-nodejs` 目录下, 执行如下命令运行后端服务:
+
+```bash
+npm run prod
+```
+
+9. 为服务器配置防火墙设置
+
+首先启用 `firewalld` 服务:
+
+```bash
+sudo systemctl start firewalld
+sudo systemctl enable firewalld
+```
+
+然后运行HTTP(80)和HTTP(443)端口访问:
+
+```bash
+sudo firewall-cmd --zone=public --add-service=http --permanent
+sudo firewall-cmd --zone=public --add-service=https --permanent
+```
+
+重新加载防火墙配置，使更改生效:
+
+```bash
+sudo firewall-cmd --reload
+```
+
+然后使用命令 `sudo firewall-cmd --list-all` 查看80 和 443 端口的状态，确保它们已成功添加到防火墙规则中.
+
+
+
+11.  为服务器配置Nginx及HTTPS
+
+使用如下命令安装Nginx并启动:
+
+```bash
+sudo dnf install -y nginx
+sudo systemctl start nginx
+sudo systemctl enable nginx
+```
+
+使用 `sudo vim /etc/nginx/conf.d/node_proxy.conf` 编辑Nginx配置文件, 为
+NodeJS服务添加反向代理, 使用如下配置:
+```nginx
+server {
+    listen 80;
+    server_name pandox.xyz;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+为了开启对HTTPS的支持, 首先安装免费的证书软件Certbort, 在此之前, 需要先安装 `snapd` .
+
+使用如下命令将EPEL repository添加到RHEL 8 system:
+
+```bash
+sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+sudo dnf upgrade
+```
+
+使用如下命令安装 `snapd` :
+
+```bash
+sudo dnf install snapd
+```
+
+Once installed, the *systemd* unit that manages the main snap communication socket needs to be enabled:
+
+```bash
+sudo systemctl enable --now snapd.socket
+```
+
+To enable classic snap support, enter the following to create a symbolic link between `/var/lib/snapd/snap` and `/snap` :
+
+```bash
+sudo ln -s /var/lib/snapd/snap /snap
+```
+
+Execute the following instruction on the command line on the machine to ensure that the certbot command can be run:
+
+```bash
+sudo ln -s /snap/bin/certbot /usr/bin/certbot
+```
+
+Run this command to get a certificate and have Certbot edit your nginx configuration automatically to serve it, turning on HTTPS access in a single step:
+
+```bash
+sudo certbot --nginx
+```
+
+`certbot` 会自动修改Nginx对应的配置信息.
+## 

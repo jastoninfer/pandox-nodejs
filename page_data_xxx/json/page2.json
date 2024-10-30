@@ -1,0 +1,1 @@
+{"title":"123-123","content":"## Demo\n\nThis is my first post\n\n```js\nfunction A() {\n    const counter = 0;\n    const B = () => {\n        console.log(counter);\n    };\n    return B;\n}\nconst b = A();\nb();\n```","author":"pandoxone"}

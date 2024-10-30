@@ -16,7 +16,7 @@
     "elasticsearch": "^16.7.3",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
-    "marked": "^12.0.2",
+    "marked": "^14.1.3",
     "marked-katex-extension": "^5.0.1",
     "marked-plaintify": "^1.0.1",
     "mime": "^1.6.0",
