@@ -126,8 +126,9 @@ const getRecommendPages:C_Func = async (req, res) => {
             limit: NUM_RECOMMENDED_PAGES,
         });
 
+        // console.log('+++++++++++++');
         const parser: Marked = new Marked({ gfm: true }).use(markedPlaintify());
-
+        // console.log('--------------');
         const ret_pages: any[] = [];
 
         for (const {dataValues: pageData} of pages) {
@@ -145,7 +146,7 @@ const getRecommendPages:C_Func = async (req, res) => {
                 imageUrls: await filterImagesFromPage(
                     pageData.content
                 ), content: parser.parse(pageData.content)};
-            
+            // console.log('<<<<<<<<<<<<<<<');
             // const ret_page = {...page, dataValues: {...page.dataValues, avatar: 
             //     IMAGE_PRFIX(page.author) + user.avatar,
             // imageUrls: await filterImagesFromPage(
@@ -163,6 +164,7 @@ const getRecommendPages:C_Func = async (req, res) => {
         res.send(ret_pages);
         return;
     } catch (err: any) {
+        console.log('ERROR OCCURRED');
         res.status(500).send({
             message:
                 err.message ||
