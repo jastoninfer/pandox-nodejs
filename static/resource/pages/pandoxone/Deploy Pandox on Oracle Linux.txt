@@ -132,7 +132,7 @@ sudo systemctl enable elasticsearch
 sudo systemctl status elasticsearch
 ```
 
-## 运行后端服务
+## Run Backend Services
 
 In the `pandox-nodejs` directory, execute the following command to run the backend service:
 
