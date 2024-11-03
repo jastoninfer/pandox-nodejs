@@ -25,8 +25,12 @@ const createStorage = (username: string): StorageEngine => {
             try {
                 await fs.access(dir);
             } catch (err) {
-                cb(new Error('Direcotory not accessible.'), dir);
-                return;
+                try {
+                    await fs.mkdir(dir, {recursive: true});
+                } catch (mkdirErr){
+                    cb(new Error('Failed to create directory'), dir);
+                    return;
+                }
             }
             try {
                 await fs.access(path.join(dir, file.originalname));
