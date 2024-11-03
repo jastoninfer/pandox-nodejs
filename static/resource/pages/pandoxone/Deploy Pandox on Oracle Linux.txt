@@ -233,7 +233,7 @@ Run this command to get a certificate and have Certbot edit your nginx configura
 sudo certbot --nginx
 ```
 
-`certbot` 会自动修改Nginx对应的配置信息.
+`cerbot` will automatically change Nginx configurations accordingly.
 
 ### Install Logstash and Inject Data into Elasticsearch
 

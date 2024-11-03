@@ -50,18 +50,18 @@ const initPages = async (users: UserDict, userImageRename: UserImageRename): Pro
                     content = content.replace(
                         domainRenameRegex,
                         (match:any, p1:any, p2:any, p3:any) => {
-                            const new_p2 = p2.replace(
+                            const new_p2 = p2.includes('pandox') ? p2.replace(
                                 /https:\/\/[^\/]+/g,
                                 URL_PREFIX
-                            );
-                            console.log('match 1 is ', match);
+                            ) : p2;
+                            // console.log('match 1 is ', match);
                             return `![${p1}](${new_p2}${
                                 (p3 && ` ${p3}`) || ''
                             })`;
                         }
                     );
                     content = content.replace(imgRenameRegex, (match:any) => {
-                        console.log('match 2', match);
+                        // console.log('match 2', match);
                         return userImageRename[username][
                             match.replace(/%20/g, ' ')
                         ];

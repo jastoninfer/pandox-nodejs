@@ -1,0 +1,57 @@
+KEYWORDS[[Markdown][Rich Editor]]KEYWORDS
+
+## This is L2 Title
+
+> this is a blockquote
+
+`The following describes a circle:`
+
+$$
+x^2+y^2 = 1
+$$
+
+### This is a L3 Title
+
+We can also insert a resized image here:
+
+![Google logo](https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png "40")
+
+### Insert Codeblock
+
+```javascript
+function debounce(func, delay) {
+    let timeoutId;
+
+    return function(...args) {
+        // Clear the previous timer
+        clearTimeout(timeoutId);
+        // Set a new timer
+        timeoutId = setTimeout(() => {
+            func.apply(this, args);
+        }, delay);
+    };
+}
+
+// Example usage
+const handleResize = () => {
+    console.log('Window resized!');
+};
+
+window.addEventListener('resize', debounce(handleResize, 300));
+```
+
+**Below are tables**:
+
+| Product      | Q1 Sales | Q2 Sales | Q3 Sales | Q4 Sales | Total Sales |
+|--------------|----------|----------|----------|----------|-------------|
+| Widget A     | 150      | 200      | 250      | 300      | 900         |
+| Widget B     | 120      | 180      | 220      | 280      | 800         |
+| Widget C     | 90       | 140      | 190      | 240      | 660         |
+| **Total**    | **360**  | **520**  | **660**  | **820**  | **2360**    |
+
+| Category     | Item Count | Average Price |
+|--------------|------------|----------------|
+| Electronics  | 150        | $299.99        |
+| Furniture    | 75         | $599.49        |
+| Clothing     | 200        | $49.99         |
+| **Grand Total** | **425** | **-**          |
