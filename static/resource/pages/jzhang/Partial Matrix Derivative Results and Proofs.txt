@@ -1,0 +1,140 @@
+KEYWORDS[[Machine Learning][PRML][Math][Algebra]]KEYWORDS
+
+![demo](https://www.pandox.xyz/api/db/images/jzhang/pexels-enginakyurt-27644253.jpg "20")
+
+**1** 
+>
+>$$
+>\frac{\partial}{\partial \mathbf{x}}\left(\mathbf{x}^\text{T}\mathbf{a}\right)=\frac{\partial}{\partial \mathbf{x}}\left(\mathbf{a}^\text{T}\mathbf{x}\right)=\mathbf{a}.
+>$$
+
+Proof: Since
+
+$$
+\mathbf{x}^\text{T}\mathbf{a}=\mathbf{a}^\text{T}\mathbf{x}=\sum{a_ix_i},
+$$
+and
+
+$$
+\frac{\partial}{\partial x_j} \sum{a_ix_i}=a_j,
+$$
+
+Thus, the original statement is proven.
+**2** 
+>
+>$$
+>\frac{\partial}{\partial x}(\mathbf{AB})=\frac{\partial\mathbf{A}}{\partial x}\mathbf{B}+\mathbf{A}\frac{\partial\mathbf{B}}{\partial x}.
+>$$
+
+Proof:
+
+$$
+\begin{aligned}\left(\frac{\partial\mathbf{AB}}{\partial x}\right)_{ij}&=\frac{\partial}{\partial x}\sum_k{A_{ik}B_{kj}}\\&=\sum_k{\frac{\partial A_{ik}}{\partial x}B_{kj}+A_{ik}\frac{\partial B_{kj}}{\partial x}}\\&=\frac{\partial A_{i,\cdot}}{\partial x}B_{\cdot,j}+A_{i,\cdot}\frac{\partial B_{\cdot, j}}{\partial x}\\&=\left(\frac{\partial\mathbf{A}}{\partial x}\mathbf{B}+\mathbf{A}\frac{\partial\mathbf{B}}{\partial x}\right)_{ij}.\end{aligned}
+$$
+
+**3** 
+>
+>$$
+>\frac{\partial}{\partial x}(\mathbf{A}^{-1})=-\mathbf{A}^{-1}\frac{\partial \mathbf{A}}{\partial x}\mathbf{A}^{-1}.
+>$$
+
+Proof: Since
+
+$$
+\begin{aligned}\frac{\partial \mathbf{I}}{\partial x}&=\frac{\partial \mathbf{A}^\text{-1}\mathbf{A}}{\partial x}\\&=\frac{\partial}{\partial x}(\mathbf{A}^{-1})\mathbf{A}+\mathbf{A}^\text{-1}\frac{\partial\mathbf{A}}{\partial x}\\&=\mathbf{0},\end{aligned}
+$$
+rearranging gives the desired result.
+
+
+**4**
+>
+>$$
+>\frac{\partial}{\partial \mathbf{A}}\text{Tr}(\mathbf{AB})=\mathbf{B}^\text{T}.
+>$$
+
+Proof: Since
+
+$$
+\begin{aligned}\frac{\partial}{\partial A_{ij}}\text{Tr}(\mathbf{AB})&=\frac{\partial}{\partial A_{ij}}\sum_k{A_{k,\cdot}B_{\cdot,k}}\\&=\frac{\partial}{\partial A_{ij}}A_{i,\cdot}B_{\cdot,i}\\&=B_{ji},\end{aligned}
+$$
+Thus, the original statement is proven.
+
+**5**
+>
+>$$
+>\frac{\partial}{\partial \mathbf{A}}\text{Tr}(\mathbf{A}^\text{T}\mathbf{B})=\mathbf{B}.
+>$$
+
+Proof: Since
+
+$$
+\frac{\partial}{\partial \mathbf{A}}\text{Tr}(\mathbf{AB})=\mathbf{B}^\text{T},
+$$
+Thus,
+
+$$
+\frac{\partial}{\partial \mathbf{A}^\text{T}}\text{Tr}(\mathbf{AB})=\mathbf{B},
+$$
+Thus, the original statement is proven.
+
+**6** 
+>
+>$$
+>\frac{\partial}{\partial \mathbf{A}}\text{Tr}(\mathbf{A})=\mathbf{I}.
+>$$
+
+Proof: Setting $\mathbf{B}=\mathbf{I}$ in equation (4) yields the desired result.
+
+**7**
+>
+>$$
+>\frac{\partial}{\partial \mathbf{A}}\text{Tr}(\mathbf{AB}\mathbf{A}^\text{T})=\mathbf{A}(\mathbf{B}+\mathbf{B}^\text{T}).
+>$$
+
+Proof:
+
+$$
+\begin{aligned}\frac{\partial}{\partial A_{ij}}\text{Tr}(\mathbf{AB}\mathbf{A}^\text{T})&=\sum_{k}\frac{\partial}{\partial A_{ij}}\left(\mathbf{AB}\mathbf{A}^\text{T}\right)_{kk}\\&=\sum_{k}\frac{\partial}{\partial A_{ij}}A_{k,\cdot}\mathbf{B}A_{\cdot,k}^\text{T}\\&=\sum_{k,u,v}\frac{\partial}{\partial A_{ij}}A_{ku}B_{uv}A_{kv}\\&=\sum_{u,v}\frac{\partial}{\partial A_{ij}}A_{iu}B_{uv}A_{iv}\\&=\sum_{v\neq j}A_{iv}B_{jv}+2A_{ij}B_{jj}+\sum_{u\neq j}A_{iu}B_{uj}\\&=\sum_{u}A_{iu}B_{uj}+\sum_{v}A_{iv}B_{jv}\\&=(\mathbf{AB})_{ij}+(\mathbf{AB}^\text{T})_{ij.}\end{aligned}
+$$
+
+**8** 
+>
+>$$
+>\frac{\partial}{\partial x}\ln|\mathbf{A}|=\text{Tr}\left(\mathbf{A}^{-1}\frac{\partial \mathbf{A}}{\partial x}\right).
+>$$
+
+Proof: Consider $\mathbf{A}$ as an $M$ -order full-rank real symmetric matrix, hence it has $M$ orthogonal unit eigenvectors $\{\mathbf{u}_1,...,\mathbf{u}_M\}$ with corresponding eigenvalues $\{\lambda_1,...,\lambda_M\}$. Thus,
+
+$$
+\mathbf{A}=\sum_{i=1}^M\lambda_i\mathbf{u}_i\mathbf{u}_i^\text{T},
+$$
+
+$$
+\mathbf{A}^\text{-1}=\sum_{i=1}^M\frac{1}{\lambda_i}\mathbf{u}_i\mathbf{u}_i^\text{T},
+$$
+Thus
+
+$$
+\begin{aligned}\text{Tr}\left(\mathbf{A}^{-1}\frac{\partial \mathbf{A}}{\partial x}\right)&=\text{Tr}\left(\sum_{i=1}^M\frac{1}{\lambda_i}\mathbf{u}_i\mathbf{u}_i^\text{T}\sum_{i=1}^M\frac{\partial \lambda_i\mathbf{u}_i\mathbf{u}_i^\text{T}}{\partial x}\right)
+\\&=\sum_{i,j}\text{Tr}\left(\frac{1}{\lambda_i}\mathbf{u}_i\mathbf{u}_i^\text{T}\left(\frac{\partial\lambda_j}{\partial x}\mathbf{u}_j\mathbf{u}_j^\text{T}+\lambda_j\frac{\partial \mathbf{u}_j\mathbf{u}_j^\text{T}}{\partial x}\right)\right)
+\\&=\sum_{i,j}\text{Tr}\left(\frac{1}{\lambda_i}\frac{\partial\lambda_j}{\partial x}\mathbf{u}_j\mathbf{u}_j^\text{T}\mathbf{u}_i\mathbf{u}_i^\text{T}\right)+\text{Tr}\left(\frac{\lambda_j}{\lambda_i}\mathbf{u}_i\mathbf{u}_i^\text{T}\left(\frac{\partial \mathbf{u}_j}{\partial x}\mathbf{u}_j^\text{T}+\mathbf{u}_j\frac{\mathbf{u}_j^\text{T}}{\partial x}\right)\right)
+\\&=\sum_{i}\frac{1}{\lambda_i}\frac{\partial\lambda_i}{\partial x}\text{Tr}\left(\mathbf{u}_i\mathbf{u}_i^\text{T}\right)+\sum_{i,j}\text{Tr}\left(\frac{\lambda_j}{\lambda_i}\frac{\partial \mathbf{u}_j}{\partial }\mathbf{u}_j^\text{T}\mathbf{u}_i\mathbf{u}_i^\text{T}+\frac{\lambda_j}{\lambda_i}\mathbf{u}_i\mathbf{u}_i^\text{T}\mathbf{u}_j\frac{\mathbf{u}_j^\text{T}}{\partial x}\right)
+\\&=\sum_{i}\frac{1}{\lambda_i}\frac{\partial\lambda_i}{\partial x}\text{Tr}\left(\mathbf{u}_i^\text{T}\mathbf{u}_i\right)+\sum_{i}\text{Tr}\left(\frac{\partial \mathbf{u}_i}{\partial x}\mathbf{u}_i^\text{T}+\mathbf{u}_i\frac{\partial \mathbf{u}_i^\text{T}}{\partial x}\right)
+\\&=\sum_{i}\frac{1}{\lambda_i}\frac{\partial\lambda_i}{\partial x}+\sum_{i}\text{Tr}\left(\frac{\partial \mathbf{u}_i^\text{T}\mathbf{u}_i}{\partial x}\right)
+\\&=\sum_{i}\frac{1}{\lambda_i}\frac{\partial\lambda_i}{\partial x},
+\end{aligned}
+$$
+On the other hand
+
+$$
+\begin{aligned}\frac{\partial}{\partial x}\ln|\mathbf{A}|&= \frac{\partial}{\partial x}\ln\prod_i{\lambda_i}
+\\&= \sum_i\frac{1}{\lambda_i}
+\frac{\partial \lambda_i}{\partial x}.\end{aligned}
+$$
+**9** 
+>
+>$$
+>\frac{\partial}{\partial\mathbf{A}}\ln|\mathbf{A}|=\left(\mathbf{A}^{-1}\right)^\text{T}.
+>$$
+
+Proof: omitted.

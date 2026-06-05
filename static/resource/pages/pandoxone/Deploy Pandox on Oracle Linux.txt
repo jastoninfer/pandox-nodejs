@@ -1,0 +1,346 @@
+KEYWORDS[[ReactJS][NodeJS][Web Application][Oracle Linux][Deployment]]KEYWORDS
+
+## Hardware and Operating System
+The machine is ARM architecture, 4-core OCPU, 4Gbps network bandwidth, 25GB memory.
+
+The operating system is Oracle Linux (Version 8).
+
+## Basic Environment Setup
+
+### Install Git
+
+Oracle Linux typically uses the `yum` package manager. Use the following command to install Git:
+
+```bash
+sudo yum install git
+```
+
+### Clone Backend Code
+
+```bash
+git clone https://github.com/jastoninfer/pandox-nodejs.git
+```
+
+### Install NodeJS
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+nvm install 22
+node -v
+npm -v
+```
+
+### Install `ts-node`, `typescript`
+
+```bash
+npm install ts-node --save-dev
+npm install typescript --save-dev
+```
+
+### Install and Configure MySQL
+
+Reference: [Installing MySQL on Linux Using the MySQL Yum Repository](https://docs.oracle.com/cd/E17952_01/mysql-8.0-en/linux-installation-yum-repo.html)
+
+Use the following command to install MySQL on Oracle Linux:
+
+```bash
+sudo yum install https://dev.mysql.com/get/mysql84-community-release-el8-1.noarch.rpm
+dnf repolist enabled | grep "mysql.*-community.*"
+
+sudo dnf module disable mysql
+sudo dnf install mysql-community-server
+```
+
+Use the following command to start and check the MySQL status:
+
+```bash
+sudo systemctl start mysqld
+sudo systemctl status mysqld
+```
+
+Use the following command to reset the `root` user password:
+
+```bash
+sudo grep 'temporary password' /var/log/mysqld.log
+mysql -u root -p
+ALTER USER 'root'@'localhost' IDENTIFIED BY '<your-mysql-root-password>';
+```
+
+And create a database named `testdb` , then exit:
+
+```sql
+CREATE DATABASE testdb;
+SHOW DATABASES;
+EXIT
+```
+
+### Install Redis
+
+Use the following command to install Redis:
+
+```bash
+sudo dnf install redis
+sudo systemctl start redis
+sudo systemctl enable redis
+sudo systemctl status redis
+```
+
+### Install and Configure Elasticsearch
+
+Elasticsearch requires a Java runtime environment. Run the following command to install OpenJDK:
+
+```bash
+sudo dnf install java-11-openjdk-devel
+java --version
+```
+
+Download and install the public signing key:
+
+```bash
+sudo rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
+```
+
+Run the command `sudo /etc/yum.repos.d/elasticsearch.repo` and fill in the following content:
+
+```bash
+[elasticsearch]
+name=Elasticsearch repository for 8.x packages
+baseurl=https://artifacts.elastic.co/packages/8.x/yum
+gpgcheck=1
+gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+enabled=0
+autorefresh=1
+type=rpm-md
+```
+
+Then use the command `sudo dnf install --enablerepo=elasticsearch elasticsearch`
+to install Elasticsearch.
+
+Then run `sudo vim /etc/elasticsearch/elasticsearch.yml` to edit the Elasticsearch configuration file, find the corresponding lines and change them to:
+
+```yml
+cluster.name: elasticsearch_pandox
+node.name: node-1
+network.host: 127.0.0.1
+```
+
+Start and check the Elasticsearch status:
+
+```bash
+sudo systemctl start elasticsearch
+sudo systemctl enable elasticsearch
+sudo systemctl status elasticsearch
+```
+
+## Run Backend Services
+
+In the `pandox-nodejs` directory, execute the following command to run the backend service:
+
+```bash
+npm run prod
+```
+
+### Configure Firewall Settings for the Server
+
+First, enable the `firewalld` service:
+
+```bash
+sudo systemctl start firewalld
+sudo systemctl enable firewalld
+```
+
+Then allow HTTP (80) and HTTPS (443) access:
+
+```bash
+sudo firewall-cmd --zone=public --add-service=http --permanent
+sudo firewall-cmd --zone=public --add-service=https --permanent
+```
+
+Reload the firewall configuration to make changes take effect:
+
+```bash
+sudo firewall-cmd --reload
+```
+
+Then use the command `sudo firewall-cmd --list-all` to check the status of ports 80 and 443, ensuring they have been successfully added to the firewall rules.
+
+
+
+### Configure Nginx and HTTPS for the Server
+
+Use the following command to install and start Nginx:
+
+```bash
+sudo dnf install -y nginx
+sudo systemctl start nginx
+sudo systemctl enable nginx
+```
+
+Use `sudo vim /etc/nginx/conf.d/node_proxy.conf` to edit the Nginx configuration file, adding a reverse proxy for the NodeJS service with the following configuration:
+
+```nginx
+server {
+    listen 80;
+    server_name pandox.xyz;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+To enable HTTPS support, first install the free certificate software Certbot. Before that, you need to install `snapd`.
+
+Use the following command to add the EPEL repository to the RHEL 8 system:
+
+```bash
+sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+sudo dnf upgrade
+```
+
+Use the following command to install `snapd` :
+
+```bash
+sudo dnf install snapd
+```
+
+Once installed, the *systemd* unit that manages the main snap communication socket needs to be enabled:
+
+```bash
+sudo systemctl enable --now snapd.socket
+```
+
+To enable classic snap support, enter the following to create a symbolic link between `/var/lib/snapd/snap` and `/snap` :
+
+```bash
+sudo ln -s /var/lib/snapd/snap /snap
+```
+
+Execute the following instruction on the command line on the machine to ensure that the certbot command can be run:
+
+```bash
+sudo ln -s /snap/bin/certbot /usr/bin/certbot
+```
+
+Run this command to get a certificate and have Certbot edit your nginx configuration automatically to serve it, turning on HTTPS access in a single step:
+
+```bash
+sudo certbot --nginx
+```
+
+`cerbot` will automatically change Nginx configurations accordingly.
+
+### Install Logstash and Inject Data into Elasticsearch
+
+We need to import some data from MySQL into Elasticsearch, so we first need to install Logstash.
+
+Add Elastic GPG key and repository to install Logstash through the Elastic official repository:
+
+```bash
+sudo rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
+sudo tee /etc/yum.repos.d/elastic.repo <<EOF
+[elastic-8.x]
+name=Elastic repository for 8.x packages
+baseurl=https://artifacts.elastic.co/packages/8.x/yum
+gpgcheck=1
+gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+enabled=1
+autorefresh=1
+type=rpm-md
+EOF
+```
+
+Install Logstash:
+
+```bash
+sudo dnf install logstash
+```
+
+Logstash uses the JDBC plugin to connect to MySQL, so you need to download the MySQL JDBC driver and place it in Logstash's `lib` directory:
+
+```bash
+wget https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-8.0.28.tar.gz
+tar -xzf mysql-connector-java-8.0.28.tar.gz
+sudo cp mysql-connector-java-8.0.28/mysql-connector-java-8.0.28.jar /usr/share/logstash/logstash-core/lib/jars/
+```
+
+Create the Logstash configuration file `jdbc.conf` to read data from MySQL and import it into Elasticsearch; you can choose any file path:
+
+```conf
+input {
+  jdbc {
+    clean_run => true
+    jdbc_driver_library => "/home/opc/mysql-connector-java-8.0.28/mysql-connector-java-8.0.28.jar" 
+    jdbc_driver_class => "com.mysql.jdbc.Driver"
+    jdbc_connection_string => "jdbc:mysql://127.0.0.1:3306/testdb" 
+    jdbc_user => "root" 
+    jdbc_password => "<your-mysql-root-password>" 
+    jdbc_paging_enabled => true
+    tracking_column => "user_ts"
+    use_column_value => true
+    tracking_column_type => "numeric"
+    schedule => "0 0 * * *"
+    statement => "select username, avatar, UNIX_TIMESTAMP(updatedAt) as user_ts from users 
+    WHERE (UNIX_TIMESTAMP(updatedAt) > :sql_last_value AND updatedAt < NOW()) ORDER BY updatedAt ASC"
+    type => "user"
+  }
+
+  jdbc {
+    clean_run => true
+    jdbc_driver_library => "/home/opc/mysql-connector-java-8.0.28/mysql-connector-java-8.0.28.jar" 
+    jdbc_driver_class => "com.mysql.jdbc.Driver"
+    jdbc_connection_string => "jdbc:mysql://127.0.0.1:3306/testdb" 
+    jdbc_user => "root" 
+    jdbc_password => "<your-mysql-root-password>" 
+    jdbc_paging_enabled => true
+    tracking_column => "page_ts"
+    use_column_value => true
+    tracking_column_type => "numeric"
+    schedule => "0 0 * * *"
+    statement => "select id, title, description, content, author, UNIX_TIMESTAMP(updatedAt) as page_ts from 
+    pages WHERE (status='published' AND UNIX_TIMESTAMP(updatedAt) > :sql_last_value AND updatedAt < NOW()) 
+    ORDER BY updatedAt ASC"
+    type => "page"
+  }
+}
+filter {
+  if [type] == "user" {
+    mutate {
+      copy => {"username" => "[@metadata][_id]"}
+      remove_field => ["@version", "user_ts"]
+    }
+  } else if [type] == "page" {
+    mutate {
+      copy => {"id" => "[@metadata][_id]"}
+      remove_field => ["@version", "page_ts"]
+    }
+  }
+}
+
+output {
+  elasticsearch {
+    hosts => ["localhost:9200"]
+    index => "%{type}"
+    document_id => "%{[@metadata][_id]}"
+  }
+}
+```
+
+Use the command `vim run_es.sh` to create a script to run Logstash:
+
+```bash
+curl -X DELETE "localhost:9200/user"
+curl -X DELETE "localhost:9200/page"
+/usr/share/logstash/bin/logstash -f /home/opc/jdbc.conf
+```
+
+Use the following command to run Logstash in the background:
+
+```bash
+sudo nohup bash run_es.sh > run_es_output.log 2>&1 &
+```

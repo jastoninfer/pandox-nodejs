@@ -1,0 +1,114 @@
+KEYWORDS[[Machine Learning][PRML]]KEYWORDS
+
+
+> Under conditions where there is no ambiguity, we will not explicitly distinguish between the concepts of "sampling" and "drawing (sampling)." In fact, the term "sampling" used in several places below actually refers to "drawing," and we will retain this terminology as a matter of convention.
+
+For a given probability distribution $p(\mathbf{z})$ , we want to compute the expectation of a function $f(\mathbf{z})$ defined on this distribution, that is
+
+$$
+\mathbb{E}[f]=\int f(\mathbf{z})p(\mathbf{z}){\rm{d}}\mathbf{z},
+$$
+Here, $f(\mathbf{z})$ is also a random variable. To simplify the calculation, we perform $L$ random samples according to the probability distribution $p(\mathbf{z})$ to obtain samples $\mathbf{z}^{(l)}$ , where $l=1,...,L$ .
+Thus, the expectation estimate of $f$ is given by
+
+$$
+\hat{f}=\frac{1}{L}\sum_{l=1}^L{f(\mathbf{z}^{(l)})},
+$$
+Here, $\hat{f}$ is a statistic (and also a random variable).
+It is easy to see that $\hat{f}$ is an unbiased estimator of $\mathbb{E}[f]$ , meaning it satisfies $\mathbb{E}[\hat{f}] = \mathbb{E}[f]$ .
+The variance of this statistic is given by
+
+$$
+\text{var}[\hat{f}]=\frac{1}{L}\mathbb{E}\left[(f-\mathbb{E}[f])^2\right],
+$$
+
+For directed graphs without observed nodes, the ancestral sampling method can be used; for directed graphs with observed nodes, the posterior probability can be estimated using the logic sampling method (a special case of importance sampling). Sampling in undirected graphs is slightly more complex and can be performed using `Gibbs sampling`.
+
+## Basic Sampling Algorithms
+
+### Box-Muller Transformation
+
+Consider random sampling from a general probability distribution $p(y)$ . Assume $z \sim U(0,1)$ and the mapping $f(\cdot)$ satisfies $y=f(z)$ , which implies that $|p(z){\rm d}z|=|p(y){\rm d}y|$ . 
+Let $h(y)$ be the distribution function of $p(\cdot)$ , and we have
+
+$$
+z=h(y),
+$$
+
+Thus
+
+$$
+y=h^{-1}(z),
+$$
+here we have $f=h^{-1}$ .
+If the random variable is multi-dimensional, the Jacobian determinant can be used, giving us
+
+$$
+p(\mathbf{y})=p(\mathbf{z})\left|\frac{\partial \mathbf{z}}{\partial\mathbf{y}}\right|.
+$$
+One method for sampling from a one-dimensional Gaussian distribution is to use the Box-Muller transformation, which simultaneously generates two independent and identically distributed samples with zero mean and unit variance. For sampling from a multivariate Gaussian distribution, the Cholesky decomposition can be used through the transformation:
+
+$$
+\begin{aligned}\mathbf{\Sigma}&=\mathbf{LL}^\text{T}\\
+\mathbf{y}&=\boldsymbol\mu+\mathbf{Lz},\end{aligned}
+$$
+this yields random samples from $\mathcal{N}(\boldsymbol{\mu}, \mathbf{\Sigma})$ .
+
+### Rejection Sampling
+
+For some distributions that are complex in form, it may not be easy to sample directly through transformations; in such cases, `rejection sampling` can be used.
+Assuming the true distribution is $p(z)$ , given $z$ , we can calculate $\widetilde{p}(z)$ , satisfying
+
+$$
+p(z)=\frac{1}{Z_p}\widetilde{p}(z),
+$$
+
+where $Z_p$ is an undetermined constant.
+First, choose a simple distribution $q(z)$ and a corresponding constant $k$ such that for all $z$ , $kq(z) \geq \widetilde{p}(z)$ .
+Then, generate $z_0$ from the distribution $q(z)$ and randomly select $u_0$ uniformly from $[0, kq(z_0)]$ , so that the pair $(z_0, u_0)$ is uniformly distributed under the curve of $kq(z)$ .
+If $u_0 > \widetilde{p}(z_0)$ , the sample is discarded, ensuring that the remaining pairs are uniformly distributed under the curve of $\widetilde{p}(z)$ .
+Now, focusing only on the values of $z_0$ in the samples, it is easy to show that they follow the distribution $p(z)$ .
+
+Moreover, to reduce the rejection rate, $k$ should be chosen as small as possible, requiring $q(z)$ to be as similar to $p(z)$ as possible.
+
+### Adaptive Rejection Sampling
+
+In general, for any given distribution $p(z)$ , it is challenging to provide an analytical envelope function that closely approximates that distribution.
+Adaptive rejection sampling can adjust $q(z)$ at runtime to better approximate $p(z)$ .
+Specifically, when $\ln p(z)$ is a concave function, we can construct a set of tangent lines at the point $(z_0, p(z_0))$ to serve as the envelope function for $p(z)$ .
+When a certain $(z_0, u_0)$ tuple is rejected, adding a tangent line at $z_0$ can improve the approximation.
+
+> When $\ln p(z)$ is not concave, an improved adaptive rejection sampling algorithm (with a Metropolis-Hastings step) is used.
+
+The direct application of rejection sampling is limited by the dimensionality of the distribution; in fact, the rejection rate increases exponentially with the dimension.
+
+### Importance Sampling
+
+Importance sampling provides an estimate of numerical characteristics for a distribution $p(\mathbf{z})$ without directly sampling from $p(\mathbf{z})$ .
+The basic principle is as follows: first, a proposal distribution $q(\mathbf{z})$ is constructed, and then samples are drawn from $q(\mathbf{z})$ to estimate $\mathbb{E}[f]$ , which is given by
+
+![demo](https://www.pandox.xyz/api/db/images/pandoxone/Principle-of-importance-sampling.png "50")
+
+$$
+\begin{aligned}\mathbb{E}[f]&=\int f(\mathbf{z})p(\mathbf{z}){\rm{d}}\mathbf{z}\\&=
+\int f(\mathbf{z})\frac{p(\mathbf{z})}{q(\mathbf{z})}q(\mathbf{z}){\rm{d}}\mathbf{z}\\&\simeq
+\frac{1}{L}\sum_{l=1}^L\frac{p(\mathbf{z}^{(l)})}{q(\mathbf{z}^{(l)})}f(\mathbf{z}^{(l)}),
+\end{aligned}
+$$
+where $\frac{p(\mathbf{z}^{(l)})}{q(\mathbf{z}^{(l)})}$ , denoted as $r_l$ , is referred to as the importance weight.
+Clearly, if $q(\mathbf{z}) \equiv p(\mathbf{z})$ , then $r_l \equiv 1$ .
+
+Similar to rejection sampling, the effectiveness of importance sampling depends on how closely the chosen proposal distribution resembles the original distribution.
+When the two distributions are very different, this sampling method will provide a poor estimate.
+
+## Markov Chain Monte Carlo
+
+![demo](https://www.pandox.xyz/api/db/images/pandoxone/Metropolis_algorithm_convergence_example.png "50")
+
+## Gibbs Sampling
+
+## Slice Sampling
+
+## Mixture Monte Carlo Algorithm
+
+## Estimating the Partition Function

@@ -1,0 +1,29 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# environment files
+.env
+.env.*
+!.env.example
+
+# build and test output
+dist/
+build/
+coverage/
+
+# runtime data
+dump.rdb
+img_data/
+logs/
+*.log
+
+# local tools and OS files
+.DS_Store
+.vscode/
+.idea/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

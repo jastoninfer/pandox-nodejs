@@ -1,0 +1,322 @@
+KEYWORDS[[Machine Learning][PRML]]KEYWORDS
+
+## Bayesian Network
+
+**1** Although probabilistic models can be represented and manipulated through algebraic operations, it is sometimes more convenient and beneficial to use graphs to describe probability distributions. Such models are also known as probabilistic graph models.
+
+**2** A Bayesian network, also called a directed graph model, represents random variables as nodes (which may represent one or more random variables) and directed edges to represent probabilistic relationships between variables. A Markov random field, or undirected graph model, differs from a Bayesian network in that undirected edges represent soft constraints between random variables rather than causal relationships.
+
+**3** Suppose a Bayesian network contains $K$ nodes, then the joint distribution of random variables is represented as
+
+$$
+p(\mathbf{x})=\prod_{k=1}^Kp(x_k|\text{pa}_k),
+$$
+
+where $\text{pa}_k$ denotes the parent node of $x_k$, $\mathbf{x}=\{x_1,...,x_K\}$ 。
+
+**4** The directed graphs we discuss are generally acyclic, meaning they are directed acyclic graphs (DAGs). Specifically, by rearranging the numbering of nodes, the value of a parent node's number can always be made smaller than that of its child node.
+
+**5** Reconsider the polynomial regression problem, where the random variables include the polynomial coefficients $\mathbf{w}$ and the observed data $\mathbf{t}$,
+> The observed data should be treated as random variables because we assume that the observations are noisy. The first observation and the second may not be the same, as they follow a certain probability distribution. What we obtain are the observed values (samples), not the distribution itself.
+
+Additionally, the model includes input data $\mathbf{x} = \left(x_1, ..., x_N\right)^\text{T}$, noise variance $\sigma^2$, and the precision of the prior on the coefficients, $\alpha$. The joint distribution of the random variables ( $\mathbf{w}$ and $\mathbf{t}$ ) is then
+
+$$
+p(\mathbf{t,w})=p(\mathbf{w})\prod_{n=1}^Np(t_n|\mathbf{w}),
+$$
+
+Illustrated as
+
+![o_Untitled Diagram](https://www.pandox.xyz/api/db/images/pandoxone/o_Untitled%20Diagram%201.png "80")
+
+To make the representation more compact, merge the $N$ nodes of the same type and enclose them in a single box. Add the remaining data, except for the random variables, into the graph structure. Since
+
+$$
+p(\mathbf{t,w}|\mathbf{x},\alpha,\sigma^2)=p(\mathbf{w}|\alpha)\prod_{n=1}^Np(t_n|\mathbf{w},x_n,\sigma^2),
+$$
+
+We have the following network structure
+<span id = "anchor1"></span>
+![o_Untitled Diagram](https://www.pandox.xyz/api/db/images/pandoxone/o_Untitled%20Diagram%202.png "80")
+
+In graph models, random variables are divided into two categories: `observed variables` and `latent variables` (also known as hidden variables).
+In this case, $\mathbf{t}$ belongs to the former, while $\mathbf{w}$ belongs to the latter. In the graph representation, observed variables are shaded.
+
+During the prediction phase, given a new input variable $\hat{x}$, the model provides the probability distribution of the output variable $\hat{t}$, satisfying
+
+$$
+p(\hat{t}|\hat{x},\mathbf{x,t},\alpha,\sigma^2)\propto \int p(\hat{t},\mathbf{t,w}|\hat{x},\mathbf{x},\alpha,\sigma^2) \rm  d\mathbf{w},
+$$
+
+which has the following network structure
+
+![o_Untitled Diagram](https://www.pandox.xyz/api/db/images/pandoxone/o_Untitled%20Diagram%203.png "80")
+
+**6** Consider the discrete random variable $\mathbf{x} = \left(x_1, \dots, x_K\right)^\text{T}$, which has $K$ different states $\left(x_i \in \{0,1\}, P(x_i = 1) = \mu_i, \sum_{i} x_i = 1\right)$, and thus its probability distribution is
+
+$$
+p(\mathbf{x}|\boldsymbol{\mu})=\prod_{k=1}^K{\mu_k^{x_k}},
+$$
+
+There are $K-1$ degrees of freedom. Now consider $M$ discrete random variables $\mathbf{x}_1, \dots, \mathbf{x}_M$, where each random variable has $K$ states. The number of free parameters is $K^M - 1$, which corresponds to a fully connected directed graph (where there is a directed edge between any lower-indexed node and a higher-indexed node). When there are no edges in the directed graph, the number of free parameters is $M(K-1)$.
+
+**7** There are two ways to reduce the independent parameters in the model. One is parameter sharing ( $\boldsymbol\mu$ ), and another is to use a parameterized method (instead of a truth table) to describe the conditional probability distribution. Suppose all nodes have two states, $1$ or $0$, and the predecessor nodes of node $y$ are $x_1, \dots, x_M$. In this case, if the probability distribution is determined using a truth table, the calculation
+
+$$
+p(y=1|x_1,...,x_M)
+$$
+which requires $2^M$ free parameters, such that
+
+$$
+p(y=1|x_1,...,x_M)=\prod_{i=1}^{2^M}\mu_i^{[x_1,...,x_M]_i},
+$$
+
+If we introduce parameter $\mathbf{w}=\left(w_0,w_1,...,w_M\right)^\text{T},$ we can use the following equation
+
+$$
+p(y=1|x_1,...,x_M)=\sigma\left(\mathbf{w}^\text{T}\mathbf{x}\right)
+$$
+to determine the distribution form，where only $M+1$ parameters are used。
+
+**8** We can also use directed acyclic graphs to represent multivariate Gaussian distributions, known as `linear Gaussian models`. Their applications include `probabilistic principal component analysis (probabilistic PCA)`, `factor analysis`, `linear dynamical systems`, and others. In a directed graph, the nodes follow a Gaussian distribution, with the mean being a linear combination of the values of their parent nodes and the variance being $v_i$. Thus,
+
+$$
+p(x_i|\text{pa}_i)=\mathcal{N}\left(x_i| \sum_{j\in\text{pa}_i}w_{ij}x_j+b_i,v_i\right),
+$$
+
+Thus, the log of the joint distribution is
+
+$$
+\begin{aligned}\ln p(\mathbf{x})&=\sum_{i=1}^D\ln p(x_i|\text{pa}_i)\\&=-\sum_{i=1}^D\frac{1}{2v_i}\left(x_i-\sum_{j\in\text{pa}_i}{w_{ij}x_j}-b_i\right)^2+\text{const},\end{aligned}
+$$
+where $\mathbf{x}=\left(x_1,...,x_D\right)^\text{T}$. Since the result of taking the logarithm is a quadratic function of $\mathbf{x}$, the joint distribution is a multivariate Gaussian distribution.  
+When the states of the parent nodes of node $i$ are given, the random variable $x_i$ at that node satisfies the following equation:
+
+$$
+x_i=\sum_{j\in\text{pa}_i}w_{ij}x_j+b_i+\sqrt{v_i}\epsilon_i,
+$$
+where $\epsilon_i\sim\mathcal{N}(0,1)$ ，且 $\mathbb{E}(\epsilon_i\epsilon_j)=I_{ij}$, hence the expectation of $x_i$ is
+
+$$
+\mathbb{E}[x_i]=\sum_{j\in\text{pa}_i}{w_{ij}\mathbb{E}[x_j]}+b_i,
+$$
+Covariance is calculated as
+
+$$
+\begin{aligned}\text{cov}[x_i,x_j]&=\mathbb{E}[(x_i-\mathbb{E}[x_i])(x_j-\mathbb{E}[x_j])]\\&=\mathbb{E}\left[ (x_i-\mathbb{E}[x_i])\left(\sum_{k\in\text{pa}_j}w_{jk}(x_k-\mathbb{E}[x_k])+\sqrt{v_j}\epsilon_j\right)\right]\\&=\sum_{k\in\text{pa}_j}w_{jk}\text{cov}[x_i,x_k]+\mathbb{E}\left[\sqrt{v_iv_j}\epsilon_i\epsilon_j\right]\\&=\sum_{k\in\text{pa}_j}w_{jk}\text{cov}[x_i,x_k]+I_{ij}v_j.\end{aligned}
+$$
+
+## Conditional Independence
+
+**1** Consider three random variables $a$, $b$, and $c$. If it holds that $p(a,b|c)=p(a|c)p(b|c)$, then $a$ and $b$ are said to be conditionally independent given $c$. In general, given a joint distribution function obtained by multiplying multiple conditional probability distributions, we can repeatedly use the principles of addition and multiplication to check the conditional independence between variables. Additionally, we can use the method of **d-separation** (where "d" stands for directed) to determine conditional independence using the structure of the graph.
+
+**2** Consider a graph composed of only three random variables $a, b, c$.
+
+![o_Untitled Diagram](https://www.pandox.xyz/api/db/images/pandoxone/o_Untitled%20Diagram%204.png "80")
+
+The joint distribution is
+
+$$
+p(a,b,c)=p(a|c)p(b|c)p(c),
+$$
+
+It can be shown that the variables $a$ and $b$ are not independent (after marginalizing out $c$ ), while they are conditionally independent given $c$. The node $c$ is referred to as tail-to-tail. Now consider the following graph structure:
+
+![o_Untitled Diagram](https://www.pandox.xyz/api/db/images/pandoxone/o_Untitled%20Diagram%206.png "80")
+
+Its joint distribution is
+
+$$
+p(a,b,c)=p(a)p(c|a)p(b|c),
+$$
+Similarly, the variables $a$ and $b$ are conditionally independent only given $c$, in which case the node $c$ is referred to as head-to-tail. The following graph structure illustrates this:
+
+![o_Untitled Diagram](https://www.pandox.xyz/api/db/images/pandoxone/o_Untitled%20Diagram%205.png "80")
+
+The joint distribution represented is:
+
+$$
+p(a,b,c)=p(a)p(b)p(c|a,b),
+$$
+At this point, $a$ and $b$ are independent of each other, but not independent when given $c$. Here, $c$ is of the head-to-head type. In fact, given any descendants of $c$, $a$ and $b$ will show correlation.
+
+**2** First, let's provide a normative statement of d-separation. Consider any directed graph, where $A$, $B$, and $C$ are three disjoint sets of nodes on the graph. Then, given $C$,
+
+> - $A$ and $B$ are conditionally independent if and only if all paths from any node in $A$ to any node in $B$ are blocked by $C$ ;
+> - A path is blocked by $C$ if and only if there exists a $c$ type node on the path;
+> - If a node $p$ on the path is in $C$, and $p$ is of head-to-tail or tail-to-tail type, then $p$ is a $c$ type node;
+> - If a node $p$ on the path is of head-to-head type, and neither $p$ nor any of its descendants are in $C$, then $p$ is a $c$ type node.
+
+In the [likelihood distribution directed graph](#anchor1), parameters $\alpha$ and $\sigma^2$ as observation nodes have no predecessors, and any paths passing through these nodes must be blocked (observation nodes must be of tail-to-tail type). Therefore, removing these nodes from the DAG does not affect the determination of conditional independence.
+  
+It is important to note that we previously considered constructing directed graphs from probability distributions. In fact, the graph structure itself contains information about the independence between variables (independent or conditionally independent). The independence information is presented by the missing edges in the graph (relative to a fully connected graph), while the conditional independence information depends on the specification of observed variables (nodes). The graph can be viewed as a filter; only distribution functions that meet the independence conditions specified by the graph can pass through. The set of these functions is denoted as $\mathcal{DF}$, and it is clear that as the independence conditions become stricter, the size of $\mathcal{DF}$ will decrease.
+
+## Markov Random Fields
+
+**1** Markov fields, also known as Markov networks or undirected graph models, assume that $A$, $B$, and $C$ are three disjoint sets of nodes on the graph. Given $C$, $A$ and $B$ are conditionally independent if and only if $C$ is a cut set of the original graph that separates $A$ and $B$ into different connected components. In contrast, the focus of undirected graph models is on factorization, meaning that given an undirected graph where each node represents a random variable, how the joint distribution $p(\mathbf{x})$ can be factored into the product of several factors, which reflects the conditional independence properties expressed by the undirected graph itself. This factorization is important because a graph in which any two points are connected by an edge does not carry any (independence) information. One principle underlying the factorization process is: **non-adjacent points belong to different factors**. In other words, a factor must include points that are all adjacent to each other, forming a clique. On this basis, for the sake of efficiency and simplicity in computation and representation, a stronger condition is imposed, requiring that the set of points in the factor be a maximal clique.
+
+**2** Let $C$ denote a clique, and $\mathbf{x}_C$ denote the variables within the clique. The joint distribution can be expressed as the product of potential functions:
+
+$$
+p(\mathbf{x})=\frac{1}{Z}\prod_C \psi_C(\mathbf{x}_C),
+$$
+where $Z$ is the partition function serving as the normalization constant, satisfying
+
+$$
+Z=\sum_\mathbf{x}\prod_C\psi_C(\mathbf{x}_C).
+$$
+Unlike the factors of directed graph distributions, the potential function itself does not have a direct probabilistic interpretation.
+
+**3** Let $\mathcal{UI}$ denote the set of distributions that satisfy the conditional independence implied by a given undirected graph, and $\mathcal{UF}$ denote the set of distributions that can be decomposed by maximal cliques. The Hammersley-Clifford theorem states that $\mathcal{UI}$ and $\mathcal{UF}$ are equal. Assuming the potential function $\psi_C(\mathbf{x}_C) > 0$, it can be written as:
+
+$$
+\psi_C(\mathbf{x}_C)=\exp\{-E(\mathbf{x}_C)\},
+$$
+
+Where $E(\mathbf{x}_C)$ is called the energy function, and this exponential representation is also known as the Boltzmann distribution. The total energy of the joint distribution is the sum of the energies of each maximal clique.
+
+**4** Image denoising is an example where undirected graph models can be applied. Assume the image is binary, with observed pixel values $y_i \in \{-1, +1\}, \text{ } i \in \{1, ..., D\}$, and the noise-free original image is $x_i$: $1 \leq i \leq D$. Additionally, assume that random noise flips the value of a single pixel in the original image with a small probability. Due to the low intensity of noise, there is a strong correlation between pixel $x_i$ and $y_i$ (indicating likelihood probability); furthermore, the continuity of natural images suggests that adjacent points in the original image $x_i$ and $x_j$ are likely to take the same value (indicating prior probability). In the energy function, these two contributions are represented by $-\eta x_iy_i$ and $-\beta x_ix_j$, respectively. Moreover, for each pixel in the original image, the term $hx_i$ is added to the energy function to represent the model bias (favoring one of the two pixel values) ( **?** ), so the model's energy function is:
+
+$$
+E(\mathbf{x},\mathbf{y})=h\sum_{i}x_i-\beta\sum_{\{i,j\}}x_ix_j-\eta \sum_i x_iy_i,
+$$
+
+The joint distribution is
+
+$$
+p(\mathbf{x},\mathbf{y})=\frac{1}{Z}\exp\{-E(\mathbf{x},\mathbf{y})\}.
+$$
+
+Given that $\mathbf{y}$ has been observed, the conditional probability $p(\mathbf{x}|\mathbf{y})$ can be directly computed. To do this, the Iterated Conditional Modes (ICM) method can be used to obtain a local optimal solution, with the main process as follows:
+
+> 1. Initialize $\{x_i\}$: $x_i \leftarrow y_i;$
+> 2. Given a permutation of $\{x_i\}$, renumber the elements in the order of their appearance, $j \leftarrow 1;$
+> 3. If executing $x_j \leftarrow -x_j$ does not increase $p(\mathbf{x},\mathbf{y})$, then set $x_j \leftarrow -x_j$, and $j \leftarrow j + 1;$
+> 4. If $j = D + 1$ and the termination condition is triggered, end; otherwise, execute (2); if $j < D + 1$, execute (3).
+
+`The maximum product algorithm (max-product)` can be considered an improvement over ICM, although it does not produce a global optimal solution. For certain classes of models, algorithms based on cuts in undirected graphs can yield a global optimal solution.
+
+**5** Consider the transformation of a probability distribution determined by a directed graph into an undirected graph representation. In general, we map several conditional probability product terms to a potential function in the undirected graph model, thus normalizing the constant $Z = 1$. It is important to note that combining more than one conditional probability term into a potential function means discarding some conditional independence properties in the undirected graph model. The following transformation method adds as few edges as possible to retain as many conditional independence properties as possible.
+
+For each node in the directed graph, connect any two points in its parent node set with an undirected edge, and replace the remaining directed edges in the graph with undirected edges to obtain the moral graph. Additionally, for each (maximal) clique $C$ that includes the node set of the conditional probability term $p_i(·)$, execute $p_C(\mathbf{x}_C) \leftarrow p_C(\mathbf{x}_C) p_i(·)$ (with $p_C(\mathbf{x}_C)$ initialized to $1$).
+
+This transformation process plays an important role in the junction tree algorithm.
+
+**6** If a graph reflects all the conditional independence properties of a distribution, it is called the distribution's $D$ *map* (correlation). If a distribution satisfies all the conditional independence properties in a graph, the graph is called the distribution's $I$ *map* (independence). Clearly, a graph with no edges (only nodes) is the $D$ *map* for any distribution, while a fully connected graph (with edges connecting every pair of points) is the $I$ *map* for any distribution. For a given distribution, if a graph is both the $D$ *map* and the $I$ *map*, it is called the perfect graph for that distribution. A directed perfect graph does not necessarily have a corresponding undirected perfect graph that preserves all conditional independence properties, and vice versa. A chain graph is a type of graph that contains both directed and undirected edges; although it has greater expressive power, there still exist certain probability distributions for which their perfect chain graph does not exist.
+
+## Inference in Graph Models
+
+**1** In Graph Models, inference involves fixing certain nodes as observed values and calculating the posterior distribution of a subset of remaining nodes. First, consider a chain (Markov chain) in an undirected graph, assuming there are no observed nodes, to compute the marginal distribution of a node variable. Since the joint distribution is
+
+$$
+p(\mathbf{x})=\frac{1}{Z}\psi_{1,2}(x_1,x_2)\psi_{2,3}(x_2,x_3)\cdots\psi_{N-1,N}(x_{N-1},x_N),
+$$
+
+Assume the nodes are discrete random variables with $K$ states, the marginal distribution of $x_n$ is
+
+$$
+p(x_n)=\sum_{x_1}\cdots\sum_{x_{n-1}}\sum_{x_{n+1}}\cdots\sum_{x_N}p(\mathbf{x}),
+$$
+
+Using conditional independence, rewrite the above equation:
+
+$$
+p(x_n)=\frac{1}{Z}\mu_\alpha(x_n)\mu_\beta(x_n),
+$$
+
+> Here, $\mu_\alpha\mu_\beta$ represents the Hadamard product of two ( $K$ -dimensional) column vectors (element-wise multiplication).
+
+where
+
+$$
+\begin{aligned}\mu_\alpha(x_n)&=\left[\sum_{x_{n-1}}\psi_{n-1,n}(x_{n-1,n})\cdots\left[\sum_{x_2}\psi_{2,3}(x_2,x_3)\left[\sum_{x_1}\psi_{1,2}(x_1,x_2)\right]\right]\right]\\\mu_\beta(x_n)&=\left[\sum_{x_{n+1}}\psi_{n,n+1}(x_n,x_{n+1})\cdots\left[\sum_{x_N}\psi_{N-1,N}(x_{N-1},x_N)\right]\right],
+\end{aligned}
+$$
+It is easy to see that, compared to the case of unconditional independence, the computational complexity is reduced from $O(K^N)$ to $O(NK^2)$. The recursive rule is
+
+$$
+\begin{aligned}\mu_\alpha(x_n)&=\sum_{x_{n-1}}\psi_{n-1,n}(x_{n-1},x_n)\mu_\alpha(x_{n-1}),\\\mu_\beta(x_n)&=\sum_{x_{n+1}}\psi_{n+1,n}(x_{n+1},x_n)\mu_\beta(x_{n+1}).
+\end{aligned}
+$$
+If there are observed nodes, the method for calculating the joint distribution is similar; simply substitute the observed values into the formula while removing certain summation symbols.
+
+**2** Using the `sum-product algorithm`, efficient inference can also be performed on tree structures. An undirected tree is an undirected graph where there is exactly one path between any two nodes; a directed tree is a directed graph in which all nodes, except for the root node, have exactly one parent node.
+
+> Obviously, a directed tree and an undirected tree can be converted between each other without adding or removing any edges. Furthermore, a directed graph in which there is exactly one path between any two nodes, without considering the direction of the edges, is called a polytree, as shown in the figure below.
+> ![o_Untitled Diagram](https://www.pandox.xyz/api/db/images/pandoxone/o_Untitled%20Diagram%202%201.png "80")
+
+**3** Directed or undirected graphs express joint distributions as the product of several factors (functions) defined on subsets of nodes (variables). **Factor graphs** contain two types of nodes: one is the variables, and the other is the factor functions themselves. The joint distribution is rewritten in the following form:
+
+$$
+p(\mathbf{x})=\prod_sf_s(\mathbf{x}_s),
+$$
+
+where $\mathbf{x}_s$ is a subset of variable nodes, and $f_s(\cdot)$ is the factor function. Factor graphs are necessarily bipartite, meaning there are no edges connecting variable nodes to factor nodes. Using certain rules, undirected trees or directed trees can be converted into factor graphs that are also tree structures. If the directed graph is a polytree, it can also be converted into a tree-shaped factor graph.
+
+**4** Assume the original graph is one of a directed tree, an undirected tree, or a polytree, so the corresponding factor graph is a tree. Furthermore, assume all nodes are latent discrete variables; for node $x$ , its marginal distribution is
+
+$$
+p(x)=\sum_{\mathbf{x}\backslash x}p(\mathbf{x}),
+$$
+
+Consider $x$ as the root node of the tree. Since the graph is bipartite, all of $x$'s child nodes are factor function nodes, and the joint distribution can be expressed in the following form:
+
+$$
+p(\mathbf{x})=\prod_{s\in\text{ne}(x)}F_s(x,X_s),
+$$
+
+where $\text{ne}(x)$ represents the set of neighbors (children) of $x$, $X_s$ denotes the set of variable nodes in the subtree $f_s$, and $F_s(x, X_s)$ represents the product of all factors in the subtree $f_s$ of $x$, as illustrated in the following diagram.
+![o_Untitled Diagram](https://www.pandox.xyz/api/db/images/pandoxone/o_Untitled%20Diagram%202%202.png "80")
+
+By utilizing the independence between the factors and rearranging the order of multiplication and addition, the marginal distribution can be rewritten.
+
+$$
+\begin{aligned}p(x)&=\sum_{\mathbf{x}\backslash x}p(\mathbf{x})\\&=\sum_{\cup X_s:s\in\text{ne}(x)}\prod_{s}F_s(x,X_s)\\&=\prod_{s\in\text{ne}(x)}\left[\sum_{X_s}F_s(x,X_s)\right]\\&=\prod_{s\in\text{ne}(x)}\mu_{f_s\rightarrow x}(x),
+\end{aligned}
+$$
+Treating $\mu_{f_s\rightarrow x}(x)$ as the message function sent from the factor node $f_s$ to the variable node $x$, the marginal distribution of $x$ equals the product of the message functions sent to the root node from all its factor subnodes. Since
+
+$$
+F_s(x,X_s)=f_s(x,x_1,...,x_M)G_1(x_1,X_{s_1})...G_M(x_M,X_{s_{M}}),
+$$
+Here $x_1,...,x_M$ are all child variable nodes of $f_s$, $X_{s_{m}}$ denotes the set of variable nodes in the subtree rooted at node 
+$x_m$ , and $G_m(\cdot)$ is a function that is structurally similar to $F_s(\cdot)$ . Thus, the message function is
+
+$$
+\begin{aligned}
+\mu_{f_s\rightarrow x}(x)&=\sum_{X_s}F_s(x,X_s)\\&=
+\sum_{x_m\in\text{ne}(f_s)\backslash x}\sum_{\cup X_{s_m}}F_s(x,X_s)\\&=
+\sum_{x_m\in\text{ne}(f_s)\backslash x}f_s(x_1,...,x_M)\left[\sum_{\cup X_{s_m}}\left[\prod_{x_m\in\text{ne}(f_s)\backslash x}G_m(x_m,X_{s_m})\right]\right]\\&=
+\sum_{x_m\in\text{ne}(f_s)\backslash x}f_s(x,x_1,...,x_M)\left[\prod_{x_m\in\text{ne}(f_s)\backslash x}\left[\sum_{X_{s_m}}G_m(x_m,X_{s_m})\right]\right]\\&=
+\sum_{x_m\in\text{ne}(f_s)\backslash x}f_s(x,x_1,...,x_M)\left[\prod_{x_m\in\text{ne}(f_s)\backslash x}\mu_{x_m\rightarrow f_s}(x_m)\right],
+\end{aligned}
+$$
+
+Here, $\mu_{x_m\rightarrow f_s}$ is the message function transmitted from the variable node $x_m$ to the factor node $f_s$. Next, consider the computation of $G_m(x_m,X_{s_m})$ ; it is clear that there should be
+
+$$
+G_m(x_m,X_{s_m})=\prod_{l\in\text{ne}(x_m)\backslash f_s}F_l(x_m,X_{m_l}),
+$$
+Thus, the message function satisfies
+
+$$
+\begin{aligned}\mu_{x_m\rightarrow f_s}(x_m)&=\sum_{X_{s_m}}G_m(x_m,X_{s_m})\\&=
+\prod_{l\in\text{ne}(x_m)\backslash f_s}\mu_{f_l\rightarrow x_m}(x_m),\end{aligned}
+$$
+Thus, the recursive relationship we established means that the computation of the marginal distribution is only related to the calculation of the message functions. 
+
+If we need to compute the marginal distribution of all nodes in the entire tree, we only need to note that the message functions are directed. While obtaining the marginal distribution of a certain node, we can compute the message functions in the reverse direction from that root node to the leaf nodes, thereby obtaining all the message functions in the necessary directions for computing any node, and multiplying them will yield its marginal distribution. The computational cost is twice that of calculating a single node.
+
+For all variable nodes $\mathbf{x}_s$ associated with a certain factor node $f_s$, its joint distribution is given by:
+
+$$
+p(\mathbf{x}_s)=f_s(\mathbf{x}_s)\prod_{i\in\text{ne}(f_s)}\mu_{x_i\rightarrow f_s}(x_i),
+$$
+
+We only need to first remove the edges adjacent to $f_s$ and then reconsider. 
+
+Now, consider the case where there are observed variables. We can divide $\mathbf{x}$ into two parts: the hidden variables $\mathbf{u}$ and the observed variables $\mathbf{v}$, with the observed values being $\mathbf{\hat v}$. Thus, the joint distribution is given by:
+
+$$
+p(\mathbf{u},\mathbf{v}=\mathbf{\hat{v}})=p(\mathbf{x})\prod_{i}I(v_i=\hat{v}_i).
+$$

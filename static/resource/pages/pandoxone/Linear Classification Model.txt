@@ -1,0 +1,793 @@
+KEYWORDS[[Machine Learning][PRML]]KEYWORDS
+
+
+There are three methods to solve linear classification problems.
+The first is to directly use a discriminant function to associate feature vectors with a certain class.
+The second and third methods model the conditional probability $p(\mathcal{C}_k|\mathbf{x})$ and the class conditional probability $p(\mathbf{x} | \mathcal{C}_k)$, respectively.
+
+A generalized linear model can be used to model the posterior (conditional) probability, which is denoted as:
+
+$$
+y(\mathbf{x})=f(\mathbf{w}^\text{T}\mathbf{x}+w_0),
+$$
+
+where $f(\cdot)$ is called the activation function (its inverse is also called the link function). Although the activation function is nonlinear, the decision boundary is linear with respect to the input vector. This means that if we are dealing with a binary classification problem, the decision boundary is still a hyperplane.
+
+The commonly mentioned logistic regression model (which is actually for classification) belongs to this type of generalized linear model.
+
+## Discriminant Function
+
+**1** Here, we only consider the case of a linear discriminant function. Let's first consider the binary classification case. The simplest linear discriminant function is of the form
+
+$$
+y(\mathbf{x})=\mathbf{w}^\text{T}\mathbf{x}+w_0,
+$$
+
+After that, we decide the category to which $\mathbf{x}$ belongs based on the sign of the discriminant function.
+
+**2** Now, let's consider extending the linear discriminant to a multi-class problem.
+It is natural to think of solving multi-class classification by repeatedly using binary classification.
+There are generally two approaches: using 1v1 or 1vK (which is actually K-1, written as K for simplicity) to achieve multi-class classification.
+
+If we use 1v1, we typically need to rely on a voting principle to determine the category of the sample.
+However, both methods have a significant drawback: they cannot completely partition the sample space into $K$ subspaces, meaning that in some cases, there will be samples for which it is unclear how to classify them.  
+
+Of course, there are other approaches.
+Looking back at the previous equation, $y(\mathbf{x})$ actually represents the directed distance from the sample $\mathbf{x}$ to the decision plane.
+Here, "directed" has two meanings: first, this distance can be positive or negative; second, the sign depends on whether the origin $O$ belongs to the current category.
+
+Therefore, for a binary classification problem, if a sample $\mathbf{x}$ belongs to category $\mathcal{C}_1$ , its directed distance under category 1 is $+d (d>0)$ , which means its directed distance under category 2 must be $-d (d>0)$ .
+Since $d_{\mathcal{C}_1}(\mathbf{x})>d_{\mathcal{C}_2}(\mathbf{x})$ , we classify $\mathbf{x}$ as belonging to $\mathcal{C}_1$ .
+
+This property can be conveniently generalized from binary classification to multi-class classification.
+For each category $\mathcal{C}_k$ , we assume there is a hyperplane $(\mathbf{w}_k,w_{k0})$ that determines the "comparative likelihood" of any sample $\mathbf{x}$ belonging to that category.
+"Comparative" means this likelihood can be directly compared among any classes, and "likelihood" refers to the degree to which the sample point belongs to the current category given that category (analogous to likelihood probability).
+
+Thus, under the assumption that all categories are treated equally (uniform, homogenous, same prior), we assign the sample $\mathbf{x}$ to category $\mathcal{C}_k$ if and only if its directed distance to this category's hyperplane is maximized.
+
+$$
+y_k(\mathbf x)=\mathbf w_k^\text T\mathbf x+w_{k0}>y_j(\mathbf x), j\neq k.
+$$
+
+Clearly, using this method, we can unambiguously assign the sample space to $K$ classes. To some extent, this idea is similar to the `K-Nearest Neighbors (KNN)` method. It can be shown that the decision region (the subspace belonging to a certain category) under this method is a simply connected convex region.
+We can select any two points within a category's region and analyze the category assignment of a point along the line segment connecting them.
+
+![o_Untitled Diagram](https://www.pandox.xyz/api/db/images/pandoxone/o_Untitled%20Diagram%207.png "80")
+
+The following sections introduce how to learn the parameters of the linear discriminant function using minimum variance (mean squared error/MSE), Fisher linear discriminant, and the perceptron algorithm.
+
+**3** Consider optimizing the parameters using minimum variance. For the category $\mathcal{C}_k$ , its hyperplane is
+
+$$
+y_k(\mathbf x)=\mathbf w_k^\text T\mathbf x+w_{k0},
+$$
+Integrating the output values of the $K$ classes gives:
+
+$$
+\mathbf y(\mathbf x)=\mathbf W^\text T\mathbf x,
+$$
+
+For convenience of notation, the $k$ -th row of $\mathbf{W}$ is $(\mathbf{w}_k^T, w_{k0})$ , and $\mathbf{x}$ is $(\mathbf{x}^T, 1)^T$ . 
+
+Assuming our training data is $\{\mathbf{x}_n, \mathbf{t}_n\}$ , where the target values are encoded using 1-vs-K binary coding. Therefore, for the entire training set, the squared error function is:
+
+$$
+E(\mathbf W)=\frac{1}{2}\text{Tr}\left\{ \left(\mathbf{XW-T}\right)^\text T\left(\mathbf{XW-T} \right) \right\},
+$$
+
+Here, the $k$ -th row of $\mathbf{T}$ is $\mathbf{t}_k^T$ , and we use the conclusion $\text{Tr}(\mathbf{AB}) = \text{Tr}(\mathbf{BA})$ .
+
+Taking the derivative of the error function with respect to $\mathbf{W}$ , we have:
+
+$$
+\frac{\partial E}{\partial \mathbf W}=\mathbf X\frac{\partial E}{\partial(\mathbf{XW-T})}=\mathbf{X(XW-T)},
+$$
+
+Let it be $0$ , we have
+
+$$
+\mathbf W = (\mathbf X^\text T\mathbf X)^\text{-1}\mathbf X^\text T\mathbf T=\mathbf X^{\star}\mathbf T.
+$$
+
+Thus, the prediction function can be rewritten as:
+
+$$
+\mathbf y(\mathbf x)=\mathbf{W}^\text T\mathbf x=\mathbf T^\text T{\mathbf X^{\star}}^{\text T}\mathbf x.
+$$
+
+Moreover, if the training data satisfies that for any target vector $\mathbf{t}_n$ , there exist constants $\mathbf{a}$ and $b$ such that:
+
+$$
+\mathbf a^\text T\mathbf t_n+b=0,
+$$
+
+Then, for any sample $\mathbf x$ , the model output must also satisfy
+
+$$
+\mathbf a^\text T\mathbf y(\mathbf x)+b=0.
+$$
+
+Specifically, if we use 1-K encoding, here $\mathbf{a}^\text{T} \equiv (1, \ldots, 1)$ and $b \equiv -1$. This means that the sum of the components of the model output vector is $1$.
+In particular, if we are dealing with a binary classification problem, the target vector for a sample belonging to a certain category is $+1$ in that component, while it is $-1$ otherwise.
+In this case, we have $\mathbf{a}^\text{T} \equiv (1, 1)$ and $b \equiv 0$ , so the sum of the components of the model output vector is $0$ .  
+
+The following provides a proof of the above conclusion.
+>In the expression above, $\mathbf{x}$ is considered as the augmented vector of the sample ( $x^{(1)} \equiv 1$ ), and $\mathbf{w}$ has also been augmented.
+>This provides convenience for solving problems in certain cases, but we need to separate out the bias here. Let’s denote it as follows:
+>
+>$$
+>y_k(\mathbf x)=\mathbf w_k^\text T\mathbf x+w_{k0},
+>$$
+>
+>$$
+>\mathbf y(\mathbf x)=\mathbf W^\text T\mathbf x+\mathbf w_{0},
+>$$
+>
+>$$
+>\mathbf Y(\mathbf X)=\mathbf{XW}+\mathbf 1\mathbf w_0^\text T,
+>$$
+>Here, the length of the column vector $1$ is $N$ (the total number of samples), and the $n$ -th row of $\mathbf{Y}(\mathbf{X})$ is the transpose of the output vector of the linear discriminant model for the $n$ -th sample.
+>Rewrite the error term:
+>
+>$$
+>E_D(\mathbf W,\mathbf w_0)=\frac{1}{2}\text{Tr}\left\{\left(\mathbf{XW}+\mathbf 1\mathbf w_0^\text T-\mathbf T\right)^\text T\left(\mathbf{XW}+\mathbf{1}\mathbf w_0^\text T-\mathbf T\right)\right\},
+>$$
+>First, take the gradient of $\mathbf{w}_0$ to get:
+>
+>$$
+>\frac{\partial E_D}{\partial \mathbf w_0}=\left((\mathbf {XW-T)}^\text T+\mathbf w_0\mathbf 1^\text T\right)\mathbf 1,
+>$$
+>Setting it to zero gives:
+>
+>$$
+>\begin{aligned}
+>\mathbf w_0=&-\frac{1}{N}\left(\mathbf{XW-T}\right)^\text T\mathbf 1\\=&-\frac{1}{N}(\mathbf W^\text T\mathbf X^\text T\mathbf 1-\mathbf T^\text T\mathbf 1)\\=&
+>\frac{1}{N}\sum \mathbf t_n^\text T-\frac{1}{N}\mathbf W^\text T\sum\mathbf x_n^\text T\\=&
+>\mathbf t^+-\mathbf W^\text T\mathbf x^+,
+>\end{aligned}
+>$$
+>where
+>
+>$$
+>\mathbf t^+=\frac{1}{N}\sum\mathbf t_n^\text T=\mathbf T^\text T\mathbf 1,
+>$$
+>
+>$$
+>\mathbf x^+=\frac{1}{N}\sum\mathbf x_n^\text T=\mathbf X^\text T\mathbf 1.
+>$$
+>Now, taking the gradient with respect to $\mathbf W$ , we have:
+>
+>$$
+>\frac{\partial E_D}{\partial \mathbf W}=\mathbf X^\text T\left(\mathbf{XW}+\mathbf 1\mathbf w_0^\text T-\mathbf T\right),
+>$$
+>Setting it to zero gives:
+>
+>$$
+>\mathbf W=(\mathbf X^\text T\mathbf X)^{-1}\mathbf X^\text T(\mathbf T-\mathbf 1\mathbf w_0^\text T)
+>$$
+>Substitue into $\mathbf w_0$, and denote $\mathbf T^+=\mathbf 1{\mathbf t^+}^\text T,\mathbf X^+=\mathbf 1{\mathbf x^+}^\text T$ , we have
+>
+>$$
+>\mathbf W=(\mathbf X^\text T\mathbf X)^{-1}\mathbf X^\text T(\mathbf T-\mathbf T^++\mathbf X^+\mathbf W),
+>$$
+>After rearranging the terms, we get:
+>
+>$$
+>\mathbf W=\mathbf M(\mathbf T-\mathbf T^+),
+>$$
+>where
+>
+>$$
+>\mathbf M=\left(\mathbf E-\mathbf X^\star\mathbf X^+\right)^{-1}\mathbf X^\star
+>$$
+>and
+>
+>$$
+>\mathbf X^\star=(\mathbf X^\text T\mathbf X)^{-1}\mathbf X^\text T.
+>$$
+>Hence,
+>
+>$$
+>\begin{aligned}
+>\mathbf a^\text T\mathbf y(\mathbf x)+b=&\mathbf a^\text T(\mathbf W^\text T\mathbf x+\mathbf w_0)+b\\=&
+>\mathbf a^\text T\left(\left(\mathbf T-\mathbf T^+\right)^\text T\mathbf M^\text T(\mathbf x-\mathbf x^+)+\mathbf t^+\right)+b\\=&
+>b(\mathbf 1-\mathbf 1)^\text T\mathbf M^\text T(\mathbf x-\mathbf x^+)+(-b)+b\\=&
+>0
+>.\end{aligned}
+>$$
+
+
+If we use the squared error as the objective function for the linear classification model, we face two main issues: one is the lack of robustness, making it sensitive to outliers, while the actual decision boundary should only be determined by the boundary points; another is that in some cases, the classification performance is poor, even though the problem is not difficult.
+This may be because the squared error corresponds to the likelihood estimation under the assumption of a Gaussian conditional distribution, while the 1-K encoding distribution is far from a Gaussian distribution.
+
+**4** Another approach to achieve classification is dimensionality reduction.
+For example, in the two-dimensional case, we can project the sample points onto a certain line and determine the original sample point's category based on the area of the projected points.
+What we need to consider is how to project the points to achieve the best classification effect.
+
+Generally, there are two guiding criteria: first, we want different categories to be as far apart as possible; second, we want the projections of the same category samples to be as concentrated as possible.
+These can be quantified using the sample mean and variance.
+Specifically, for the binary classification problem, there are $N_1$ samples of $\mathcal{C}_1$ and $N_2$ samples of $\mathcal{C}_2$ , with their means $\mathbf{m}_1$ and $\mathbf{m}_2$ given by:
+
+$$
+\mathbf m_1=\frac{1}{N_1}\sum\mathbf x_n^{(1)},\text{ }\mathbf m_2=\frac{1}{N_2}\sum\mathbf x_n^{(2)}.
+$$
+
+The direction vector of the projection line is $\mathbf{w}$ , so in a one-dimensional coordinate system, the distance between the projection points of the two means is given by:
+
+$$
+m_2-m_1=\mathbf w^\text T(\mathbf m_2-\mathbf m_1),
+$$
+
+If the inter-class dispersion is not considered, maximizing this quantity will yield a projection direction that is perpendicular to the line connecting the class means. In this case, the projection points of the means are the farthest apart, but it may lead to a higher number of misclassifications (overlapping projection regions).
+
+>
+>$$
+>\begin{aligned}
+>\max_{\mathbf w}m_2-m_1=&\mathbf w^\text T(\mathbf m_2-\mathbf m_1)+\lambda(||\mathbf w||^2-1)\\
+>\frac{\partial (m_2-m_1)}{\partial \mathbf w}=&(\mathbf m_2-\mathbf m_1)+2\lambda\mathbf w=0
+>\end{aligned}
+>$$
+
+Now consider the inter-class projection dispersion, where $y$ is the projection of the sample point $\mathbf{x}$ , and $m_k$ is the projection of the mean of class $\mathcal{C}_k$ . Therefore, the inter-class variance is given by:
+
+$$
+s_k^2=\sum\left(y_n^{(k)}-m_k\right)^2.
+$$
+
+Under the condition of binary classification, the total within-class variance is $\mathbf{s}_1^2 + \mathbf{s}_2^2$ , thus the Fisher criterion is given by the following expression:
+
+$$
+J(\mathbf w)=\frac{(m_1-m_2)^2}{s_1^2+s_2^2}=\frac{\mathbf w^\text T(\mathbf m_2-\mathbf m_1)(\mathbf m_2-\mathbf m_1)^\text T\mathbf w}{\sum \mathbf w^\text T(\mathbf x_n^{(1)}-\mathbf m_1)(\mathbf x_n^{(1)}-\mathbf m_1)^\text T\mathbf w+\sum\mathbf w^\text T(\mathbf x_n^{(2)}-\mathbf m_2)(\mathbf x_n^{(2)}-\mathbf m_2)^\text T\mathbf w}=\frac{\mathbf w^\text T\mathbf S_\text{B}\mathbf w}{\mathbf w^\text T\mathbf S_\text{W}\mathbf w},
+$$
+
+where $\mathbf{S}_\text{B}$ and $\mathbf{S}_\text{W}$ are referred to as the between-class and within-class covariance matrices (second-order moments), respectively.
+
+Since
+
+$$
+\frac{\partial J}{\partial \mathbf w}=\frac{1}{\partial\mathbf w}\partial \frac{\text{Tr}(\mathbf w^\text T\mathbf S_\text{B}\mathbf w)}{\text{Tr}(\mathbf w^\text T\mathbf S_\text{W}\mathbf w)}=\frac{(\mathbf S_\text B^\text T+\mathbf S_\text B)\mathbf w\mathbf w^\text T\mathbf S_\text W\mathbf w-\mathbf w^\text T\mathbf S_\text B\mathbf w(\mathbf S_\text W^\text T+\mathbf S_\text W)\mathbf w}{(\mathbf w^\text T\mathbf S_\text W\mathbf w)^2},
+$$
+
+Utilizing the symmetry of the two class covariance matrices and setting the gradient to zero, we can swap the position of the term $\mathbf{w}^\text{T} \mathbf{S} \mathbf{w}$ in the matrix multiplication, resulting in the following equation:
+
+$$
+(\mathbf w^\text T\mathbf S_\text B\mathbf w)\mathbf S_\text W\mathbf w=(\mathbf w^\text T\mathbf S_\text W\mathbf w)\mathbf S_\text B\mathbf w.
+$$
+Note that $\mathbf S_\text B\mathbf w=(\mathbf m_2-\mathbf m_1)(\mathbf m_2-\mathbf m_1)^\text T\mathbf w$ always has the same sign as $(\mathbf m_2-\mathbf m_1)$, we have
+
+$$
+\mathbf S_\text W\mathbf w\propto (\mathbf m_2-\mathbf m_1),
+$$
+
+Hence,
+
+$$
+\mathbf w \propto \mathbf S_\text W^{-1}(\mathbf m_2-\mathbf m_1).
+$$
+When the class-internal sample covariance is distributed concentrically, $\mathbf{S}_\text{W}$ is proportional to the identity matrix, and at this point, the projection direction is perpendicular to the line connecting the means of the two classes.
+The above result is known as Fisher's linear discriminant.
+However, so far we have only provided the projection direction without determining where along the projection line to classify samples into the first class or the second class.
+This step can be accomplished by maximizing the likelihood probability under the assumption that the class conditional distributions follow a Gaussian distribution to determine the required threshold.
+
+**5** Next, we consider the relationship between the minimum squared error and Fisher's discriminant.
+The conclusion is that, in the case of binary classification, Fisher's discriminant can be seen as a special case of minimum squared error.
+
+Of course, at this point, the minimum squared error no longer uses 1-K encoding to represent the target vector.
+In this case, if $\mathbf{x}_n$ belongs to class $\mathcal{C}_1$ , then $t_n = \frac{N}{N_1}$ ; if $\mathbf{x}_n$ belongs to class $\mathcal{C}_2$ , then $t_n = -\frac{N}{N_2}$ .
+Numerically, at this point, the target value is no longer a vector but a scalar, and its magnitude is equal to the inverse of the class prior probabilities. Here, $\mathbf{x}_n$ is the augmented vector of the original sample, and the bias is also included in $\mathbf{w}$ .
+At this point, the squared error is given by
+
+$$
+E(\mathbf w)=\frac{1}{2}\sum\left(\mathbf w^\text T\mathbf x_n-t_n\right)^2,
+$$
+such that
+
+$$
+\frac{\partial E}{\partial \mathbf w}=\sum(\mathbf w^\text T\mathbf x_n-t_n)\mathbf x_n,
+$$
+Setting gradient to zero, we have
+
+$$
+\begin{aligned}
+\sum\mathbf w^\text T\mathbf x_n\mathbf x_n=&\sum t_n\mathbf x_n=N(\mathbf m_1-\mathbf m_2)\\=&\sum\mathbf x_n\mathbf x_n^\text T\mathbf w\\=&\sum(\mathbf x_n^{(1)}-\mathbf m_1+\mathbf m_1)(\mathbf x_n^\text{(1)}-\mathbf m_1+\mathbf m_1)^\text T\mathbf w+\sum(\mathbf x_n^{(2)}-\mathbf m_2+\mathbf m_2)(\mathbf x_n^{(2)}-\mathbf m_2+\mathbf m_2)^\text T\mathbf w\\=&\left(\mathbf S_\text W+N_1\mathbf m_1\mathbf m_1^\text{T}+N_2\mathbf m_2\mathbf m_2^\text T\right)\mathbf w,
+\end{aligned}
+$$
+
+Because of
+
+$$
+\begin{aligned}
+N\mathbf m=&N_1\mathbf m_1+N_2\mathbf m_2\\N\mathbf m\mathbf m_1^\text T=&N_1\mathbf m_1\mathbf m_1^\text T+N_2\mathbf m_2\mathbf m_1^\text T\\N\mathbf m\mathbf m_2^\text T=&N_1\mathbf m_1\mathbf m_2^\text T+N_2\mathbf m_2\mathbf m_2^\text T\\
+N_1N_2\mathbf S_\text B=& N_1N_2(\mathbf m_1\mathbf m_1^\text T+\mathbf m_2\mathbf m_2^\text T)-N_1(N\mathbf m\mathbf m_1^\text T-N_1\mathbf m_1\mathbf m_1^\text T)-N_2(N\mathbf m\mathbf m_2^\text T-N_2\mathbf m_2\mathbf m_2^\text T)\\
+=&N(N_1\mathbf m_1\mathbf m_1^\text T+N_2\mathbf m_2\mathbf m_2^\text T)-N^2\mathbf m\mathbf m^\text T\\N_1\mathbf m_1\mathbf m_1^\text T+N_2\mathbf m_2\mathbf m_2^\text T=&\frac{N_1N_2}{N}\mathbf S_\text B+N\mathbf m\mathbf m^\text T
+\end{aligned}
+$$
+
+Substitue back, we have
+
+$$
+(\mathbf S_\text W+\frac{N_1N_2}{N}\mathbf S_\text B+N\mathbf m\mathbf m^\text T)\mathbf w=N(\mathbf m_1-\mathbf m_2),
+$$
+
+Since $\mathbf S_\text{B} \mathbf w$ is in the same direction as $(\mathbf m_1 - \mathbf m_2)$ , and without loss of generality, we can perform a translation preprocessing on the training data such that $\mathbf m = \mathbf 0$ , resulting in:
+
+$$
+\mathbf w\propto \mathbf S_\text W^{-1}(\mathbf m_2-\mathbf m_1),
+$$
+
+This is equivalent to the result obtained in Fisher's discriminant.
+Based on the error evaluation criteria, during classification, if $\mathbf{w}^\text{T}\mathbf{x} > 0$ , it is classified as class $\mathcal{C}_1$ .
+
+**6** Now we consider Fisher's discriminant in the case of multi-class classification.
+Here, we have a hypothesis that the dimension $D$ of the sample space is greater than the number of classes $K$ (i.e., $D > K$ ).
+
+The basic idea is the same: we want to transform the classification problem in the $D$ -dimensional sample space into a classification problem in a $D'$ -dimensional space, which is also known as the feature space.
+Similarly, we hope to minimize the within-class variance and maximize the distance between classes.
+
+Let the projection matrix be $\mathbf{W}^\text{T}$ .
+For a sample $\mathbf{x}$, its feature vector is $\mathbf{W}^\text{T}\mathbf{x}$ , where each row of $\mathbf{W}^\text{T}$ maps $\mathbf{x}$ to the component value in a certain dimension of the feature space.
+The within-class variance is defined as the sum of the within-class variances (high-dimensional, actually covariances) of each class, given by
+
+$$
+\mathbf S_\text W=\sum\mathbf S_k,
+$$
+
+The between-class distance $\mathbf{S}_\text{B}$ is indirectly defined as the difference between the total variance $\mathbf{S}_\text{T}$ and the within-class variance, that is
+
+$$
+\mathbf S_\text B=\mathbf S_\text T-\mathbf S_\text W=\sum (\mathbf x_n-\mathbf m)(\mathbf x_n-\mathbf m)^\text T-\sum\mathbf S_k,
+$$
+
+Essentially, $\mathbf S_\text B$ is
+
+$$
+\mathbf S_\text B=\sum N_k(\mathbf m_k-\mathbf m)(\mathbf m_k-\mathbf m)^\text T.
+$$
+
+In the feature space, denote the aforementioned quantities as $\mathbf{s}_\text{B}$ and $\mathbf{s}_\text{W}$ . It is not difficult to obtain $\mathbf{s} = \mathbf{W}\mathbf{S}\mathbf{W}^\text{T}$ . 
+
+A Fisher discriminant measure is given by
+
+$$
+J(\mathbf W)=\text{Tr}(\mathbf s_\text W^{-1}\mathbf s_\text B),
+$$
+
+The optimal projection matrix is determined by the eigenvectors corresponding to the largest $D'$ eigenvalues of $\mathbf{S}_\text{W}^{-1}\mathbf{S}_\text{B}$ (this matrix is $D$ -dimensional).
+Assuming we are dealing with a $K$ -class classification problem, it is clear that the rank of the matrix $\mathbf{S}_\text{B} (D \times D)$ does not exceed $K-1$ .
+
+**7** Now, consider a third type of discriminative model, the star discriminative model, in addition to the general linear discriminative model and Fisher linear discriminative model.
+This model is suitable for solving binary classification problems, where the sample $\mathbf{x}$ is first mapped to the feature $\boldsymbol{\phi}(\mathbf{x})$ through a fixed nonlinear mapping function $\boldsymbol{\phi}(\cdot)$ , and then a generalized linear model is used.
+
+$$
+y(\mathbf x)=f(\mathbf w^\text T\boldsymbol\phi(\mathbf x)),
+$$
+
+Here, the activation function $f(\cdot)$ is a step function (discontinuous).
+This model is also known as the perceptron model.
+
+A natural idea is to determine $\mathbf{w}$ by minimizing some error function, such as the number of misclassified samples.
+Due to the nature of the activation function, this problem cannot be solved through differentiation methods.
+
+To address this, the perceptron criterion is introduced as the error function.
+First, in the binary classification problem, the target values of the samples are labeled as $+1$ or $-1$ .
+We want the samples $\mathbf{x}_n$ belonging to class $\mathcal{C}_1$ to satisfy $\mathbf{w}^\text{T}\boldsymbol{\phi}(\mathbf{x}_n) > 0$ , and those belonging to class $\mathcal{C}_2$ to satisfy $\mathbf{w}^\text{T}\boldsymbol{\phi}(\mathbf{x}_n) < 0$ ; that is, $\mathbf{w}^\text{T}\boldsymbol{\phi}(\mathbf{x}_n)t_n > 0$ .
+Therefore, we can attempt to maximize the left side of the inequality and assume it is additive, leading to a target error function that can be minimized.
+
+$$
+E_P(\mathbf w)=-\sum \mathbf w^\text T\boldsymbol\phi_{n:n\in\mathcal M}t_n,
+$$
+
+Note that the above expression only includes misclassified samples.
+The error function is piecewise linear in the $\mathbf{w}$ space; consider that in some neighborhood of $\mathbf{w}$ , the classification results remain unchanged, but $E_P$ is a linear function of $\mathbf{w}$ . 
+
+We can update $\mathbf{w}$ using `stochastic gradient descent (SGD)`.
+
+$$
+\mathbf w^{(\tau+1)}\leftarrow\mathbf w^{(\tau)}-\eta \nabla E_P(\mathbf w)=\mathbf w^{(\tau)}+\eta\boldsymbol\phi_nt_n. 
+$$
+
+The perceptron convergence theorem states that if a binary classification problem is completely separable, then executing the perceptron algorithm (SGD) can solve the problem in a finite number of steps. In practice, however, it may require many steps, making it uncertain whether the problem is completely separable or if it is converging slowly.
+
+
+## Probabilistic Generative Models
+
+**1** Following the linear discriminative model, we will next explore probabilistic classification models that produce linear decision boundaries.  
+> Generally, models used to solve classification problems include discriminative models and generative models.
+
+To achieve this, we need to make assumptions about the distribution of the data (the distribution of samples in the sample space); more specifically, we will model the class conditional probabilities and the class prior probabilities. In the binary classification context, the posterior probability can be written as
+
+$$
+\begin{aligned}
+p(\mathcal C_1|\mathbf x)=&\frac{p(\mathcal C_1,\mathbf x)}{p(\mathbf x)}=\frac{p(\mathcal C_1)p(\mathbf x|\mathcal C_1)}{p(\mathcal C_1)p(\mathbf x|\mathcal C_1)+p(\mathcal C_2)p(\mathbf x|\mathcal C_2)}\\=&
+\frac{1}{1+\frac{p(\mathcal C_2)p(\mathbf x|\mathcal C_2)}{p(\mathcal C_1)p(\mathbf x|\mathcal C_1)}}=\frac{1}{1+\exp(-a)}\\=&
+\sigma(a),
+\end{aligned}
+$$
+
+where
+
+$$
+a=\ln\frac{p(\mathbf x,\mathcal C_1)}{p(\mathbf x,\mathcal C_2)}=\ln\frac{p(\mathcal C_1|\mathbf x)}{p(\mathcal C_2|\mathbf x)}=\ln\frac{p(\mathcal C_1|\mathbf x)}{1-p(\mathcal C_1|\mathbf x)},
+$$
+
+The ratio of posterior probabilities is also known as the odds, so $a$ is referred to as the log odds. Here, $\sigma(a)$ is the logistic (S-shaped) function, and $a(\sigma)$ is the logit function.
+For multi-class problems, the posterior probability is given by
+
+$$
+p(\mathcal C_k|\mathbf x)=\frac{p(\mathcal C_k)p(\mathbf x|\mathcal C_k)}{\sum p(\mathcal C_j)p(\mathbf x|\mathcal C_j)}=\frac{\exp(a_k)}{\sum\exp(a_j)},
+$$
+
+where
+
+$$
+a_k=\ln p(\mathcal C_k)p(\mathbf x|\mathcal C_k).
+$$
+The normalized exponential function here is the softmax function. It is important to note that both $a(\mathbf x)$ and $a_k(\mathbf x)$ should be (linear) functions of $\mathbf x$ .
+
+**2** First, the most natural approach is to model the class conditional probabilities using a Gaussian distribution.
+Additionally, we add the assumption that the covariance (matrix) is the same across all class conditional Gaussian distributions, thus the conditional probability for class $\mathcal C_k$ is given by
+
+$$
+p(\mathbf x|\mathcal C_k)=\frac{1}{(2\pi)^{D/2}|\mathbf\Sigma|^{1/2}}\exp\left\{-\frac{1}{2}(\mathbf x-\boldsymbol\mu_k)^\text T\mathbf\Sigma^{-1}(\mathbf x-\boldsymbol\mu_k)\right\}.
+$$
+
+Returning to the binary classification problem, where we provided the expression for $a(\mathbf x)$ .
+
+$$
+a(\mathbf x)=\ln\frac{p(\mathcal C_1)p(\mathbf x|\mathcal C_1)}{p(\mathcal C_2)p(\mathbf x|\mathcal C_2)},
+$$
+
+Substituting in the expression for the class conditional distribution, we have
+
+$$
+\begin{aligned}
+a(\mathbf x)=&\ln\frac{p(\mathcal C_1)}{p(\mathcal C_2)}-\frac{1}{2}\left((\mathbf x-\boldsymbol\mu_1)^\text T\mathbf\Sigma^{-1}(\mathbf x-\boldsymbol\mu_1)-(\mathbf x-\boldsymbol\mu_2)^\text T\mathbf\Sigma^{-1}(\mathbf x-\boldsymbol\mu_2)\right)\\=&
+\ln\frac{p(\mathcal C_1)}{p(\mathcal C_2)}-\frac{1}{2}\left[\mathbf x^\text T\mathbf\Sigma^{-1}(\boldsymbol\mu_2-\boldsymbol\mu_1)+(\boldsymbol\mu_2^\text T-\boldsymbol\mu_1^\text T)\mathbf\Sigma^{-1}\mathbf x+\boldsymbol\mu_1^\text T\mathbf\Sigma^{-1}\boldsymbol\mu_1-\boldsymbol\mu_2^\text T\mathbf\Sigma^{-1}\boldsymbol\mu_2\right]\\=&
+\ln\frac{p(\mathcal C_1)}{p(\mathcal C_2)}+\left(\mathbf\Sigma^{-1}(\boldsymbol\mu_1-\boldsymbol\mu_2)\right)^\text T\mathbf x-\frac{1}{2}\left(\boldsymbol\mu_1^\text T\mathbf\Sigma^{-1}\boldsymbol\mu_1-\boldsymbol\mu_2^\text T\mathbf\Sigma^{-1}\boldsymbol\mu_2\right),
+\end{aligned}
+$$
+
+Thus, $a(\mathbf{x})$ is a linear function of $\mathbf{x}$ , which can be written as
+
+$$
+a(\mathbf x)=\mathbf w^\text T\mathbf x+w_0.
+$$
+
+Due to the assumption of the same covariance in the Gaussian distribution, the decision boundary of the generative model in the sample space is linear. For the multi-class case, the relationship only concerns the decision boundaries.
+
+$$
+p(\mathcal C_k|\mathbf x)=p(\mathcal C_j|\mathbf x)\longleftrightarrow a_k=a_j,
+$$
+Thus, using $a_k'(\mathbf x)$ to replace $a_k(\mathbf x)$ and classifying $\mathbf x$ as belonging to class $\mathcal C_k$ if and only if $a_k'(\mathbf x) > a_j'(\mathbf x), k \neq j$ results in the same decision boundary.
+At this point,
+
+$$
+a_k^\prime(\mathbf x)=\left(\mathbf\Sigma^{-1}\boldsymbol\mu_k\right)^\text T\mathbf x-\frac{1}{2}\boldsymbol\mu_k^\text T\mathbf\Sigma^{-1}\boldsymbol\mu_k+\ln p(\mathcal C_k),
+$$
+is a linear function of $\mathbf x$ .
+If the assumption of equal covariance is abandoned, the model will produce a quadratic decision boundary with respect to $\mathbf x$ .
+
+**3** Since we have a model that uses Bayesian methods to determine the category of $\mathbf x$ by calculating the posterior probabilities, the next step is to estimate the parameters in the model, including prior probabilities, class means, and shared covariance (matrix). Here, we consider using maximum likelihood estimation to solve for these unknown parameters.
+
+First, let’s consider the case of binary classification, where the class conditional probabilities are still assumed to follow Gaussian distributions with equal covariance. The training data consists of $\{\mathbf x_n, t_n\}$ . When $t_n=1$ , $\mathbf x_n$ belongs to class $\mathcal C_1$ ; when $t_n=0$ , $\mathbf x_n$ belongs to class $\mathcal C_2$ .
+Let the prior probability be denoted as $p(\mathcal C_1) = \pi$ , so $p(\mathcal C_2) = 1 - \pi$ . Thus,
+
+$$
+p(\mathcal C_1,\mathbf x)=p(\mathcal C_1)p(\mathbf x|\mathcal C_1)=\pi\mathcal N(\mathbf x_n|\boldsymbol\mu_1,\mathbf\Sigma),
+$$
+
+$$
+p(\mathcal C_2,\mathbf x)=p(\mathcal C_2)p(\mathbf x|\mathcal C_2)=(1-\pi)\mathcal N(\mathbf x_n|\boldsymbol\mu_2,\mathbf\Sigma),
+$$
+The likelihood probability is given by
+
+$$
+\begin{aligned}
+p(\mathbf t,\mathbf X|\pi,\mathbf\Sigma,\boldsymbol\mu_1,\boldsymbol\mu_2)=&\prod p^{t_n}(\mathcal C_1,\mathbf x)p^{1-t_n}(\mathcal C_2,\mathbf x)
+\\=&\prod \left[\pi\mathcal N(\mathbf x_n|\boldsymbol\mu_1,\mathbf\Sigma)\right]^{t_n}\left[(1-\pi)\mathcal N(\mathbf x_n|\boldsymbol\mu_2,\mathbf\Sigma)\right]^{1-t_n}
+\end{aligned}
+$$
+
+so we have
+
+$$
+\ln p(\mathbf t)=\sum t_n\ln\left[\pi\mathcal N(\mathbf x_n|\boldsymbol\mu_1,\mathbf\Sigma)\right]+(1-t_n)\ln[(1-\pi)\mathcal N(\mathbf x_n|\boldsymbol\mu_2,\mathbf\Sigma)],
+$$
+
+$$
+\frac{\partial \ln p}{\partial \pi}=\sum \frac{t_n}{\pi}-\frac{1-t_n}{1-\pi},
+$$
+Setting it to zero, we obtain the maximum likelihood estimate for $\pi$ as follows:
+
+$$
+\pi=\sum t_n/N=\frac{N_{\mathcal C_1}}{N_{\mathcal C_1}+N_{\mathcal C_2}}.
+$$
+
+Note that
+
+$$
+\frac{\partial \ln p}{\partial \boldsymbol\mu_1}=\sum-t_n{\mathbf\Sigma^{-1}}^\text T(\mathbf x-\boldsymbol\mu_1),
+$$
+Setting it to zero, we obtain the maximum likelihood estimate for $\boldsymbol\mu_1$ as follows:
+
+$$
+\boldsymbol\mu_1=\frac{\sum\mathbf x^{(1)}}{N_1},
+$$
+Using symmetry, the maximum likelihood estimate for $\boldsymbol\mu_2$ is:
+
+$$
+\boldsymbol\mu_2=\frac{\sum\mathbf x^{(2)}}{N_2}.
+$$
+Finally, consider the maximum likelihood estimate for the covariance $\mathbf \Sigma$ . Since
+
+$$
+\begin{aligned}
+\frac{\partial\ln p}{\partial\mathbf\Sigma^{-1}}=&-\frac{1}{2}\sum t_n\left(\frac{\partial \ln |\mathbf\Sigma|}{\partial \mathbf\Sigma^{-1}}+\frac{\partial (\mathbf x-\boldsymbol\mu_1)^\text T\mathbf\Sigma^{-1}(\mathbf x-\boldsymbol\mu_1)}{\partial\mathbf\Sigma ^{-1}}\right)+(1-t_n)\left(\frac{\partial \ln |\mathbf\Sigma|}{\partial \mathbf\Sigma ^{-1}}+\frac{\partial (\mathbf x-\boldsymbol\mu_2)^\text T\mathbf\Sigma^{-1}(\mathbf x-\boldsymbol\mu_2)}{\partial\mathbf\Sigma^{-1}}\right)\\=&-\frac{1}{2}\left[N\frac{\partial\ln|\mathbf\Sigma|}{\partial\mathbf\Sigma^{-1}}+\sum\frac{\text{Tr}\partial (\mathbf x^{(1)}-\boldsymbol\mu_1)^\text T\mathbf\Sigma^{-1}(\mathbf x^{(1)}-\boldsymbol\mu_1)}{\partial \mathbf\Sigma^{-1}}+\sum\frac{\partial\text{Tr} (\mathbf x^{(2)}-\boldsymbol\mu_2)^\text T\mathbf\Sigma^{-1}(\mathbf x^{(2)}-\boldsymbol\mu_2)}{\partial \mathbf\Sigma^{-1}}\right]\\=&
+\frac{N}{2}\mathbf\Sigma-\frac{1}{2}\frac{1}{\partial\mathbf\Sigma^{-1}}\partial\text{Tr}\mathbf\Sigma^{-1}\left(\sum(\mathbf x^{(1)}-\boldsymbol\mu_1)^\text T(\mathbf x^{(1)}-\boldsymbol\mu_1)+\sum(\mathbf x^{(2)}-\boldsymbol\mu_2)^\text T(\mathbf x^{(2)}-\boldsymbol\mu_2)\right)\\=&
+\frac{N}{2}\mathbf\Sigma-\frac{1}{2}\frac{1}{\partial\mathbf\Sigma ^{-1}}\partial\text{Tr}\mathbf\Sigma^{-1}(N_1\mathbf S_1+N_2\mathbf S_2)\\=&
+\frac{N}{2}\mathbf\Sigma-\frac{1}{2}(N_1\mathbf S_1^\text T+N_2\mathbf S_2^\text T),
+\end{aligned}
+$$
+Setting it to zero, we have
+
+$$
+\mathbf\Sigma =\frac{N_1}{N}\mathbf S_1+\frac{N_2}{N}\mathbf S_2,
+$$
+That is, the maximum likelihood estimate for $\mathbf \Sigma$ is the weighted average of the within-class covariances of the two classes.
+This conclusion can be generalized to the multi-class situation.
+
+**4** Now consider the case where the sample space consists of discrete points, starting with the situation where each dimension of the samples takes values in $\{0,1\}$ .
+Suppose the sample vector has a length of $D$ , and the generative model needs to model the distribution of the samples.
+Assuming we are considering distinct sample points, there are clearly $2^D$ possible positions in the space.
+Considering the constraint that the sum of the probabilities of the samples across all positions is $1$ , we actually need $2^D - 1$ parameters to determine this.
+
+Furthermore, by assuming that the values of each dimension in the sample space are independent (the naive Bayes assumption), we can address the explosion in the number of parameters, thus allowing us to model each of the $D$ dimensions separately.
+Suppose the probability that a sample $\mathbf x$ belonging to class $\mathcal C_k$ takes the value $1$ in the $i$ -th dimension is $\mu_{ki}$ , then the conditional class probability for the vector $\mathbf x$ is given by
+
+$$
+p(\mathbf x|\mathcal C_k)=\prod \mu_{ki}^{x_i}(1-\mu_{ki})^{1-x_i},
+$$
+
+Using $a_k=\ln p(\mathcal C_k)p(\mathbf x|\mathcal C_k)$, we have
+
+$$
+a_k=\ln p(\mathcal C_k)+\sum x_i\ln\mu_{ki}+(1-x_i)\ln(1-\mu_{ki}),
+$$
+Thus satisfying the linear condition.
+
+**5** In fact, as long as the assumption about the class conditional distribution belongs to the exponential family of distributions, by introducing a scaling factor $s$ , the class conditional distribution can be expressed as follows:
+
+$$
+p(\mathbf x|\boldsymbol\lambda_k,s)=\frac{1}{s}h(\frac{\mathbf x}{s})g(\boldsymbol\lambda_k)\exp\left\{\frac{1}{s}\boldsymbol\lambda_k^\text T\mathbf x\right\},
+$$
+It can be verified that, at this point, $a(\mathbf x)$ is still a linear function of $\mathbf x$ .
+
+
+## Probabilistic Discriminative Models
+
+**1** In the previously discussed probabilistic generative models, we first model the probability distribution of the samples, determine the model parameters through likelihood estimation, and then calculate the posterior probabilities to classify the samples using softmax or sigmoid functions.
+The logical flow is: model parameter estimation from the probability distribution $\rightarrow$ calculate posterior probabilities $\rightarrow$ classify samples.
+
+Of course, we can skip modeling the sample distribution and directly model the log odds or posterior probabilities, using likelihood estimation to directly determine the model parameters.
+This approach is known as the probabilistic discriminative model. An efficient algorithm to accomplish this task is the `Iterative Reweighted Least Squares (IRLS)` algorithm.
+
+**2** First, consider the binary classification problem. To directly model the posterior probabilities, we represent the log odds in the sigmoid function as a linear function of the features $\boldsymbol\phi$ of the sample $\mathbf x$ , such that
+
+$$
+p(\mathcal C_1|\boldsymbol\phi)=y(\boldsymbol\phi)=\sigma(\mathbf w^\text T\boldsymbol\phi),
+$$
+
+Clearly, here $\boldsymbol\phi$ is the augmented form.
+This model is known as the logistic regression model.
+A significant advantage of this probabilistic discriminative model compared to generative models is that it has far fewer parameters to tune.
+Now, let the training data be denoted as $\{\boldsymbol\phi_n, t_n\}$ , where $t_n \in \{0, 1\}$ ; the likelihood is maximized to adjust the parameters of the discriminative model, leading to the likelihood being expressed as
+
+$$
+p(\mathbf t|\mathbf w;\mathbf\Phi)=\prod y_n^{t_n}(1-y_n)^{1-t_n},
+$$
+
+Let the error function be defined as the negative log of the likelihood probability (which is essentially the cross-entropy of the sample dataset).
+
+$$
+E(\mathbf w)=-\sum\left(t_n\ln y_n+(1-t_n)\ln(1-y_n)\right),
+$$
+Thus, the derivative with respect to $\mathbf w$ is given by:
+
+$$
+\begin{aligned}
+\frac{\partial E}{\partial\mathbf w}=&-\sum t_n\frac{\sigma^\prime(\boldsymbol\phi_n)}{\sigma(\boldsymbol\phi_n)}+\sum(1-t_n)\frac{\sigma^\prime(\boldsymbol\phi_n)}{1-\sigma(\boldsymbol\phi_n)}\\=&
+-\sum t_n(1-\sigma(\boldsymbol\phi_n))\boldsymbol\phi_n+\sum(1-t_n)\sigma(\boldsymbol\phi_n)\boldsymbol\phi_n\\=&
+\sum(y_n-t_n)\boldsymbol\phi_n.
+\end{aligned}
+$$
+It is worth noting that, without any additional constraints, if the source data is linearly separable in the feature space, then $\mathbf w \rightarrow \infty$ . This is because $\mathbf w$ can always be increased in value after correctly classifying all samples to achieve a higher likelihood probability.
+Likelihood models are more susceptible to overfitting.
+We can mitigate this situation by adding a regularization term or providing prior information about $\mathbf w$ to maximize the posterior probability of $\mathbf w$ .
+
+**3** In logistic regression, the error function is a convex function of $\mathbf w$ . Although a closed-form solution cannot be provided due to the presence of the $\sigma(\cdot)$ function, it can be solved using the Newton-Raphson method.
+The weight update rule is as follows:
+
+$$
+\mathbf w\leftarrow\mathbf w-\left(\frac{\partial^2 E}{\partial \mathbf w\partial\mathbf w^\text T}\right)^{-1}\frac{\partial E}{\partial\mathbf w}.
+$$
+
+Because of
+
+$$
+\frac{\partial E}{\partial\mathbf w}=\nabla E(\mathbf w)=\sum(y_n-t_n)\boldsymbol\phi_n=\mathbf\Phi^\text T(\mathbf y-\mathbf t),
+$$
+
+and
+
+$$
+\begin{aligned}
+\frac{\partial^2E}{\partial\mathbf w\partial\mathbf w^\text T}=&\nabla\nabla E(\mathbf w)=\mathbf H=\frac{\partial\mathbf\Phi^\text T(\mathbf{y-t})}{\partial\mathbf w^\text T}\\=&
+\mathbf\Phi^\text T\frac{\partial\mathbf y}{\partial\mathbf w^\text T}=\mathbf\Phi^\text T\mathbf R\mathbf\Phi,
+\end{aligned}
+$$
+
+where
+ 
+$$
+\mathbf R=\text{diag}(y_1(1-y_1),...,y_i(1-y_i),...).
+$$
+Thus, the Newton iteration rule is as follows:
+
+$$
+\begin{aligned}
+\mathbf w\leftarrow& \mathbf w-\mathbf H^{-1}\nabla E(\mathbf w)\\=&
+\mathbf w-(\mathbf\Phi^\text T\mathbf R\mathbf\Phi)^{-1}\mathbf\Phi^\text T(\mathbf{y-t})\\=&
+(\mathbf\Phi^\text T\mathbf R\mathbf\Phi)^{-1}\mathbf\Phi^\text T\mathbf R(\mathbf \Phi\mathbf w-\mathbf R^{-1}(\mathbf{y-t})).
+\end{aligned}
+$$
+
+**4** To extend the probabilistic discriminative model to multi-class problems, we use multi-class logistic regression. The posterior probability takes the form of the softmax function, thus:
+
+$$
+p(\mathcal C_k|\boldsymbol\phi)=y_k(\boldsymbol\phi)=\frac{\exp(a_k)}{\sum\exp(a_j)},
+$$
+
+where
+
+$$
+a_k=\mathbf w_k^\text T\boldsymbol\phi.
+$$
+We still use the maximum likelihood estimation method to estimate parameters, and the target vector is represented using 1-K encoding, resulting in the likelihood probability:
+
+$$
+p(\mathbf T|\mathbf W,\mathbf\Phi)=\prod_n\prod_k y_{nk}^{t_{nk}}(\mathbf\phi),
+$$
+Thus, the cross-entropy loss function can be expressed as the negative of the log-likelihood probability.
+
+$$
+E(\mathbf W)=-\sum_n\sum_k t_{nk}\ln y_{nk}(\boldsymbol\phi).
+$$
+
+**5** Consider the generalized linear model under general probabilistic discrimination for the binary classification problem.
+
+$$
+p(t=1|a)=f(a),
+$$
+
+where $a = \mathbf{w}^\text{T} \boldsymbol{\phi}$ , and $f(\cdot)$ is the activation function. 
+
+When classifying the category of a sample, for the feature $\boldsymbol{\phi}$ , if $a = \mathbf{w}^\text{T} \boldsymbol{\phi} \geq \theta$ , we classify $\boldsymbol{\phi}$ as category $t = 1$ ; otherwise, we classify it as $t = 0$ . In addition to fixing $\theta$ as a constant, we can also treat it as a random variable.
+For example, we assume $\theta \sim \mathcal{N}(0,1)$ , so that
+
+$$
+\begin{aligned}
+f(a)=&p(t=1|a)\\=&
+\int_{-\infty}^a\text{d}\theta p(\theta)\\=&
+\Phi(a),
+\end{aligned}
+$$
+This leads to the introduction of the so-called new activation function, the probit function $\Phi(\cdot)$ , which is the distribution function of the standard normal distribution.
+Compared to the sigmoid function as an activation function, the probit function is more sensitive to outliers.
+
+**6** Now, let’s summarize and generalize the probability discriminative model discussed above, providing general conclusions.
+Here, we need to make two assumptions: one is that the sample target variables (rather than the distribution of the samples themselves in the probability generative model) follow an exponential family distribution; additionally, we assume that the activation function takes the form of a canonical link function.
+The distribution of the sample target variables can be expressed as follows:
+
+$$
+p(t|\eta,s)=\frac{1}{s}h\left(\frac{t}{s}\right)g(\eta)\exp\frac{\eta t}{s},
+$$
+Considering the constraints of the probability distribution.
+
+$$
+\int p(t|\eta,s)\text{ d}t=1\longleftrightarrow g(\eta)\int h\left(\frac{t}{s}\right)\exp\frac{\eta t}{s}\text{ d}t=s,
+$$
+
+Taking derivative of $\eta$ gives
+
+$$
+g^\prime(\eta)\int h\left(\frac{t}{s}\right)\exp\frac{\eta t}{s}\text{ d}t+g(\eta)\int h\left(\frac t s\right)\frac{t}{s}\exp\frac{\eta t}{s}\text{ d}t=0,
+$$
+
+Considering that
+
+$$
+\mathbb E[t|\eta,s]=\int p(t|\eta,s)t\text{ d}t,
+$$
+Substituting back, we have
+
+$$
+\mathbb E[t|\eta,s]=-\frac{g^\prime(\eta)}{g(\eta)}s=-s\frac{\text{d}}{\text d\eta}\ln g(\eta).
+$$
+
+Let the expected value of the sample target be denoted as $y$ , thus
+
+$$
+y\equiv -s\frac{\text d\ln g(\eta)}{\text d\eta}=\psi^{-1}(\eta).
+$$
+
+Generalized liner model outputs
+
+$$
+y=f(\mathbf w^\text T\boldsymbol\phi),
+$$
+where $f(\cdot)$ is the activation function (in machine learning) and $f^{-1}(\cdot)$ is the link function (in statistics).
+The log-likelihood probability is given by (as a function of $\eta$ ; note that for each feature $\boldsymbol{\phi}_n$ , $\eta_n$ is a function of $\boldsymbol{\phi}_n$ ):
+
+$$
+\ln p(\mathbf t|\eta, s)=\text C+\sum \ln g(\eta_n)+\frac{\eta_n t_n}{s},
+$$
+So that
+
+$$
+\begin{aligned}
+\frac{\partial\ln p}{\partial\mathbf w}=&\sum\frac{\text d\ln g(\eta_n)}{\text d\eta_n}\frac{\partial \eta_n}{\partial\mathbf w}+\frac{t_n}{s}\frac{\partial\eta_n}{\partial\mathbf w}\\=&
+\sum\left(\frac{t_n-y_n}{s}\right)\psi^\prime(y_n)f^\prime(\mathbf w^\text T\boldsymbol\phi_n)\boldsymbol\phi_n,
+\end{aligned}
+$$
+For a general link function $\psi(y)$ , if we adjust $g(\cdot)$ such that
+
+$$
+f^{-1}(y)\equiv \psi(y),
+$$
+
+We have $f(\psi)=y$ , so that $f^\prime(\psi)\psi^\prime(y)=1$ .
+Additionally, because of $f(\mathbf w^\text T\boldsymbol\phi)=y$ , so we have $\mathbf w^\text T\boldsymbol\phi=f^{-1}(y)=\psi(y)$, eventually we have
+
+$$
+\psi^\prime(y_n)f^\prime(\mathbf w^\text T\boldsymbol\phi_n)=1,
+$$
+
+Substituting into the gradient of the log-likelihood probability with respect to $\mathbf w$ , we have
+
+$$
+\frac{\partial\ln p}{\partial\mathbf w}=\frac 1 s\sum(t_n-y_n)\mathbf\phi_n.
+$$
+Thus, the gradient of the error function satisfies: the contribution of each sample is the feature vector stretched by a certain multiple, which is the difference between the target value and the current model output value.
+
+
+## Laplace Approximation
+
+**1** Due to the favorable properties of the Gaussian function, there are times when we wish to approximate a general function with a Gaussian, a process also known as Laplace approximation.
+In the univariate case, we consider a second-order Taylor expansion around the maximum point of the original function to obtain the approximate Gaussian function.
+Specifically, let the probability density function to be approximated be $p(z)$ .
+
+$$
+p(z)=\frac{1}{Z}f(z),
+$$
+Here, $Z$ is a normalization constant that is independent of $z$ . Let $z_0$ be the mode (maximum point) of the function, thus the second-order Taylor expansion of $\ln f(z)$ around $z_0$ is given by:
+
+$$
+\ln f(z)\simeq \ln f(z_0)+\frac{1}{2}\left(\ln f(z_0)\right)^{\prime\prime}(z-z_0)^2,
+$$
+
+Denote $A=-\left(\ln f(z_0)\right)^{\prime\prime}$, we have
+
+$$
+f(z)\simeq f(z_0)\exp{\left(-\frac{A}{2}(z-z_0)^2\right)},
+$$
+
+At this point, $f(\cdot)$ has the form of a Gaussian function.
+Considering its normalization, we obtain the approximation $q(\cdot)$ for $p(\cdot)$ :
+
+$$
+q(z)=\sqrt{\frac{A}{2\pi}}\exp\left(-\frac A 2(z-z_0)^2\right)^2.
+$$
+Here, there are two requirements for the selection of $z_0$ : first, it must be a critical point of $\ln f(\cdot)$ so that the expansion eliminates the linear term; second, the second derivative must be negative to ensure that $A > 0$ .
+
+
+## Bayesian Logistic Regression

@@ -1,0 +1,73 @@
+KEYWORDS[[Machine Learning][PRML]]KEYWORDS
+
+![demo](https://www.pandox.xyz/api/db/images/jzhang/pexels-kyle-boonie-379159410-29015072.jpg "50")
+
+The function $y(x)$ gives an output value $y$ for any given input variable $x$ ; similarly, a function of a function $F[y]$ , also called a functional, outputs a value $F$ given the function $y$ . The entropy $\text{H}[x]$ is also a type of functional, defined on the probability density function $p(x)$ , and can be equivalently denoted as $\text{H}[p]$ .
+
+In functionals, the variational method is analogous to finding extrema in functions, seeking a function $y(x)$ that maximizes or minimizes the functional $F[y]$ . The variational method can be used to prove that the shortest path between two points is a straight line and that the maximum entropy distribution is a Gaussian distribution.
+
+For a multivariate function $y(\mathbf{x}) = y(x_1, ..., x_D)$ , its Taylor expansion is given by
+
+$$
+y(\mathbf{x}+\boldsymbol\epsilon)=y(\mathbf{x})+\boldsymbol\epsilon^\text{T}\frac{\partial y}{\partial \mathbf{x}}+O(\Vert\boldsymbol\epsilon\Vert^2).
+$$
+For a functional $F[y]$ , consider a small change $\epsilon \eta(x)$ on $y(x)$ , where $\eta(x)$ is an arbitrary function.
+Comparing with the previous equation, we expand $\mathbf{x}$ to infinite dimensions, yielding
+
+$$
+F[y(x)+\epsilon\eta(x)]=F[y(x)]+\int \frac{\delta F}{\delta y(x)}\epsilon\eta(x){\rm{d}}x+O(\epsilon^2),
+$$
+where $\frac{\delta F}{\delta y(x)}$ is the functional gradient.
+
+To obtain the extremum of $F[y]$ , the first-order condition of the above equation is
+
+$$
+\begin{aligned}\lim_{\epsilon\rightarrow 0}\frac{
+\int \frac{\delta F}{\delta y(x)}\epsilon\eta(x){\rm{d}}x}{\epsilon}&=\int \frac{\delta F}{\delta y(x)}\eta(x){\rm{d}}x
+\\&=0,
+\end{aligned}
+$$
+Noting the arbitrariness in the choice of $\eta(x)$ , we conclude that the functional gradient must be zero everywhere, that is,
+
+$$
+\frac{\delta F}{\delta y(x)}\equiv 0.
+$$
+
+>Consider the following example, where the functional $F[y]$ is defined as follows:
+>
+$$
+F[y]=\int G(y(x),y'(x),x)\text{ d}x,
+$$
+>Assuming that $y(x)$ takes constant values at the boundaries of the integral, we have $\eta(x) = 0$ at the boundaries.  
+>Consider the variation on $y(x)$ .
+>
+>$$
+>\begin{aligned}
+>F[y(x)+\epsilon\eta(x)]&=
+>\int G\left(y(x)+\epsilon \eta(x),y'(x)+\epsilon\eta'(x),x\right)\text{ d} x\\&=
+>\int\left\{G\left(y(x),y'(x),x\right)+\frac{\partial G}{\partial y}\epsilon\eta(x)+\frac{\partial G}{\partial y'}\epsilon\eta'(x)\right\}\text{ d}x+O(\epsilon^2)\\&=
+>F[y(x)]+\epsilon\int\left\{\frac{\partial G}{\partial y}\eta(x)+\frac{\partial G}{\partial y'}\eta'(x)\right\}\text{ d}x+O(\epsilon^2)
+>\end{aligned}
+>$$
+>Note that
+>
+>$$
+>\begin{aligned}
+>\int \frac{\partial G}{\partial y'}\eta'(x)\text{ d}x&=\int \frac{\partial G}{\partial y'}\text{ d}\eta(x)\\&=
+>\eta(x)\frac{\partial G}{\partial y'}\Big\vert-\int\eta(x)\frac{\text{d}}{\text{d}x}\left(\frac{\partial G}{\partial y'}\right)\text{ d}x\\&=
+>-\int\eta(x)\frac{\text{d}}{\text{d}x}\left(\frac{\partial G}{\partial y'}\right)\text{ d}x
+>\end{aligned}
+>$$
+>Substituting into the above equation and rearranging gives:
+>
+>$$
+>\begin{aligned}
+>F[y(x)+\epsilon\eta(x)]&=F[y(x)]+\epsilon\int\left\{\frac{\partial G}{\partial y}-\frac{\text{d}}{\text{d}x}\left(\frac{\partial G}{\partial y'}\right)\right\}\eta(x)\text{ d}x+O(\epsilon^2),
+>\end{aligned}
+>$$
+>Set the functional gradient to zero:
+>
+>$$
+>\frac{\partial G}{\partial y}-\frac{\text{d}}{\text{d}x}\left(\frac{\partial G}{\partial y'}\right)=0,
+>$$
+>The remaining steps can be solved using differential equations.

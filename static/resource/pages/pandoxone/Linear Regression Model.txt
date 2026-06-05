@@ -1,0 +1,288 @@
+KEYWORDS[[Machine Learning][PRML]]KEYWORDS
+
+# Probability Distributions
+
+## Binary Variables
+
+**1** The form of the `Bernoulli distribution` is as follows:
+
+$$
+\text{Bern}(x|\mu)=\mu^x(1-\mu)^{1-x}.
+$$
+> In fact, the Bernoulli distribution does not have its own notation. Considering it as a special case of the binomial distribution, it can be represented as $B(1,\mu)$ to denote the result of a Bernoulli trial. That is, if $X\sim B(1,\mu)$ , then
+>
+> $$
+> P\left(X=x\right)=\text{Bern}(x|\mu).
+> $$
+
+It is easy to derive that its mean and variance are, respectively
+
+$$
+\begin{aligned}
+\mathbb E[x]&=\mu\\\text{var}[x]&=\mu(1-\mu).
+\end{aligned}
+$$
+Assuming we have a dataset $\mathcal{D}=\left\{x_1,...,x_N\right\}$ consisting of $N$ independently observed samples, the likelihood function is
+
+$$
+p(\mathcal D|\mu)=\prod_{n=1}^Np(x_n|\mu)=\prod_{n=1}^N\mu^{x_n}(1-\mu)^{1-x_n},
+$$
+The log likelihood is
+
+$$
+\ln p(\mathcal D|\mu)=\sum_{n=1}^N\ln p(x_n|\mu)=\sum_{n=1}^N\left\{x_n\ln\mu+(1-x_n)\ln(1-\mu)\right\},
+$$
+Setting the gradient with respect to $\mu$ to zero, the maximum likelihood estimate is
+
+$$
+\mu_\text{ML}=\frac{1}{N}\sum_{n=1}^Nx_n.
+$$
+The form of the binomial distribution is as follows
+
+$$
+\text{Bin}(m|N,\mu)=\left(\begin{matrix}N\\m\end{matrix}\right)\mu^m(1-\mu)^{N-m}.
+$$
+> Suppose $X\sim B(N,\mu)$ , then
+> 
+> $$
+> P(X=m)=\text{Bin}(m|N,\mu).
+> $$
+
+Its mean and variance are given by the following equations
+
+$$
+\begin{aligned}
+\mathbb E[m]&=N\mu\\
+\text{var}[m]&=N\mu(1-\mu).
+\end{aligned}
+$$
+
+**2** Note that when estimating the parameter $\mu$ through $N$ independent Bernoulli trials, the likelihood function is the product of the exponents of $\mu$ and $1 - \mu$ .
+This leads to the introduction of the following beta prior distribution
+
+$$
+\text{Beta}(\mu|a,b)=\frac{\Gamma(a+b)}{\Gamma(a)\Gamma(b)}\mu^{a-1}(1-\mu)^{b-1},\text{ }\text{ }0\leq\mu\leq1.
+$$
+Where $\Gamma(a+b)/\Gamma(a)\Gamma(b)$ is the normalization constant, and $\Gamma(\cdot)$ is in the following form
+
+$$
+\Gamma(x)\equiv \int_0^\infty u^{x-1}e^{-u}\text{ d}u.
+$$
+Its mean and variance are given by the following equations
+
+$$
+\begin{aligned}
+\mathbb E[\mu]&=\frac{a}{a+b}\\
+\text{var}[\mu]&= \frac{ab}{(a+b)^2(a+b+1)}.
+\end{aligned}
+$$
+Since the posterior distribution is proportional to the product of the prior distribution and the likelihood (with a constant factor independent of the random variable), the posterior distribution for estimating the parameters of a binomial distribution satisfies
+
+$$
+p(\mu|m,l,a,b)\propto\mu^{m+a-1}(1-\mu)^{l+b-1},
+$$
+where $l$ satisfies
+
+$$
+m+l=N.
+$$
+By simple comparison, it is easy to provide the complete representation of the posterior distribution.
+
+$$
+p(\mu|m,l,a,b)=\frac{\Gamma(N+a+b)}{\Gamma(m+a)(l+b)}\mu^{m+a-1}(1-\mu)^{l+b-1}.
+$$
+>When the data scale approaches infinity, Bayesian estimation and maximum likelihood estimation are the same.
+
+
+## Multivariable
+
+**1** Consider the $K$ -dimensional extension of the Bernoulli distribution, using $\mathbf{x}=\{x_1,...,x_K\}$ to represent the state random variables, satisfying
+
+$$
+\begin{aligned}x_k\in\{0,1\},\\
+\sum_{k=1}^K x_k=1.
+\end{aligned}
+$$
+If the following probability condition holds
+
+$$
+P(x_k=1)=\mu_k,
+$$
+The distribution of the random variable is given by
+
+$$
+p(\mathbf{x}|\boldsymbol{\mu})=\prod_{k=1}^K\mu_k^{x_k},
+$$
+where $\boldsymbol\mu=(\mu_1,...,\mu_K)^\text T$ , with the constraints $\mu_k\geq 0$ and $\sum_k\mu_k=1$ .
+Now, suppose we have a dataset $\mathcal D=\{\mathbf{x}_1,...,\mathbf x_K\}$ consisting of $N$ independently observed samples; the likelihood function is given by
+
+$$
+p(\mathcal D|\boldsymbol\mu)=\prod_{n=1}^N\prod_{k=1}^K\mu_k^{x_{nk}}=\prod_{k=1}^K\mu_k^{\sum_nx_{nk}}=\prod_{k=1}^K \mu_k^{m_k},
+$$
+The log-likelihood function is given by
+
+$$
+\ln p(\mathcal D|\boldsymbol\mu)=\sum_{k=1}^K m_k\ln\mu_k,
+$$
+Taking into account the constraints
+
+$$
+\sum_{k=1}^K\mu_k=1,
+$$
+The maximum likelihood solution can be obtained using the Lagrange multiplier method?
+
+$$
+\mu_k^{\text{ML}}=\frac{m_k}{N}.
+$$
+Given the parameter $\boldsymbol\mu$, the joint distribution of $m_1,...,m_K$ in $N$ independent observations is the multinomial distribution (an extension of the binomial distribution).
+
+$$
+\text{Mult}(m_1,m_2,...,m_K|\boldsymbol\mu,N)=\left(\begin{matrix}
+N\\m_1m_2...m_K\end{matrix}\right)\prod_{k=1}^K\mu_k^{m_k},
+$$
+where
+
+$$
+\left(\begin{matrix}
+N\\m_1m_2...m_K\end{matrix}\right)=\frac{N!}{m_1!m_2!...m_K!},
+$$
+At the same time, there are constraints:
+
+$$
+\sum_{k=1}^K m_k=N.
+$$
+
+**2** By comparison, the conjugate prior for the multinomial distribution should have the following form:
+
+$$
+p(\boldsymbol\mu|\boldsymbol\alpha)\propto\prod_{k=1}^K \mu_k^{\alpha_k-1},
+$$
+where $0\leq\mu_k\leq 1$ and $\sum_k\mu_k=1$ , $\boldsymbol\alpha=(\alpha_1,...,\alpha_K)^\text T$ . 归一化后的狄利克雷分布为
+
+$$
+\text{Dir}(\boldsymbol\mu|\boldsymbol\alpha)=\frac{\Gamma(\alpha_0)}{\Gamma(\alpha_1)\cdots\Gamma(\alpha_K)}\prod_{k=1}^K\mu_k^{\alpha_k-1},
+$$
+where
+
+$$
+\alpha_0=\sum_{k=1}^K\alpha_k.
+$$
+
+
+## Gaussian Distribution
+
+## Exponential Family Distribution
+
+## Nonparametric Methods
+
+**1** The results of parametric methods depend on the choice of model (to what extent it correctly describes the distribution of the true data), whereas nonparametric methods make significantly fewer assumptions. Nonparametric methods are also divided into two categories: frequency-based and Bayesian, with a focus here on the former. Consider the simplest case of density estimation using a histogram.
+
+Suppose the random variable $x$ is a one-dimensional continuous variable, and the range of $x$ is divided into several small intervals of width $\Delta_i$ .
+The number of observed samples falling into the $i$ -th interval is $n_i$ , and the total number of samples is $N$ , thus providing an estimate of the probability density $p_i$ for that interval as
+
+$$
+p_i=\frac{n_i}{N\Delta_i},
+$$
+Clearly, this estimation method yields a stepwise density estimate. When the chosen interval width $\Delta_i$ is small, the frequency histogram drawn shows that the density estimate is quite sensitive to the samples (especially their randomness).
+
+> We say that density estimation is sensitive to the randomness of the samples when this estimation overly reduces the characteristics that the samples reflect as the true distribution, thereby losing the recovery of the commonalities of the original distribution. In extreme cases, when the interval width is very small, the density estimation and the samples can be approximately equivalent (with no loss in conversion between the two).
+
+Its smoothness is poor, and when the interval width $\Delta_i$ is large, the density estimation is likely to lose important distribution features, as shown in the figure below (first row).
+In fact, the appropriate selection of $\Delta_i$ can provide the best estimate of the original distribution, which aligns with the selection of model complexity or regularization parameters that control model complexity.
+
+![o_Many_Points_Example](https://www.pandox.xyz/api/db/images/pandoxone/o_Many_Points_Example.jpg "30")
+
+The main drawbacks of histogram estimation are the discontinuity of the density estimate and the limitations imposed by dimensionality. In a $D$ -dimensional space, using $M$ intervals for each dimension requires a total of $M^D$ intervals, which increases exponentially as $D$ increases.
+Furthermore, the amount of training data required also grows at this rate.
+To address the issue of dimensionality expansion, two nonparametric density estimation methods are introduced: **kernel estimation** and **nearest neighbors**.
+
+**2** Inspired by histogram estimation, density estimation should be conducted in the vicinity (locality) of the point to be estimated.
+Suppose the observed data is given by a density function $p(\mathbf{x})$ defined in $D$ -dimensional space.
+Consider a small region $\mathcal{R}$ that contains $\mathbf{x}$ , with its probability given by
+
+$$
+P=\int_\mathcal{R}{p(\mathbf{x})}{\rm{d}}\mathbf{x},
+$$
+Assuming the size of the observed data (the number of observation points) is $N$ , and the number of points falling within the region $\mathcal{R}$ is $K$ , then $K$ as a random variable follows the distribution given by
+
+$$
+P\{B(N,P)=K\}=\binom{N}{K}P^K(1-P)^{N-K},
+$$
+Since $\mathbb{E}[K/N]=\mathbb{E}[K]/N=P$ , and $\text{var}[K/N]=\text{var}[K]/N^2=P(1-P)/N$ , it follows that when $N$ is sufficiently large, it satisfies
+
+$$
+K\simeq NP,
+$$
+>
+> $$
+> \lim_{N\rightarrow \infty}\mathbb{E}\left[\frac{K-NP}{NP}\right]=0,
+> $$
+>
+> $$
+> \lim_{N\rightarrow \infty}\text{var}\left[\frac{K-NP}{NP}\right]=\lim_{N\rightarrow \infty}\frac{1-P}{NP}=0.
+> $$
+
+Assuming that $\mathcal{R}$ is sufficiently small, the probability density can be approximated as a constant value, satisfying
+
+$$
+P\simeq p(\mathbf{x})V,
+$$
+Thus, the estimate for $p(\mathbf{x})$ is given by
+
+$$
+p(\mathbf{x})=\frac{K}{NV},
+$$
+
+It is worth noting that to provide a "sufficiently good" estimate of the probability density, we have used two inconsistent assumptions.
+On one hand, $\mathcal{R}$ should be sufficiently small so that the density in the region is constant; on the other hand, $\mathcal{R}$ should also be large enough to ensure that the number of observation points falling into that region is close to $NVp(\mathbf{x})$ .  
+
+> When $N$ is sufficiently large, $K/V$ becomes sufficiently large ( $K$ increases while $V$ decreases), and $p(\mathbf{x})$ will converge to the true density.
+
+The kernel method fixes $V$ while adjusting $K$ , whereas the nearest neighbors fix $K$ while adjusting $V$ .
+
+**3** The kernel function method fixes the volume and counts the statistics.
+The region $\mathcal{R}$ is a hypercube centered at the point $\mathbf{x}$ in $D$ -dimensional space, with side length $h$ , defined by the following kernel function (also known as the Parzen window).
+
+$$
+k(\mathbf{u})=\left\{\begin{aligned}1,\text{ }\text{ }\text{ }&|u_i|\leq \frac{1}{2},\text{ }\text{ }\text{ }\text{ }\text{ }\text{ }i=1,...,D,\\0,\text{ }\text{ }\text{ }&\text{其他},\end{aligned}\right.
+$$
+
+Clearly, when $\mathbf{x_n}$ falls within (or on the boundary of) $\mathcal{R}$ , the value of the kernel function $k((\mathbf{x}-\mathbf{x_n})/h)$ is $1$ . Thus, the total number of data points falling within $\mathcal{R}$ , $K$ , satisfies
+
+$$
+K=\sum_{n=1}^Nk\left(\frac{\mathbf{x}-\mathbf{x}_n}{h}\right),
+$$
+Thus, the density estimate at the point $\mathbf{x}$ is given by
+
+$$
+\begin{aligned}p(\mathbf{x})&=\frac{K}{NV}\\&=\frac{1}{N}\sum_{n=1}^{N}{\frac{1}{h^D}k\left(\frac{\mathbf{x}-\mathbf{x}_n}{h}\right)},\end{aligned}
+$$
+Similar to the histogram estimation method, the choice of the kernel function implies that the density estimate values at the boundaries of the hypercube are discontinuous.
+To address this, a smooth kernel function can be selected, such as the Gaussian kernel:
+
+$$
+k(\mathbf{u})=\exp\left\{-\frac{\Vert\mathbf{x}-\mathbf{x}_n\Vert^2}{2h^2}\right\},
+$$
+Thus, the kernel density estimation model is given by
+
+$$
+p(\mathbf{x})=\frac{1}{N}\sum_{n=1}^N{\frac{1}{\sqrt{2\pi}h}\exp\left\{-\frac{\Vert\mathbf{x}-\mathbf{x}_n\Vert^2}{2h^2}\right\}}.
+$$
+
+It is evident that this model is a mixture of $D$ -dimensional Gaussian models centered on $N$ data points, with the constant coefficient $1/{N\sqrt{2\pi}h}$ ensuring that the density model is correctly normalized.  
+More generally, the kernel density estimation or Parzen estimation model requires the chosen kernel function to satisfy the following two conditions:
+
+> 
+> $$
+> \begin{aligned}k(\mathbf{u})&\geq 0,\\\int k(\mathbf{u})&=1.\end{aligned}
+> $$
+
+The computational cost of this estimation method during the training phase is $0$ , while the cost during the testing phase is $O(N)$ .
+
+**4** One drawback of kernel estimation is that the parameter $h$ (which determines the degree of smoothing/model complexity) is fixed globally, whereas we would prefer $h$ to adaptively adjust based on the positions of the data points.
+The $K$ nearest neighbors method is a density estimation approach that fixes $K$ and adjusts $V$ : it selects a sphere centered at $\mathbf{x}$ that contains exactly $K$ data points, with its volume denoted as $V$ .
+
+Thus, the resulting density estimate is given by $p(\mathbf{x})=K/VN$ .
+Here, the parameter controlling model complexity is $K$ .
+Using Bayes' theorem, this model can be applied to classification problems, where the decision with the lowest misclassification rate is to assign $\mathbf{x}$ to the category with the highest frequency within the sphere.
+Specifically, when $K=1$ , $\mathbf{x}$ is assigned to the category of the nearest data point, and as $N$ approaches infinity, its misclassification rate will not exceed twice that of the optimal decision (calculated based on the true class distribution).

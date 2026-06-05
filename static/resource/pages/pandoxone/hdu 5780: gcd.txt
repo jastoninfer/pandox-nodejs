@@ -1,0 +1,126 @@
+KEYWORDS[[ACM/ICPC][HDU]]KEYWORDS
+
+![demo](https://www.pandox.xyz/api/db/images/pandoxone/pexels-edward-jenner-4252895.jpg "30")
+
+## Problem Statement
+
+Given $x$ and $n$ satisfying $1 \leq x, n \leq 1000000$ , find the value of $\sum{(x^a - 1, x^b - 1)}$ modulo $10^9 + 7$ , where $1 \leq a, b \leq n$ .
+
+## Solution
+
+First, it is not difficult to see that $(x^a - 1, x^b - 1) = x^{(a, b)} - 1$ (the proof can follow the idea of Euclid's theorem). Therefore, we only need to consider when $(a, b) = d$ . Let $f(d)$ denote the number of pairs $(a, b)$ such that $(a, b) = d$ , then it is not hard to see that the answer is $ans = \sum_{d = 1}^{n}{f(d)(x^d - 1)}$ .
+
+Now, let's consider calculating $f(d)$. Since $(a, b) = d$ satisfies $d \mid a$ , $d \mid b$ , and $(\frac{a}{d}, \frac{b}{d}) = 1$ , for a pair $(a, b)$ satisfying $1 \leq a \leq b \leq n$ , the total number is $\sum_{i=1}^{\frac{n}{d}}{\varphi(i)}$ , where $\varphi(i)$ is Euler's totient function. This is because we can multiply by the factor $d$ on pairs that are coprime to map them to pairs $(a, b)$ .
+
+Thus, for the required count in the problem, the total is $2\sum_{i=1}^{\frac{n}{d}}{\varphi(i)} - 1$ . Therefore, we only need the prefix sum of the Euler's totient function. Notice that $f(d)$ only depends on $\frac{n}{d}$, and the right-hand side can be computed using geometric series. As a result, we can compute this in segments, where each segment corresponds to a fixed $\frac{n}{d}$ .
+
+This preprocessing can be done in $O(n)$ time, and each query has a complexity of $O(\sqrt{n})$ .
+
+## Code
+
+```cpp
+#include <algorithm>
+#include <cstdio>
+#include <cstring>
+#include <string>
+#include <queue>
+#include <map>
+#include <set>
+#include <stack>
+#include <ctime>
+#include <cmath>
+#include <iostream>
+#include <assert.h>
+#define PI acos(-1.)
+#pragma comment(linker, "/STACK:102400000,102400000")
+#define max(a, b) ((a) > (b) ? (a) : (b))
+#define min(a, b) ((a) < (b) ? (a) : (b))
+#define mp std :: make_pair
+#define st first
+#define nd second
+#define keyn (root->ch[1]->ch[0])
+#define lson (u << 1)
+#define rson (u << 1 | 1)
+#define pii std :: pair<int, int>
+#define pll pair<ll, ll>
+#define pb push_back
+#define type(x) __typeof(x.begin())
+#define foreach(i, j) for(type(j)i = j.begin(); i != j.end(); i++)
+#define FOR(i, s, t) for(int i = (s); i <= (t); i++)
+#define ROF(i, t, s) for(int i = (t); i >= (s); i--)
+#define dbg(x) std::cout << x << std::endl
+#define dbg2(x, y) std::cout << x << " " << y << std::endl
+#define clr(x, i) memset(x, (i), sizeof(x))
+#define maximize(x, y) x = max((x), (y))
+#define minimize(x, y) x = min((x), (y))
+using namespace std;
+typedef long long ll;
+const int int_inf = 0x3f3f3f3f;
+const ll ll_inf = 0x3f3f3f3f3f3f3f3f;
+const int INT_INF = (int)((1ll << 31) - 1);
+const double double_inf = 1e30;
+const double eps = 1e-14;
+typedef unsigned long long ul;
+typedef unsigned int ui;
+
+const int mod = 1e9 + 7;
+const int maxn = 1e6 + 10;
+ll phi[maxn];
+void init_miu(){
+    clr(phi, 0);
+    phi[1] = 1;
+    FOR(i, 2, maxn - 1) if(!phi[i]){
+        for(int j = i; j < maxn; j += i){
+            if(!phi[j]) phi[j] = j;
+            phi[j] = phi[j] / i * (i - 1);
+        }
+    }
+    FOR(i, 1, maxn - 1) phi[i] = (phi[i] + phi[i - 1]) % mod;
+}
+ll power(ll a, ll p, ll mod){
+    ll res = 1;
+    a %= mod;
+    while(p){
+        if(p & 1) res = res * a % mod;
+        p >>= 1;
+        a = a * a % mod;
+    }
+    return res;
+}
+
+ll cal2(int x, int n){
+    ll ans = 0;
+    int p = 1;
+    while(p <= n){
+        int np = n / (n / p);
+        int delta = np - p + 1;
+        ll cnt = (2 * phi[n / p] + mod - 1) % mod;
+        ll lhs = 0;
+        if(x > 1){
+            lhs = power(x, p, mod) * (power(x, delta, mod) + mod - 1) % mod;
+            lhs = lhs * power(x - 1, mod - 2, mod) % mod;
+            lhs = (lhs - delta + mod) % mod;
+        }
+        ans = (ans + lhs * cnt % mod) % mod;
+        p = np + 1;
+    }
+    return ans;
+}
+int main(){
+    //data_gen(); return 0;
+    //C(); return 0;
+    int debug = 0;
+    if(debug) freopen("in.txt", "r", stdin);
+    //freopen("out.txt", "w", stdout);
+    init_miu();
+    int T = readint();
+    while(T--){
+        int x = readint(), n = readint();
+        printf("%lld\n", cal2(x, n));
+    }
+    return 0;
+}
+```
+## Möbius Inversion
+Of course, for this problem, I barely passed using Möbius inversion (it took over 900 ms and only passed once).
+I used segmented summation twice, and the complexity for each query was between $O(\sqrt{n})$ and $O(n)$. Although this is not the optimal solution, it still shows the connection between Euler's function and the Möbius function.
