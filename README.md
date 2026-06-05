@@ -1,38 +1,37 @@
 # Pandox Blog Platform Backend
 
-Portfolio case study for the backend of Pandox, a full-stack technical blogging platform. The backend is a TypeScript/Node.js API that powers authentication, users, articles, comments, likes, follows, image uploads, and Elasticsearch-backed search.
+Backend for Pandox, a full-stack technical blogging platform. It is a TypeScript/Node.js API for authentication, users, articles, comments, likes, follows, image uploads, and Elasticsearch search.
 
-## Reviewer Snapshot
+## Project Summary
 
 | Area | Summary |
 | --- | --- |
 | Product | Technical blogging platform for long-form articles with profiles, comments, social actions, and search |
-| Backend scope | Express REST API, Sequelize data model, auth middleware, seed pipeline, image handling, search endpoints |
+| Backend scope | Express REST API, Sequelize models, auth middleware, seed script, image handling, and search routes |
 | Core services | MySQL, Redis, local image storage |
-| Search service | Elasticsearch, originally populated from MySQL through Logstash JDBC sync |
-| Current demo status | The Oracle VPS is offline. The project is best reviewed locally with seeded MySQL/Redis data; Elasticsearch can be enabled separately for search. |
+| Search service | Elasticsearch, with data originally synced from MySQL through Logstash JDBC |
+| Demo status | The Oracle VPS is offline. The project can be reviewed locally with seeded MySQL and Redis data. Elasticsearch can be enabled separately for search. |
 
 ## Engineering Highlights
 
-- Designed a TypeScript Express backend with explicit route, controller, middleware, model, and config layers.
+- Built a TypeScript Express API with separate routes, controllers, middleware, models, and config files.
 - Modeled users, pages, comments, threads, images, page keywords, likes, and follows with Sequelize associations.
-- Implemented JWT authentication, protected route middleware, and Redis-backed token/user invalidation.
-- Built a repeatable seed process that recreates tables and loads demo users, Markdown pages, images, comments, and keywords from static resources.
-- Added image upload and retrieval through Multer and local filesystem storage.
-- Implemented Elasticsearch search endpoints for page and user search; used Logstash to sync MySQL rows into ES indexes.
+- Added JWT login, protected routes, and Redis-based logout/token invalidation.
+- Added a seed script that recreates tables and loads demo users, Markdown pages, images, comments, and keywords from local files.
+- Added image upload and retrieval with Multer and local filesystem storage.
+- Added Elasticsearch routes for page and user search, with a Logstash JDBC setup for syncing MySQL rows into Elasticsearch indexes.
 
-## Skills Demonstrated
+## Skills Shown
 
 | Skill | Evidence in this project |
 | --- | --- |
-| API design | Separate routers/controllers for auth, users, pages, comments, images, likes, follows, keywords, and search |
+| API design | Separate routers and controllers for auth, users, pages, comments, images, likes, follows, keywords, and search |
 | Data modeling | Sequelize models and associations for one-to-many and many-to-many social/blog relationships |
-| Auth/security | JWT issuance, auth middleware, Redis invalidation, environment-based secret configuration |
-| Data seeding | Local demo content generated from Markdown, images, and comments for reproducible review |
-| Search architecture | Elasticsearch query endpoints and documented Logstash JDBC indexing pipeline |
-|
+| Auth/security | JWT tokens, auth middleware, Redis token invalidation, and environment-based secrets |
+| Local demo data | Seeded users, articles, images, comments, and keywords for local review |
+| Search setup | Elasticsearch query routes and documented Logstash JDBC indexing |
 
-## API Surface
+## Main API Areas
 
 | Domain | Representative routes |
 | --- | --- |
@@ -44,7 +43,7 @@ Portfolio case study for the backend of Pandox, a full-stack technical blogging 
 | Social | likes and follows |
 | Search | `GET /api/db/es/pages/:keyword/:pageIdx`, `GET /api/db/es/users/:keyword/:userIdx` |
 
-## Local Review Appendix
+## Run Locally
 
 Use Node 22 where possible. Very new Node versions may expose old transitive dependency issues unless JWT dependencies are updated.
 
@@ -54,7 +53,7 @@ cp .env.example .env
 npm run dev
 ```
 
-Expected backend environment:
+Expected backend `.env`:
 
 ```bash
 MYSQL_HOST=localhost
@@ -77,4 +76,3 @@ Seeded login accounts:
 | `pandoxone` | `1234` |
 | `jzhang` | `1234` |
 | `mshao` | `1234` |
-
